@@ -1,60 +1,121 @@
 // ==UserScript==
-// @name         IATEL - Suite Lanzador Universal
+// @name         IATEL - Cargador Dinámico de Reportes
 // @version      1.0
 // @match        http://mxmefm01.wnet/private/zc/tools/smc*
-// @grant        none
+// @grant        GM_xmlhttpRequest
+// @grant        GM_addStyle
+// @connect      raw.githubusercontent.com
 // ==/UserScript==
 
 (function() {
     'use strict';
 
-    // 1. Catálogo: Texto visible en el lanzador vs Texto del botón original en la página
-    const ACCIONES = [
-        { nombre: '📊 Reporte HUAWEI MasMovil', textoBotonOriginal: 'Generar Huawei' },
-        { nombre: '📄 Reporte ICFs (>= 36h)',    textoBotonOriginal: 'Descargar ICFs' },
-        { nombre: '✉️ RSSI VDF -> Outlook',      textoBotonOriginal: 'Extraer VDF' },
-        { nombre: '🎯 Acumulador Jira MASEMP',   textoBotonOriginal: 'Acumular Jira' }
+    // 1. URL base de tu repositorio público en GitHub
+    const BASE_GITHUB_URL = "https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/";
+
+    // 2. Lista de reportes (El 'archivo' debe coincidir exactamente con el nombre en GitHub)
+    const REPORTES = [
+        {
+            nombre: '📊 HUAWEI (>36h) MAS MOVIL',
+            archivo: 'Generador Reporte HUAWEI (-36h) SERVICIOS MAS MOVIL.user.js'
+        },
+        {
+            nombre: '📊 HUAWEI Servicios (24h-36h)',
+            archivo: 'Generador Reporte HUAWEI Servicios (24h-36h).user.js'
+        },
+        {
+            nombre: '📄 ICFs (Customer Complaints) >= 36h',
+            archivo: 'Generador Reporte ICFs (Customer Complaints) -= 36h.user.js'
+        },
+        {
+            nombre: '⚡ ICFs (QBOOST >= 36h)',
+            archivo: 'Generador Reporte ICFs (QBOOST -= 36h).user.js'
+        },
+        {
+            nombre: '✉️ RSSI VDF -> Outlook',
+            archivo: 'Generador Reporte RSSI VDF -- Outlook.user.js'
+        },
+        {
+            nombre: '📡 Reporte VDF (MC y DOWN) con MAIL',
+            archivo: 'Extractor de Reporte VDF (MC y DOWN) con MAIL.user.js'
+        },
+        {
+            nombre: '🎯 Acumulador Jira MASEMP',
+            archivo: 'Acumulador Reporte Jira MASEMP.user.js'
+        },
+        {
+            nombre: '📋 Reporte Bloqueos',
+            archivo: 'Extractor Reporte Bloqueos (GESTION DE BLOQUEOS).user.js'
+        }
     ];
 
-    // Función que busca el botón generado por el script original y le hace clic
-    function pulsarBotonDelScript(textoBuscado) {
-        // Busca entre todos los botones o enlaces de la pantalla
-        const elementos = Array.from(document.querySelectorAll('button, input[type="button"], a'));
-        const botonReal = elementos.find(el => el.textContent.toLowerCase().includes(textoBuscado.toLowerCase()) || 
-                                               el.value?.toLowerCase().includes(textoBuscado.toLowerCase()));
+    // Función que descarga el script de GitHub y lo ejecuta al vuelo
+    function cargarYEjecutarScript(nombreArchivo, tituloReporte) {
+        const urlFinal = BASE_GITHUB_URL + encodeURIComponent(nombreArchivo);
+        console.log(`[Cargador] Descargando: ${urlFinal}`);
 
-        if (botonReal) {
-            console.log(`Pulsando botón original: "${botonReal.textContent.trim()}"`);
-            botonReal.click();
-        } else {
-            alert(`No se encontró el botón de "${textoBuscado}" en esta pantalla. Comprueba si la tabla ha cargado.`);
-        }
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: urlFinal,
+            headers: {
+                "Cache-Control": "no-cache" // Evita que se quede en caché y siempre descargue la última versión
+            },
+            onload: function(response) {
+                if (response.status === 200) {
+                    try {
+                        // Inyecta y ejecuta el código en el contexto de la página
+                        const scriptElement = document.createElement('script');
+                        scriptElement.textContent = response.responseText;
+                        document.body.appendChild(scriptElement);
+                        console.log(`✅ [Cargador] "${tituloReporte}" cargado con éxito.`);
+                    } catch (error) {
+                        console.error("Error al ejecutar el script:", error);
+                        alert(`Error al ejecutar el script: ${error.message}`);
+                    }
+                } else {
+                    alert(`Error al descargar de GitHub (Código: ${response.status}). Revisa que el nombre del archivo sea exacto.`);
+                }
+            },
+            onerror: function(err) {
+                console.error("Error en la conexión:", err);
+                alert("Error de conexión al intentar conectar con GitHub.");
+            }
+        });
     }
 
-    // 2. Crear el botón flotante en la pantalla
-    const botonHub = document.createElement('button');
-    botonHub.textContent = '⚡ Reportes';
-    botonHub.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:9999999;padding:10px 16px;background:#ff6600;color:#fff;border:none;border-radius:25px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.4);';
+    // 3. Crear el Botón Flotante y Menú en Pantalla
+    const btnHub = document.createElement('button');
+    btnHub.textContent = '⚡ Reportes';
+    btnHub.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:2147483647;padding:10px 16px;background:#ff6600;color:#fff;border:none;border-radius:25px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.35);font-family:sans-serif;font-size:13px;';
 
     const panelMenu = document.createElement('div');
-    panelMenu.style.cssText = 'position:fixed;bottom:65px;right:20px;background:#1e1e1e;border:1px solid #444;border-radius:8px;padding:8px;display:none;flex-direction:column;gap:5px;z-index:9999999;min-width:220px;box-shadow:0 6px 16px rgba(0,0,0,0.5);';
+    panelMenu.style.cssText = 'position:fixed;bottom:65px;right:20px;background:#1e1e1e;border:1px solid #3d3d3d;border-radius:8px;padding:8px;display:none;flex-direction:column;gap:6px;z-index:2147483647;min-width:260px;box-shadow:0 6px 16px rgba(0,0,0,0.5);font-family:sans-serif;';
 
-    ACCIONES.forEach(accion => {
+    REPORTES.forEach(rep => {
         const itemBtn = document.createElement('button');
-        itemBtn.textContent = accion.nombre;
-        itemBtn.style.cssText = 'text-align:left;background:#2d2d2d;color:#fff;border:1px solid #3d3d3d;padding:8px 10px;border-radius:5px;cursor:pointer;font-size:12px;';
-        
+        itemBtn.textContent = rep.nombre;
+        itemBtn.style.cssText = 'text-align:left;background:#2a2a2a;color:#eee;border:1px solid #3a3a3a;padding:8px 10px;border-radius:5px;cursor:pointer;font-size:12px;';
+        itemBtn.onmouseover = () => itemBtn.style.background = '#ff6600';
+        itemBtn.onmouseout = () => itemBtn.style.background = '#2a2a2a';
+
         itemBtn.onclick = () => {
             panelMenu.style.display = 'none';
-            pulsarBotonDelScript(accion.textoBotonOriginal);
+            cargarYEjecutarScript(rep.archivo, rep.nombre);
         };
         panelMenu.appendChild(itemBtn);
     });
 
-    botonHub.onclick = () => {
+    btnHub.onclick = (e) => {
+        e.stopPropagation();
         panelMenu.style.display = panelMenu.style.display === 'none' ? 'flex' : 'none';
     };
 
-    document.body.appendChild(botonHub);
+    document.addEventListener('click', (e) => {
+        if (!panelMenu.contains(e.target) && e.target !== btnHub) {
+            panelMenu.style.display = 'none';
+        }
+    });
+
+    document.body.appendChild(btnHub);
     document.body.appendChild(panelMenu);
 })();
