@@ -76,9 +76,9 @@
             archivo: 'Generador Reporte ESTRUCTURAL_SERVICIO.user.js'
         },
         REUNION_RSSI: {
-            nombre: '🤝 Reunión RSSI (3PP, FLM y otros)',
-            archivo: 'Generador Informe Completo Reunión RSSI casos pendientes de 3PP, FLM y otros..user.js'
-        }
+    nombre: '🤝 Reunión RSSI (3PP, FLM y otros)',
+    archivo: 'Generador_Informe_Reunion_RSSI.user.js'
+}
     };
 
     const REPORTES_DIARIOS = [
