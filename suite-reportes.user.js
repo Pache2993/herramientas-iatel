@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         IATEL - Cargador Dinámico de Reportes (Oceane UI Edition)
+// @name         IATEL - Cargador Dinámico de Reportes (Oceane UI Categorizado)
 // @namespace    http://tampermonkey.net/
-// @version      3.0.0
-// @description  Lanzador y organizador dinámico de reportes semanales con diseño profesional Glassmorphism IATelecom
+// @version      3.1.0
+// @description  Lanzador dinámico organizado por días y subcategorías (MásMóvil, Servicios, Cobertura) con diseño Oceane Glassmorphism
 // @match        http://mxmefm01.wnet/private/zc/tools/smc*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_addStyle
@@ -81,14 +81,12 @@
         }
     };
 
-    // Tareas repetidas a diario
     const REPORTES_DIARIOS = [
         SCRIPTS.HUAWEI_SERV_24_36,
         SCRIPTS.HUAWEI_ORANGE,
         SCRIPTS.HUAWEI_MM
     ];
 
-    // Distribución por días
     const DIAS_DISTRIBUCION = [
         {
             diaId: 1,
@@ -146,7 +144,23 @@
         }
     ];
 
-    // Inyección de estilos y tokens visuales de Oceane
+    // --- REGLAS DE CATEGORIZACIÓN ---
+    function obtenerCategoria(rep) {
+        const cadena = (rep.nombre + " " + rep.archivo).toLowerCase();
+        
+        // 1. MásMóvil: Si contiene "mas movil" o "masmovil"
+        if (cadena.includes('mas movil') || cadena.includes('masmovil')) {
+            return 'masmovil';
+        }
+        // 2. Servicios: Si contiene "servicios", "estructural" u "orange"
+        if (cadena.includes('servicios') || cadena.includes('estructural') || cadena.includes('orange')) {
+            return 'servicios';
+        }
+        // 3. Cobertura: Todo lo demás
+        return 'cobertura';
+    }
+
+    // --- ESTILOS GLASSMORPHISM ---
     const s = document.createElement('style');
     s.id = 'estilo-iatel-reports-oceane';
     s.innerHTML = `
@@ -279,7 +293,6 @@
             box-shadow: inset 0 0 12px rgba(0, 153, 255, 0.08);
         }
 
-        /* Panel Desplegable */
         .dropdown-oceane-panel {
             display: none;
             position: absolute;
@@ -291,8 +304,8 @@
             -webkit-backdrop-filter: blur(16px) saturate(180%);
             border: 1px solid var(--op-border-subtle);
             border-radius: 8px;
-            width: 320px;
-            max-height: 75vh;
+            width: 330px;
+            max-height: 80vh;
             overflow-y: auto;
             box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.2);
             z-index: 9999999;
@@ -307,16 +320,12 @@
             to { opacity: 1; transform: translate(-50%, 0); }
         }
 
-        /* Scrollbar estilizada */
-        .dropdown-oceane-panel::-webkit-scrollbar {
-            width: 5px;
-        }
+        .dropdown-oceane-panel::-webkit-scrollbar { width: 5px; }
         .dropdown-oceane-panel::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.15);
             border-radius: 4px;
         }
 
-        /* Acordeón por días */
         .oceane-day-accordion {
             background: var(--op-bg-card);
             border: 1px solid var(--op-border-subtle);
@@ -358,9 +367,47 @@
         .oceane-day-content {
             display: flex;
             flex-direction: column;
+            gap: 8px;
+            padding: 8px 6px;
+            background: rgba(0, 0, 0, 0.25);
+        }
+
+        /* Subsecciones */
+        .oceane-subgroup {
+            display: flex;
+            flex-direction: column;
             gap: 3px;
-            padding: 6px;
-            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .oceane-subgroup-title {
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            padding: 2px 6px 3px 6px;
+            border-radius: 3px;
+            margin-bottom: 1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .title-masmovil {
+            color: #ffd000;
+            background: rgba(255, 208, 0, 0.08);
+            border-left: 2px solid #ffd000;
+        }
+
+        .title-servicios {
+            color: #ff9100;
+            background: rgba(255, 145, 0, 0.08);
+            border-left: 2px solid #ff9100;
+        }
+
+        .title-cobertura {
+            color: var(--op-accent);
+            background: var(--op-accent-bg);
+            border-left: 2px solid var(--op-accent);
         }
 
         .dropdown-item-oceane {
@@ -370,7 +417,7 @@
             color: var(--op-text-secondary);
             border: none;
             border-left: 2px solid transparent;
-            padding: 6px 10px;
+            padding: 5px 8px;
             cursor: pointer;
             text-align: left;
             font-family: inherit;
@@ -388,10 +435,9 @@
             color: var(--op-accent) !important;
             border-left: 2px solid var(--op-accent) !important;
             background-color: var(--op-accent-bg) !important;
-            padding-left: 12px;
+            padding-left: 11px;
         }
 
-        /* Botón Circular Minimalista Ocultar/Mostrar */
         #helper-hide-toggle {
             position: fixed;
             right: 14px;
@@ -424,7 +470,6 @@
             transform: scale(1.08);
         }
 
-        /* Toast flotante informativo */
         #helper-toast-msg {
             position: fixed;
             display: inline-flex;
@@ -453,7 +498,6 @@
     `;
     document.head.appendChild(s);
 
-    // Toast flotante
     function mostrarToast(msg, icono = "✓") {
         let oldToast = document.getElementById("helper-toast-msg");
         if (oldToast) oldToast.remove();
@@ -472,7 +516,6 @@
         }, 2200);
     }
 
-    // Descarga y ejecución de scripts
     function cargarYEjecutarScript(nombreArchivo, tituloReporte) {
         const urlFinal = BASE_GITHUB_URL + encodeURIComponent(nombreArchivo);
         mostrarToast(`Cargando reporte...`, '⏳');
@@ -506,11 +549,10 @@
         });
     }
 
-    // Contenedor principal de la barra flotante superior
+    // --- CONSTRUCCIÓN DE INTERFAZ ---
     const menu = document.createElement("div");
     menu.id = "iatel-launcher-container";
 
-    // Logo Corporativo y Badge AI Pro
     const logoContainer = document.createElement("div");
     logoContainer.className = "op-logo-wrapper";
 
@@ -525,7 +567,6 @@
     logoContainer.appendChild(aiBadge);
     menu.appendChild(logoContainer);
 
-    // Botón lanzador desplegable
     const btnMenu = document.createElement("button");
     btnMenu.className = "btn-oceane";
     btnMenu.innerHTML = `⚡ Reportes Semanales`;
@@ -535,7 +576,13 @@
 
     const diaActual = new Date().getDay(); // 1 = Lunes, ..., 5 = Viernes
 
-    // Poblado de acordeón por días
+    // Definición de las 3 subcategorías solicitadas
+    const SECCIONES_GRUPO = [
+        { id: 'masmovil', label: 'MásMóvil', clase: 'title-masmovil', icono: '🟡' },
+        { id: 'servicios', label: 'Servicios', clase: 'title-servicios', icono: '🟠' },
+        { id: 'cobertura', label: 'Cobertura', clase: 'title-cobertura', icono: '🔵' }
+    ];
+
     DIAS_DISTRIBUCION.forEach(seccion => {
         const detalle = document.createElement('details');
         detalle.className = 'oceane-day-accordion';
@@ -552,20 +599,48 @@
         const bodyContainer = document.createElement('div');
         bodyContainer.className = 'oceane-day-content';
 
+        // Clasificar los reportes del día según los criterios
+        const agrupados = {
+            masmovil: [],
+            servicios: [],
+            cobertura: []
+        };
+
         seccion.reportes.forEach(rep => {
-            const itemBtn = document.createElement('button');
-            itemBtn.className = 'dropdown-item-oceane';
-            itemBtn.textContent = rep.nombre;
-            itemBtn.title = rep.nombre;
+            const cat = obtenerCategoria(rep);
+            agrupados[cat].push(rep);
+        });
 
-            itemBtn.onclick = (e) => {
-                e.stopPropagation();
-                dropdownPanel.style.display = 'none';
-                btnMenu.classList.remove('active');
-                cargarYEjecutarScript(rep.archivo, rep.nombre);
-            };
+        // Renderizar cada subgrupo si tiene reportes asignados
+        SECCIONES_GRUPO.forEach(sub => {
+            const listaReportes = agrupados[sub.id];
+            if (listaReportes.length > 0) {
+                const subBox = document.createElement('div');
+                subBox.className = 'oceane-subgroup';
 
-            bodyContainer.appendChild(itemBtn);
+                const subHeader = document.createElement('div');
+                subHeader.className = `oceane-subgroup-title ${sub.clase}`;
+                subHeader.innerHTML = `${sub.icono} ${sub.label}`;
+                subBox.appendChild(subHeader);
+
+                listaReportes.forEach(rep => {
+                    const itemBtn = document.createElement('button');
+                    itemBtn.className = 'dropdown-item-oceane';
+                    itemBtn.textContent = rep.nombre;
+                    itemBtn.title = rep.nombre;
+
+                    itemBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        dropdownPanel.style.display = 'none';
+                        btnMenu.classList.remove('active');
+                        cargarYEjecutarScript(rep.archivo, rep.nombre);
+                    };
+
+                    subBox.appendChild(itemBtn);
+                });
+
+                bodyContainer.appendChild(subBox);
+            }
         });
 
         detalle.appendChild(summary);
@@ -573,7 +648,6 @@
         dropdownPanel.appendChild(detalle);
     });
 
-    // Control de apertura/cierre
     btnMenu.onclick = (e) => {
         e.stopPropagation();
         const isOpen = dropdownPanel.style.display === 'flex';
@@ -592,7 +666,6 @@
     menu.appendChild(dropdownPanel);
     document.body.appendChild(menu);
 
-    // Botón circular inferior derecho para ocultar/mostrar toda la barra
     if (!document.getElementById("helper-hide-toggle")) {
         const hideToggle = document.createElement("button");
         hideToggle.id = "helper-hide-toggle";
