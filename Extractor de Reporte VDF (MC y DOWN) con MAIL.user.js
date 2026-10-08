@@ -20,7 +20,7 @@
     { titulo: "fecha_inicio", origen: "fecha_inicio", exacto: true },
     { titulo: "tipo_icf", origen: "tipo_icf", exacto: true },
     { titulo: "ICF_RED", origen: "ICF_RED", exacto: true },
-    { titulo: "causa_especif", origen: "causa_especif", exacto: false },
+    { titulo: "causa_especif", origen: "causa_especif", exacto: true },
     { titulo: "VODAFONE", origen: "Prevision", exacto: false },
     { titulo: "Nivel de escalado 3PP", origen: "escalado_3PP", exacto: false },
     { titulo: "causa", origen: "causa", exacto: true },
