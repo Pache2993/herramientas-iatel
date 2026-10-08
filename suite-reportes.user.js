@@ -1,6 +1,8 @@
 // ==UserScript==
-// @name         IATEL - Cargador Dinámico de Reportes por Días
-// @version      2.0
+// @name         IATEL - Cargador Dinámico de Reportes (Oceane UI Edition)
+// @namespace    http://tampermonkey.net/
+// @version      3.0.0
+// @description  Lanzador y organizador dinámico de reportes semanales con diseño profesional Glassmorphism IATelecom
 // @match        http://mxmefm01.wnet/private/zc/tools/smc*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_addStyle
@@ -10,9 +12,12 @@
 (function() {
     'use strict';
 
+    if (window.top !== window.self) return;
+
+    // --- CONFIGURACIÓN REPOSITORIO GITHUB ---
     const BASE_GITHUB_URL = "https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/";
 
-    // Definición centralizada de reportes[cite: 1]
+    // --- CATÁLOGO DE REPORTES ---
     const SCRIPTS = {
         HUAWEI_MM: {
             nombre: '📊 HUAWEI (>36h) MAS MOVIL',
@@ -83,11 +88,12 @@
         SCRIPTS.HUAWEI_MM
     ];
 
-    // Distribución por días (incluyendo los diarios repetidos)
+    // Distribución por días
     const DIAS_DISTRIBUCION = [
         {
             diaId: 1,
-            titulo: '📅 Lunes',
+            titulo: 'Lunes',
+            icono: '📅',
             reportes: [
                 ...REPORTES_DIARIOS,
                 SCRIPTS.CUST_COMP_24_36,
@@ -97,7 +103,8 @@
         },
         {
             diaId: 2,
-            titulo: '📅 Martes',
+            titulo: 'Martes',
+            icono: '📅',
             reportes: [
                 ...REPORTES_DIARIOS,
                 SCRIPTS.ZONA_36,
@@ -107,7 +114,8 @@
         },
         {
             diaId: 3,
-            titulo: '📅 Miércoles',
+            titulo: 'Miércoles',
+            icono: '📅',
             reportes: [
                 ...REPORTES_DIARIOS,
                 SCRIPTS.CUST_COMP_36,
@@ -116,7 +124,8 @@
         },
         {
             diaId: 4,
-            titulo: '📅 Jueves',
+            titulo: 'Jueves',
+            icono: '📅',
             reportes: [
                 ...REPORTES_DIARIOS,
                 SCRIPTS.CUST_COMP_24_36,
@@ -127,7 +136,8 @@
         },
         {
             diaId: 5,
-            titulo: '📅 Viernes',
+            titulo: 'Viernes',
+            icono: '📅',
             reportes: [
                 ...REPORTES_DIARIOS,
                 SCRIPTS.ESTRUCTURAL,
@@ -136,9 +146,336 @@
         }
     ];
 
+    // Inyección de estilos y tokens visuales de Oceane
+    const s = document.createElement('style');
+    s.id = 'estilo-iatel-reports-oceane';
+    s.innerHTML = `
+        :root {
+            --op-bg-glass: rgba(13, 17, 23, 0.75);
+            --op-bg-dropdown: rgba(13, 17, 23, 0.94);
+            --op-bg-card: rgba(255, 255, 255, 0.03);
+            --op-bg-hover: rgba(255, 255, 255, 0.08);
+            --op-border-subtle: rgba(255, 255, 255, 0.1);
+            --op-border-focus: rgba(0, 153, 255, 0.6);
+            --op-accent: #0099ff;
+            --op-accent-glow: rgba(0, 153, 255, 0.35);
+            --op-accent-bg: rgba(0, 153, 255, 0.12);
+            --op-text-primary: #f0f6fc;
+            --op-text-secondary: #c9d1d9;
+            --op-text-muted: #8b949e;
+            --op-font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --op-font-mono: "JetBrains Mono", "SF Mono", Consolas, Menlo, monospace;
+        }
+
+        #iatel-launcher-container {
+            position: fixed;
+            top: 12px;
+            left: 0;
+            right: 0;
+            margin: 0 auto;
+            width: max-content;
+            display: flex;
+            align-items: center;
+            padding: 5px 10px;
+            gap: 8px;
+            font-family: var(--op-font-sans);
+            font-size: 11px;
+            color: var(--op-text-primary);
+            z-index: 9999999;
+            border-radius: 8px;
+            user-select: none;
+            opacity: 0.6;
+            transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s ease;
+        }
+
+        #iatel-launcher-container:hover {
+            opacity: 1 !important;
+            transform: translateY(1px);
+        }
+
+        #iatel-launcher-container::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            backdrop-filter: blur(14px) saturate(180%);
+            -webkit-backdrop-filter: blur(14px) saturate(180%);
+            background-color: var(--op-bg-glass);
+            border: 1px solid var(--op-border-subtle);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            z-index: -1;
+            transition: all 0.25s ease;
+        }
+
+        #iatel-launcher-container:hover::before {
+            background-color: rgba(13, 17, 23, 0.88);
+            border-color: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+        }
+
+        #iatel-launcher-container.helper-oculto {
+            display: none !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
+        .op-logo-wrapper {
+            display: flex;
+            align-items: center;
+            padding-right: 10px;
+            margin-right: 4px;
+            border-right: 1px solid var(--op-border-subtle);
+        }
+
+        .op-logo-wrapper img {
+            height: 18px;
+            filter: drop-shadow(0 0 4px rgba(0,153,255,0.25));
+        }
+
+        .op-ai-badge {
+            font-size: 9px;
+            color: var(--op-accent);
+            margin-left: 6px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            background: var(--op-accent-bg);
+            padding: 2px 5px;
+            border-radius: 4px;
+            border: 1px solid var(--op-accent-glow);
+        }
+
+        .btn-oceane {
+            background: transparent;
+            color: var(--op-text-secondary);
+            border: 1px solid transparent;
+            border-left: 2px solid transparent;
+            padding: 0 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.2px;
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+            gap: 6px;
+        }
+
+        .btn-oceane:hover {
+            color: var(--op-text-primary);
+            background-color: var(--op-bg-hover);
+            border-color: var(--op-border-subtle);
+        }
+
+        .btn-oceane.active {
+            color: var(--op-accent) !important;
+            border-left: 2px solid var(--op-accent) !important;
+            background-color: var(--op-accent-bg) !important;
+            box-shadow: inset 0 0 12px rgba(0, 153, 255, 0.08);
+        }
+
+        /* Panel Desplegable */
+        .dropdown-oceane-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--op-bg-dropdown);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid var(--op-border-subtle);
+            border-radius: 8px;
+            width: 320px;
+            max-height: 75vh;
+            overflow-y: auto;
+            box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.2);
+            z-index: 9999999;
+            padding: 8px;
+            gap: 6px;
+            flex-direction: column;
+            animation: opFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes opFadeIn {
+            from { opacity: 0; transform: translate(-50%, -4px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* Scrollbar estilizada */
+        .dropdown-oceane-panel::-webkit-scrollbar {
+            width: 5px;
+        }
+        .dropdown-oceane-panel::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+
+        /* Acordeón por días */
+        .oceane-day-accordion {
+            background: var(--op-bg-card);
+            border: 1px solid var(--op-border-subtle);
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 4px;
+            transition: border-color 0.2s;
+        }
+
+        .oceane-day-accordion[open] {
+            border-color: rgba(0, 153, 255, 0.3);
+        }
+
+        .oceane-day-summary {
+            padding: 7px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--op-text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .oceane-day-summary:hover {
+            background: var(--op-bg-hover);
+            color: var(--op-text-primary);
+        }
+
+        .oceane-day-summary.is-today {
+            color: var(--op-accent);
+            background: var(--op-accent-bg);
+            font-weight: 700;
+        }
+
+        .oceane-day-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 6px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .dropdown-item-oceane {
+            display: block;
+            width: 100%;
+            background: transparent;
+            color: var(--op-text-secondary);
+            border: none;
+            border-left: 2px solid transparent;
+            padding: 6px 10px;
+            cursor: pointer;
+            text-align: left;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 500;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            box-sizing: border-box;
+        }
+
+        .dropdown-item-oceane:hover {
+            color: var(--op-accent) !important;
+            border-left: 2px solid var(--op-accent) !important;
+            background-color: var(--op-accent-bg) !important;
+            padding-left: 12px;
+        }
+
+        /* Botón Circular Minimalista Ocultar/Mostrar */
+        #helper-hide-toggle {
+            position: fixed;
+            right: 14px;
+            bottom: 14px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: var(--op-bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--op-border-subtle);
+            color: var(--op-text-muted);
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2147483647;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0.4;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        #helper-hide-toggle:hover {
+            opacity: 1;
+            color: #fff;
+            border-color: var(--op-accent);
+            background-color: var(--op-accent);
+            box-shadow: 0 0 16px var(--op-accent-glow);
+            transform: scale(1.08);
+        }
+
+        /* Toast flotante informativo */
+        #helper-toast-msg {
+            position: fixed;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 28px;
+            padding: 0 12px;
+            background-color: rgba(13, 17, 23, 0.9);
+            backdrop-filter: blur(14px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-left: 2px solid var(--op-accent);
+            border-radius: 6px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+            font-family: var(--op-font-sans);
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--op-text-primary);
+            z-index: 99999999;
+            opacity: 0;
+            transform: translateX(-4px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+            pointer-events: none;
+            user-select: none;
+        }
+        #helper-toast-msg .toast-icon { color: var(--op-accent); font-weight: 700; font-size: 12px; }
+    `;
+    document.head.appendChild(s);
+
+    // Toast flotante
+    function mostrarToast(msg, icono = "✓") {
+        let oldToast = document.getElementById("helper-toast-msg");
+        if (oldToast) oldToast.remove();
+        const toast = document.createElement("div");
+        toast.id = "helper-toast-msg";
+        toast.innerHTML = `<span class="toast-icon">${icono}</span><span>${msg}</span>`;
+        const rect = menu.getBoundingClientRect();
+        toast.style.top = `${rect.top + (rect.height / 2) - 14}px`;
+        toast.style.left = `${rect.right + 10}px`;
+        document.body.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(0)'; }, 10);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(4px)';
+            setTimeout(() => toast.remove(), 200);
+        }, 2200);
+    }
+
+    // Descarga y ejecución de scripts
     function cargarYEjecutarScript(nombreArchivo, tituloReporte) {
         const urlFinal = BASE_GITHUB_URL + encodeURIComponent(nombreArchivo);
-        console.log(`[Cargador] Descargando: ${urlFinal}`);
+        mostrarToast(`Cargando reporte...`, '⏳');
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -150,59 +487,81 @@
                         const scriptElement = document.createElement('script');
                         scriptElement.textContent = response.responseText;
                         document.body.appendChild(scriptElement);
+                        mostrarToast(`${tituloReporte} listo`, '⚡');
                         console.log(`✅ [Cargador] "${tituloReporte}" cargado con éxito.`);
                     } catch (error) {
                         console.error("Error al ejecutar el script:", error);
+                        mostrarToast("Error en el script", "⚠");
                         alert(`Error al ejecutar el script: ${error.message}`);
                     }
                 } else {
-                    alert(`Error al descargar de GitHub (Código: ${response.status}). Revisa que el nombre del archivo coincida exactamente.`);
+                    mostrarToast("Error de descarga", "⚠");
+                    alert(`Error al descargar de GitHub (Código: ${response.status}). Revisa que el nombre coincida.`);
                 }
             },
             onerror: function(err) {
                 console.error("Error en la conexión:", err);
-                alert("Error de conexión al intentar conectar con GitHub.");
+                mostrarToast("Fallo de red", "⚠");
             }
         });
     }
 
-    // Botón Hub principal
-    const btnHub = document.createElement('button');
-    btnHub.textContent = '⚡ Reportes Semanales';
-    btnHub.style.cssText = 'position:fixed;bottom:20px;right:20px;z-index:2147483647;padding:10px 18px;background:#ff6600;color:#fff;border:none;border-radius:25px;font-weight:bold;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.4);font-family:sans-serif;font-size:13px;';
+    // Contenedor principal de la barra flotante superior
+    const menu = document.createElement("div");
+    menu.id = "iatel-launcher-container";
 
-    // Panel contenedor
-    const panelMenu = document.createElement('div');
-    panelMenu.style.cssText = 'position:fixed;bottom:65px;right:20px;background:#1e1e1e;border:1px solid #3d3d3d;border-radius:8px;padding:8px;display:none;flex-direction:column;gap:6px;z-index:2147483647;min-width:320px;max-height:80vh;overflow-y:auto;box-shadow:0 6px 16px rgba(0,0,0,0.6);font-family:sans-serif;';
+    // Logo Corporativo y Badge AI Pro
+    const logoContainer = document.createElement("div");
+    logoContainer.className = "op-logo-wrapper";
+
+    const logoImg = document.createElement("img");
+    logoImg.src = "https://iatelecom.es/assets/img/logo_azul.svg";
+
+    const aiBadge = document.createElement("span");
+    aiBadge.className = "op-ai-badge";
+    aiBadge.innerHTML = "✨ AI Pro";
+
+    logoContainer.appendChild(logoImg);
+    logoContainer.appendChild(aiBadge);
+    menu.appendChild(logoContainer);
+
+    // Botón lanzador desplegable
+    const btnMenu = document.createElement("button");
+    btnMenu.className = "btn-oceane";
+    btnMenu.innerHTML = `⚡ Reportes Semanales`;
+
+    const dropdownPanel = document.createElement("div");
+    dropdownPanel.className = "dropdown-oceane-panel";
 
     const diaActual = new Date().getDay(); // 1 = Lunes, ..., 5 = Viernes
 
-    // Construcción del acordeón por días
+    // Poblado de acordeón por días
     DIAS_DISTRIBUCION.forEach(seccion => {
         const detalle = document.createElement('details');
-        detalle.style.cssText = 'background:#252525;border:1px solid #333;border-radius:6px;overflow:hidden;';
+        detalle.className = 'oceane-day-accordion';
 
-        // Abre automáticamente el día correspondiente a la fecha actual
         if (seccion.diaId === diaActual) {
             detalle.open = true;
         }
 
         const summary = document.createElement('summary');
-        summary.textContent = seccion.diaId === diaActual ? `${seccion.titulo} (Hoy)` : seccion.titulo;
-        summary.style.cssText = `padding:8px 10px;font-size:12px;font-weight:bold;cursor:pointer;background:${seccion.diaId === diaActual ? '#2e3a24' : '#2b2b2b'};color:${seccion.diaId === diaActual ? '#8ae67c' : '#f0f0f0'};user-select:none;`;
+        const esHoy = (seccion.diaId === diaActual);
+        summary.className = `oceane-day-summary ${esHoy ? 'is-today' : ''}`;
+        summary.innerHTML = `<span>${seccion.icono} ${seccion.titulo}</span>${esHoy ? '<span class="op-ai-badge" style="font-size:8px; padding:1px 4px;">Hoy</span>' : ''}`;
 
         const bodyContainer = document.createElement('div');
-        bodyContainer.style.cssText = 'display:flex;flex-direction:column;gap:4px;padding:6px;';
+        bodyContainer.className = 'oceane-day-content';
 
         seccion.reportes.forEach(rep => {
             const itemBtn = document.createElement('button');
+            itemBtn.className = 'dropdown-item-oceane';
             itemBtn.textContent = rep.nombre;
-            itemBtn.style.cssText = 'text-align:left;background:#1c1c1c;color:#ddd;border:1px solid #383838;padding:6px 9px;border-radius:4px;cursor:pointer;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
-            itemBtn.onmouseover = () => { itemBtn.style.background = '#ff6600'; itemBtn.style.color = '#fff'; };
-            itemBtn.onmouseout = () => { itemBtn.style.background = '#1c1c1c'; itemBtn.style.color = '#ddd'; };
+            itemBtn.title = rep.nombre;
 
-            itemBtn.onclick = () => {
-                panelMenu.style.display = 'none';
+            itemBtn.onclick = (e) => {
+                e.stopPropagation();
+                dropdownPanel.style.display = 'none';
+                btnMenu.classList.remove('active');
                 cargarYEjecutarScript(rep.archivo, rep.nombre);
             };
 
@@ -211,20 +570,50 @@
 
         detalle.appendChild(summary);
         detalle.appendChild(bodyContainer);
-        panelMenu.appendChild(detalle);
+        dropdownPanel.appendChild(detalle);
     });
 
-    btnHub.onclick = (e) => {
+    // Control de apertura/cierre
+    btnMenu.onclick = (e) => {
         e.stopPropagation();
-        panelMenu.style.display = panelMenu.style.display === 'none' ? 'flex' : 'none';
+        const isOpen = dropdownPanel.style.display === 'flex';
+        dropdownPanel.style.display = isOpen ? 'none' : 'flex';
+        btnMenu.classList.toggle('active', !isOpen);
     };
 
     document.addEventListener('click', (e) => {
-        if (!panelMenu.contains(e.target) && e.target !== btnHub) {
-            panelMenu.style.display = 'none';
+        if (!dropdownPanel.contains(e.target) && e.target !== btnMenu) {
+            dropdownPanel.style.display = 'none';
+            btnMenu.classList.remove('active');
         }
     });
 
-    document.body.appendChild(btnHub);
-    document.body.appendChild(panelMenu);
+    menu.appendChild(btnMenu);
+    menu.appendChild(dropdownPanel);
+    document.body.appendChild(menu);
+
+    // Botón circular inferior derecho para ocultar/mostrar toda la barra
+    if (!document.getElementById("helper-hide-toggle")) {
+        const hideToggle = document.createElement("button");
+        hideToggle.id = "helper-hide-toggle";
+        hideToggle.title = "Ocultar / mostrar herramienta";
+        hideToggle.setAttribute("aria-label", "Ocultar / mostrar herramienta");
+        hideToggle.innerHTML = "•";
+
+        hideToggle.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const oculto = document.documentElement.getAttribute("data-helper-oculto") === "true";
+            if (!oculto) {
+                menu.classList.add("helper-oculto");
+                document.documentElement.setAttribute("data-helper-oculto", "true");
+                hideToggle.title = "Mostrar herramienta";
+            } else {
+                menu.classList.remove("helper-oculto");
+                document.documentElement.setAttribute("data-helper-oculto", "false");
+                hideToggle.title = "Ocultar herramienta";
+            }
+        };
+        document.body.appendChild(hideToggle);
+    }
 })();
