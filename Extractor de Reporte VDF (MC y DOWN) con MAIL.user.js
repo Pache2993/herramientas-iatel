@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         Extractor de Reporte VDF (MC y DOWN) con MAIL
-// @namespace    http://tampermonkey.net/
-// @version      1.1
-// @description  Filtra, consolida filas y copia tabla en formato enriquecido para correo
-// @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
-// @grant        GM_setClipboard
-// @run-at       document-idle
+// @name          Extractor de Reporte VDF (MC y DOWN) con MAIL PRUEBAAA
+// @namespace     http://tampermonkey.net/
+// @version       1.2
+// @description   Filtra, consolida filas y copia tabla en formato enriquecido para correo
+// @match         http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
+// @grant         GM_setClipboard
+// @run-at        document-idle
 // ==/UserScript==
 
 (function() {
@@ -100,7 +100,22 @@
       if (tds.length <= 3) return;
 
       const filaDatos = indices.map(idx => {
-        return (idx !== -1 && tds[idx]) ? tds[idx].innerText.trim() : '';
+        if (idx === -1 || !tds[idx]) return '';
+
+        const celda = tds[idx];
+        // Si hay un nodo interior (como <span class="ellipsis">) con atributo title, extraerlo
+        const elementoConTitle = celda.querySelector('[title]');
+        if (elementoConTitle && elementoConTitle.getAttribute('title').trim()) {
+          return elementoConTitle.getAttribute('title').trim();
+        }
+
+        // Si la propia celda td tiene el title
+        if (celda.getAttribute('title') && celda.getAttribute('title').trim()) {
+          return celda.getAttribute('title').trim();
+        }
+
+        // Si no tiene title, toma el texto visible habitual
+        return celda.innerText.trim();
       });
 
       const claveUnica = filaDatos[2] || JSON.stringify(filaDatos);
@@ -186,7 +201,6 @@
 
     const htmlCompleto = generarCuerpoCorreoCompleto();
 
-    // 1. Copiar contenido enriquecido (texto + tabla con estilos) al portapapeles
     try {
       const blobHtml = new Blob([htmlCompleto], { type: 'text/html' });
       const blobText = new Blob([htmlCompleto.replace(/<[^>]+>/g, '')], { type: 'text/plain' });
@@ -208,12 +222,10 @@
       document.body.removeChild(divOculto);
     }
 
-    // 2. Destinatarios y asunto con el día actual
     const para = "imaccytransp.masorange@masorange.es; n3.masorange@masorange.es; gloria.arias@masorange.es";
     const cc = "net.cso@masorange.es; icf@iatelecom.es; Fernando Martin Rodriguez";
     const asunto = `NODOS DOWN/MC VDF ${obtenerFechaActualFormato()}`;
 
-    // 3. Abrir la aplicación instalada de Outlook mediante mailto
     const mailtoUrl = `mailto:${encodeURIComponent(para)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(asunto)}`;
     window.location.href = mailtoUrl;
 
@@ -270,7 +282,6 @@
     if (el) el.innerText = `Filas acumuladas: ${bufferFilas.size}`;
   }
 
-  // Comprobar que el DOM esté listo antes de montar la interfaz
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', iniciarPanel);
   } else {
