@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Extractor Reporte Bloqueos (GESTION DE BLOQUEOS)
+// @name         GESTIONDEBLOQUEOS
 // @namespace    http://tampermonkey.net/
 // @version      1.0
 // @description  Filtra por GESTION DE BLOQUEOS y Devuelta NO, guarda y copia la tabla para correo
