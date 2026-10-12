@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Suite de Herramientas SMC",
+  "version": "1.0.0",
+  "description": "Extensión unificada para herramientas y reportes internos SMC",
+  "content_scripts": [
+    {
+      "matches": [
+        "http://mxmefm01.wnet/private/zc/tools/smc/*"
+      ],
+      "js": [
+        "Extractor Reporte Bloqueos (GESTION DE BLOQUEOS).user.js",
+        "Extractor Reporte Incidencias Despliegue (Control).user.js",
+        "Extractor Reporte PCAR (Aging -= 36).user.js",
+        "Extractor de Reporte VDF (MC y DOWN) con M....user.js",
+        "Generador Reporte ESTRUCTURAL_SERVICIO.user.js",
+        "Generador Reporte HUAWEI (-36h) SERVICIOS ....user.js",
+        "Generador Reporte HUAWEI Servicios (24h-36h....user.js",
+        "Generador Reporte ICFs (Customer Complaints)....user.js",
+        "Generador Reporte ICFs (QBOOST -= 36h).user.js",
+        "Generador Reporte ICFs (QBOOST) 24 a 36h.user.js",
+        "Generador Reporte ICFs (Zona -= 36h).user.js",
+        "Generador Reporte RSSI VDF -- Outlook.user.js",
+        "Generador_Informe_Reunion_RSSI.user.js",
+        "suite-reportes.user.js"
+      ],
+      "run_at": "document_end"
+    }
+  ]
+}
