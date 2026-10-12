@@ -9,20 +9,21 @@
         "http://mxmefm01.wnet/private/zc/tools/smc/*"
       ],
       "js": [
-        "Extractor Reporte Bloqueos (GESTION DE BLOQUEOS).user.js",
-        "Extractor Reporte Incidencias Despliegue (Control).user.js",
-        "Extractor Reporte PCAR (Aging -= 36).user.js",
-        "Extractor de Reporte VDF (MC y DOWN) con M....user.js",
-        "Generador Reporte ESTRUCTURAL_SERVICIO.user.js",
-        "Generador Reporte HUAWEI (-36h) SERVICIOS ....user.js",
-        "Generador Reporte HUAWEI Servicios (24h-36h....user.js",
-        "Generador Reporte ICFs (Customer Complaints)....user.js",
-        "Generador Reporte ICFs (QBOOST -= 36h).user.js",
-        "Generador Reporte ICFs (QBOOST) 24 a 36h.user.js",
-        "Generador Reporte ICFs (Zona -= 36h).user.js",
-        "Generador Reporte RSSI VDF -- Outlook.user.js",
-        "Generador_Informe_Reunion_RSSI.user.js",
-        "suite-reportes.user.js"
+        "Customer_mas_36h.user.js",
+        "Customer_24h_hasta_36h.user.js",
+        "Estructural_servicios.user.js",
+        "Gestion_de_bloqueos.user.js",
+        "Incidencias_despliegue.user.js",
+        "MC_DOWN.user.js",
+        "Masmovil.user.js",
+        "PCAR_mas_36h.user.js",
+        "QBOOST_mas_36h.user.js",
+        "Qboost_24h_hasta_36h.user.js",
+        "RSSI_VDF.user.js",
+        "Reunion_RSSI.user.js",
+        "Servicios_orange_24h_hasta_36h.user.js",
+        "Servicios_orange_mas_36h.user.js",
+        "Zona_mas_36h.user.js"
       ],
       "run_at": "document_end"
     }
