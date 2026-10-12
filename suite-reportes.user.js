@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IATEL - Cargador Dinámico de Reportes (Oceane UI Categorizado)
 // @namespace    http://tampermonkey.net/
-// @version      3.1.0
+// @version      3.2.0
 // @description  Lanzador dinámico organizado por días y subcategorías (MásMóvil, Servicios, Cobertura) con diseño Oceane Glassmorphism
 // @match        http://mxmefm01.wnet/private/zc/tools/smc*
 // @grant        GM_xmlhttpRequest
@@ -17,68 +17,68 @@
     // --- CONFIGURACIÓN REPOSITORIO GITHUB ---
     const BASE_GITHUB_URL = "https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/";
 
-    // --- CATÁLOGO DE REPORTES ---
+    // --- CATÁLOGO DE REPORTES ACTUALIZADO ---
     const SCRIPTS = {
         HUAWEI_MM: {
             nombre: '📊 HUAWEI (>36h) MAS MOVIL',
-            archivo: 'Generador Reporte HUAWEI (-36h) SERVICIOS MAS MOVIL.user.js'
+            archivo: 'Masmovil.user.js'
         },
         HUAWEI_ORANGE: {
             nombre: '🍊 HUAWEI (>36h) Orange',
-            archivo: 'Generador Reporte HUAWEI (-36h) SERVICIOS Orange.user.js'
+            archivo: 'Servicios_orange_mas_36h.user.js'
         },
         HUAWEI_SERV_24_36: {
             nombre: '📊 HUAWEI Servicios (24h-36h)',
-            archivo: 'Generador Reporte HUAWEI Servicios (24h-36h).user.js'
+            archivo: 'Servicios_orange_24h_hasta_36h.user.js'
         },
         CUST_COMP_24_36: {
             nombre: '📄 Cust. Complaints (24h-36h)',
-            archivo: 'Generador Reporte ICFs (Customer Complaints) 24 a 36h.user.js'
+            archivo: 'Customer_24h_hasta_36h.user.js'
         },
         CUST_COMP_36: {
             nombre: '📄 Cust. Complaints (>= 36h)',
-            archivo: 'Generador Reporte ICFs (Customer Complaints) -= 36h.user.js'
+            archivo: 'Customer_mas_36h.user.js'
         },
         QBOOST_24_36: {
             nombre: '⚡ QBOOST (24h-36h)',
-            archivo: 'Generador Reporte ICFs (QBOOST) 24 a 36h.user.js'
+            archivo: 'Qboost_24h_hasta_36h.user.js'
         },
         QBOOST_36: {
             nombre: '⚡ QBOOST (>= 36h)',
-            archivo: 'Generador Reporte ICFs (QBOOST -= 36h).user.js'
+            archivo: 'QBOOST_mas_36h.user.js'
         },
         ZONA_36: {
             nombre: '🗺️ Clientes Zona (>= 36h)',
-            archivo: 'Generador Reporte ICFs (Zona -= 36h).user.js'
+            archivo: 'Zona_mas_36h.user.js'
         },
         PCAR_36: {
             nombre: '⏱️ PCAR (Aging >= 36)',
-            archivo: 'Extractor Reporte PCAR (Aging --= 36).user.js'
+            archivo: 'PCAR_mas_36h.user.js'
         },
         DESPLIEGUE: {
             nombre: '🚀 Incidencias Despliegue SMC',
-            archivo: 'Extractor Reporte Incidencias Despliegue (Conteo Global caso_asociado).user.js'
+            archivo: 'Incidencias_despliegue.user.js'
         },
         VDF_MC_DOWN: {
             nombre: '📡 VDF (MC y DOWN) Mail',
-            archivo: 'Extractor de Reporte VDF (MC y DOWN) con MAIL.user.js'
+            archivo: 'MC_DOWN.user.js'
         },
         RSSI_OUTLOOK: {
             nombre: '✉️ RSSI VDF -> Outlook',
-            archivo: 'Generador Reporte RSSI VDF -- Outlook.user.js'
+            archivo: 'RSSI_VDF.user.js'
         },
         BLOQUEOS: {
             nombre: '📋 Gestión Bloqueos FM',
-            archivo: 'Extractor Reporte Bloqueos (GESTION DE BLOQUEOS).user.js'
+            archivo: 'Gestion_de_bloqueos.user.js'
         },
         ESTRUCTURAL: {
             nombre: '🏗️ Estructural Servicio',
-            archivo: 'Generador Reporte ESTRUCTURAL_SERVICIO.user.js'
+            archivo: 'Estructural_servicios.user.js'
         },
         REUNION_RSSI: {
-    nombre: '🤝 Reunión RSSI (3PP, FLM y otros)',
-    archivo: 'Generador_Informe_Reunion_RSSI.user.js'
-}
+            nombre: '🤝 Reunión RSSI (3PP, FLM y otros)',
+            archivo: 'Reunion_RSSI.user.js'
+        }
     };
 
     const REPORTES_DIARIOS = [
@@ -355,338 +355,4 @@
 
         .oceane-day-summary:hover {
             background: var(--op-bg-hover);
-            color: var(--op-text-primary);
-        }
-
-        .oceane-day-summary.is-today {
-            color: var(--op-accent);
-            background: var(--op-accent-bg);
-            font-weight: 700;
-        }
-
-        .oceane-day-content {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            padding: 8px 6px;
-            background: rgba(0, 0, 0, 0.25);
-        }
-
-        /* Subsecciones */
-        .oceane-subgroup {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-
-        .oceane-subgroup-title {
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            padding: 2px 6px 3px 6px;
-            border-radius: 3px;
-            margin-bottom: 1px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .title-masmovil {
-            color: #ffd000;
-            background: rgba(255, 208, 0, 0.08);
-            border-left: 2px solid #ffd000;
-        }
-
-        .title-servicios {
-            color: #ff9100;
-            background: rgba(255, 145, 0, 0.08);
-            border-left: 2px solid #ff9100;
-        }
-
-        .title-cobertura {
-            color: var(--op-accent);
-            background: var(--op-accent-bg);
-            border-left: 2px solid var(--op-accent);
-        }
-
-        .dropdown-item-oceane {
-            display: block;
-            width: 100%;
-            background: transparent;
-            color: var(--op-text-secondary);
-            border: none;
-            border-left: 2px solid transparent;
-            padding: 5px 8px;
-            cursor: pointer;
-            text-align: left;
-            font-family: inherit;
-            font-size: 11px;
-            font-weight: 500;
-            border-radius: 4px;
-            transition: all 0.15s ease;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            box-sizing: border-box;
-        }
-
-        .dropdown-item-oceane:hover {
-            color: var(--op-accent) !important;
-            border-left: 2px solid var(--op-accent) !important;
-            background-color: var(--op-accent-bg) !important;
-            padding-left: 11px;
-        }
-
-        #helper-hide-toggle {
-            position: fixed;
-            right: 14px;
-            bottom: 14px;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background-color: var(--op-bg-glass);
-            backdrop-filter: blur(10px);
-            border: 1px solid var(--op-border-subtle);
-            color: var(--op-text-muted);
-            font-size: 14px;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2147483647;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-            opacity: 0.4;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        #helper-hide-toggle:hover {
-            opacity: 1;
-            color: #fff;
-            border-color: var(--op-accent);
-            background-color: var(--op-accent);
-            box-shadow: 0 0 16px var(--op-accent-glow);
-            transform: scale(1.08);
-        }
-
-        #helper-toast-msg {
-            position: fixed;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            height: 28px;
-            padding: 0 12px;
-            background-color: rgba(13, 17, 23, 0.9);
-            backdrop-filter: blur(14px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-left: 2px solid var(--op-accent);
-            border-radius: 6px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-            font-family: var(--op-font-sans);
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--op-text-primary);
-            z-index: 99999999;
-            opacity: 0;
-            transform: translateX(-4px);
-            transition: opacity 0.2s ease, transform 0.2s ease;
-            pointer-events: none;
-            user-select: none;
-        }
-        #helper-toast-msg .toast-icon { color: var(--op-accent); font-weight: 700; font-size: 12px; }
-    `;
-    document.head.appendChild(s);
-
-    function mostrarToast(msg, icono = "✓") {
-        let oldToast = document.getElementById("helper-toast-msg");
-        if (oldToast) oldToast.remove();
-        const toast = document.createElement("div");
-        toast.id = "helper-toast-msg";
-        toast.innerHTML = `<span class="toast-icon">${icono}</span><span>${msg}</span>`;
-        const rect = menu.getBoundingClientRect();
-        toast.style.top = `${rect.top + (rect.height / 2) - 14}px`;
-        toast.style.left = `${rect.right + 10}px`;
-        document.body.appendChild(toast);
-        setTimeout(() => { toast.style.opacity = '1'; toast.style.transform = 'translateX(0)'; }, 10);
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(4px)';
-            setTimeout(() => toast.remove(), 200);
-        }, 2200);
-    }
-
-    function cargarYEjecutarScript(nombreArchivo, tituloReporte) {
-        const urlFinal = BASE_GITHUB_URL + encodeURIComponent(nombreArchivo);
-        mostrarToast(`Cargando reporte...`, '⏳');
-
-        GM_xmlhttpRequest({
-            method: "GET",
-            url: urlFinal,
-            headers: { "Cache-Control": "no-cache" },
-            onload: function(response) {
-                if (response.status === 200) {
-                    try {
-                        const scriptElement = document.createElement('script');
-                        scriptElement.textContent = response.responseText;
-                        document.body.appendChild(scriptElement);
-                        mostrarToast(`${tituloReporte} listo`, '⚡');
-                        console.log(`✅ [Cargador] "${tituloReporte}" cargado con éxito.`);
-                    } catch (error) {
-                        console.error("Error al ejecutar el script:", error);
-                        mostrarToast("Error en el script", "⚠");
-                        alert(`Error al ejecutar el script: ${error.message}`);
-                    }
-                } else {
-                    mostrarToast("Error de descarga", "⚠");
-                    alert(`Error al descargar de GitHub (Código: ${response.status}). Revisa que el nombre coincida.`);
-                }
-            },
-            onerror: function(err) {
-                console.error("Error en la conexión:", err);
-                mostrarToast("Fallo de red", "⚠");
-            }
-        });
-    }
-
-    // --- CONSTRUCCIÓN DE INTERFAZ ---
-    const menu = document.createElement("div");
-    menu.id = "iatel-launcher-container";
-
-    const logoContainer = document.createElement("div");
-    logoContainer.className = "op-logo-wrapper";
-
-    const logoImg = document.createElement("img");
-    logoImg.src = "https://iatelecom.es/assets/img/logo_azul.svg";
-
-    const aiBadge = document.createElement("span");
-    aiBadge.className = "op-ai-badge";
-    aiBadge.innerHTML = "✨ AI Pro";
-
-    logoContainer.appendChild(logoImg);
-    logoContainer.appendChild(aiBadge);
-    menu.appendChild(logoContainer);
-
-    const btnMenu = document.createElement("button");
-    btnMenu.className = "btn-oceane";
-    btnMenu.innerHTML = `⚡ Reportes Semanales`;
-
-    const dropdownPanel = document.createElement("div");
-    dropdownPanel.className = "dropdown-oceane-panel";
-
-    const diaActual = new Date().getDay(); // 1 = Lunes, ..., 5 = Viernes
-
-    // Definición de las 3 subcategorías solicitadas
-    const SECCIONES_GRUPO = [
-        { id: 'masmovil', label: 'MásMóvil', clase: 'title-masmovil', icono: '🟡' },
-        { id: 'servicios', label: 'Servicios', clase: 'title-servicios', icono: '🟠' },
-        { id: 'cobertura', label: 'Cobertura', clase: 'title-cobertura', icono: '🔵' }
-    ];
-
-    DIAS_DISTRIBUCION.forEach(seccion => {
-        const detalle = document.createElement('details');
-        detalle.className = 'oceane-day-accordion';
-
-        if (seccion.diaId === diaActual) {
-            detalle.open = true;
-        }
-
-        const summary = document.createElement('summary');
-        const esHoy = (seccion.diaId === diaActual);
-        summary.className = `oceane-day-summary ${esHoy ? 'is-today' : ''}`;
-        summary.innerHTML = `<span>${seccion.icono} ${seccion.titulo}</span>${esHoy ? '<span class="op-ai-badge" style="font-size:8px; padding:1px 4px;">Hoy</span>' : ''}`;
-
-        const bodyContainer = document.createElement('div');
-        bodyContainer.className = 'oceane-day-content';
-
-        // Clasificar los reportes del día según los criterios
-        const agrupados = {
-            masmovil: [],
-            servicios: [],
-            cobertura: []
-        };
-
-        seccion.reportes.forEach(rep => {
-            const cat = obtenerCategoria(rep);
-            agrupados[cat].push(rep);
-        });
-
-        // Renderizar cada subgrupo si tiene reportes asignados
-        SECCIONES_GRUPO.forEach(sub => {
-            const listaReportes = agrupados[sub.id];
-            if (listaReportes.length > 0) {
-                const subBox = document.createElement('div');
-                subBox.className = 'oceane-subgroup';
-
-                const subHeader = document.createElement('div');
-                subHeader.className = `oceane-subgroup-title ${sub.clase}`;
-                subHeader.innerHTML = `${sub.icono} ${sub.label}`;
-                subBox.appendChild(subHeader);
-
-                listaReportes.forEach(rep => {
-                    const itemBtn = document.createElement('button');
-                    itemBtn.className = 'dropdown-item-oceane';
-                    itemBtn.textContent = rep.nombre;
-                    itemBtn.title = rep.nombre;
-
-                    itemBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        dropdownPanel.style.display = 'none';
-                        btnMenu.classList.remove('active');
-                        cargarYEjecutarScript(rep.archivo, rep.nombre);
-                    };
-
-                    subBox.appendChild(itemBtn);
-                });
-
-                bodyContainer.appendChild(subBox);
-            }
-        });
-
-        detalle.appendChild(summary);
-        detalle.appendChild(bodyContainer);
-        dropdownPanel.appendChild(detalle);
-    });
-
-    btnMenu.onclick = (e) => {
-        e.stopPropagation();
-        const isOpen = dropdownPanel.style.display === 'flex';
-        dropdownPanel.style.display = isOpen ? 'none' : 'flex';
-        btnMenu.classList.toggle('active', !isOpen);
-    };
-
-    document.addEventListener('click', (e) => {
-        if (!dropdownPanel.contains(e.target) && e.target !== btnMenu) {
-            dropdownPanel.style.display = 'none';
-            btnMenu.classList.remove('active');
-        }
-    });
-
-    menu.appendChild(btnMenu);
-    menu.appendChild(dropdownPanel);
-    document.body.appendChild(menu);
-
-    if (!document.getElementById("helper-hide-toggle")) {
-        const hideToggle = document.createElement("button");
-        hideToggle.id = "helper-hide-toggle";
-        hideToggle.title = "Ocultar / mostrar herramienta";
-        hideToggle.setAttribute("aria-label", "Ocultar / mostrar herramienta");
-        hideToggle.innerHTML = "•";
-
-        hideToggle.onclick = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const oculto = document.documentElement.getAttribute("data-helper-oculto") === "true";
-            if (!oculto) {
-                menu.classList.add("helper-oculto");
-                document.documentElement.setAttribute("data-helper-oculto", "true");
-                hideToggle.title = "Mostrar herramienta";
-            } else {
-                menu.classList.remove("helper-oculto");
-                document.documentElement.setAttribute("data-helper-oculto", "false");
-                hideToggle.title = "Ocultar herramienta";
-            }
-        };
-        document.body.appendChild(hideToggle);
-    }
-})();
+            color: var
