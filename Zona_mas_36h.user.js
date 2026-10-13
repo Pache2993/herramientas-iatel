@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Generador Reporte ICFs (Zona  >= 36h)
+// @name         Generador Reporte ICFs (Zona >= 36h)
 // @namespace    violentmonkey.custom
-// @version      1.6
-// @description  Pregunta la zona al inicio, la inyecta directamente en Search ResponsableICF, filtra Devuelta NO y aging >= 36h
+// @version      2.1
+// @description  Pregunta la zona al inicio, la inyecta directamente en Search ResponsableICF, filtra Devuelta NO y aging >= 36h con diseño IATelecom
 // @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant        none
 // ==/UserScript==
@@ -10,29 +10,420 @@
 (function() {
     'use strict';
 
-    // 1. Botón inicial flotante
-    const btnIniciar = document.createElement('button');
-    btnIniciar.innerText = '📋 Reporte Zonas (>=36h)';
-    btnIniciar.style.cssText = `
-        position: fixed;
-        bottom: 25px;
-        right: 25px;
-        z-index: 99999;
-        padding: 12px 20px;
-        background-color: #00796b;
-        color: #ffffff;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-        font-size: 14px;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        cursor: pointer;
+    // =====================================================================
+    // IATELECOM DESIGN SYSTEM - LOGO & ASSETS VECTORIALES
+    // =====================================================================
+
+    const IADS_LOGO_SVG = `
+        <svg class="ia-logo-svg" viewBox="0 0 420 100" fill="none" xmlns="http://www.w3.org/2000/svg" height="20" aria-label="IATelecom">
+            <defs>
+                <linearGradient id="iaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#00c6ff" />
+                    <stop offset="100%" stop-color="#0072ff" />
+                </linearGradient>
+            </defs>
+            <path d="M22 68 A 36 36 0 0 1 22 28" stroke="url(#iaGrad)" stroke-width="8" stroke-linecap="round"/>
+            <path d="M36 60 A 24 24 0 0 1 36 36" stroke="url(#iaGrad)" stroke-width="8" stroke-linecap="round"/>
+            <circle cx="50" cy="48" r="7" fill="url(#iaGrad)"/>
+            <text x="75" y="62" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="44" fill="#ffffff" letter-spacing="-0.5">IA<tspan fill="url(#iaGrad)">Telecom</tspan></text>
+        </svg>
     `;
-    document.body.appendChild(btnIniciar);
+
+    const IADS_ICONS = {
+        'clipboard': '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>',
+        'check':     '<path d="m5 12 5 5 9-10"/>',
+        'x':         '<path d="M18 6 6 18M6 6l12 12"/>',
+        'minimize':  '<path d="M4 14h6v6M20 10h-6V4"/>',
+        'maximize':  '<path d="M14 4h6v6M10 20H4v-6"/>',
+        'ticket':    '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>',
+        'map-pin':   '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>'
+    };
+
+    function iaIcon(name, size = 14) {
+        return `<svg class="ia-icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IADS_ICONS[name] || ''}</svg>`;
+    }
+
+    const IADS_CSS = `
+        :host { all: initial; }
+        *, *::before, *::after { box-sizing: border-box; }
+
+        :host {
+            --ia-brand-500: #0099ff;
+            --ia-brand-600: #007acc;
+            --ia-brand-glow: rgba(0, 153, 255, 0.35);
+            --ia-brand-soft: rgba(0, 153, 255, 0.12);
+            --ia-success: #3fb950;
+            --ia-warning: #d29922;
+            --ia-danger: #f85149;
+            --ia-surface-bar: rgba(13, 17, 23, 0.88);
+            --ia-surface-panel: rgba(13, 17, 23, 0.95);
+            --ia-surface-item: rgba(255, 255, 255, 0.03);
+            --ia-hover: rgba(255, 255, 255, 0.08);
+            --ia-border: rgba(255, 255, 255, 0.12);
+            --ia-border-strong: rgba(255, 255, 255, 0.20);
+            --ia-border-focus: rgba(0, 153, 255, 0.60);
+            --ia-text: #f0f6fc;
+            --ia-text-2: #c9d1d9;
+            --ia-text-3: #8b949e;
+            --ia-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --ia-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+            --ia-r-sm: 4px;
+            --ia-r-md: 6px;
+            --ia-r-lg: 10px;
+            --ia-sh-panel: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 1px rgba(255, 255, 255, 0.2);
+            --ia-ease: cubic-bezier(0.16, 1, 0.3, 1);
+            --ia-z-top: 2147483647;
+        }
+
+        .ia-fab {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: var(--ia-z-top);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: var(--ia-surface-bar);
+            backdrop-filter: blur(14px) saturate(180%);
+            -webkit-backdrop-filter: blur(14px) saturate(180%);
+            border: 1px solid var(--ia-border-strong);
+            border-left: 3px solid var(--ia-brand-500);
+            border-radius: var(--ia-r-lg);
+            color: var(--ia-text);
+            font-family: var(--ia-font);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+            transition: all 0.2s var(--ia-ease);
+            user-select: none;
+        }
+        .ia-fab:hover {
+            background: var(--ia-hover);
+            border-color: var(--ia-brand-500);
+            box-shadow: 0 0 16px var(--ia-brand-glow);
+            transform: translateY(-2px);
+        }
+        .ia-fab.is-busy {
+            color: var(--ia-brand-500);
+            pointer-events: none;
+        }
+
+        /* Overlay modal inicial */
+        .ia-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: var(--ia-z-top);
+            font-family: var(--ia-font);
+        }
+        .ia-modal-box {
+            background: var(--ia-surface-panel);
+            border: 1px solid var(--ia-border-strong);
+            border-radius: var(--ia-r-lg);
+            width: 400px;
+            max-width: 90vw;
+            box-shadow: var(--ia-sh-panel);
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            color: var(--ia-text);
+        }
+        .ia-modal-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--ia-brand-500);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ia-modal-desc {
+            font-size: 12px;
+            color: var(--ia-text-2);
+            line-height: 1.4;
+        }
+
+        /* Desplegable estilizado */
+        .ia-select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+        .ia-select {
+            width: 100%;
+            height: 38px;
+            padding: 0 32px 0 12px;
+            background: #161b22;
+            color: #f0f6fc;
+            border: 1px solid var(--ia-border-strong);
+            border-radius: var(--ia-r-md);
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            transition: border-color 0.18s, box-shadow 0.18s;
+        }
+        .ia-select:focus {
+            border-color: var(--ia-brand-500);
+            box-shadow: 0 0 0 2px rgba(0, 153, 255, 0.2);
+        }
+        .ia-select option {
+            background: #161b22;
+            color: #f0f6fc;
+            padding: 8px;
+        }
+        .ia-select-arrow {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--ia-text-3);
+            display: flex;
+            align-items: center;
+        }
+
+        .ia-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        /* Panel lateral */
+        .ia-side-panel {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            width: 500px;
+            max-width: calc(100vw - 48px);
+            max-height: calc(100vh - 48px);
+            background: var(--ia-surface-panel);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border: 1px solid var(--ia-border);
+            border-radius: var(--ia-r-lg);
+            box-shadow: var(--ia-sh-panel);
+            color: var(--ia-text);
+            font-family: var(--ia-font);
+            z-index: var(--ia-z-top);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            transition: all 0.25s var(--ia-ease);
+        }
+        .ia-side-panel.is-minimized {
+            max-height: 48px !important;
+            width: 320px;
+        }
+
+        .ia-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--ia-border);
+            user-select: none;
+        }
+        .ia-panel-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ia-logo-svg {
+            display: block;
+            height: 20px;
+            width: auto;
+        }
+        .ia-panel-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--ia-text);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ia-badge {
+            font-size: 10px;
+            font-family: var(--ia-mono);
+            background: var(--ia-brand-soft);
+            color: var(--ia-brand-500);
+            border: 1px solid var(--ia-brand-glow);
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .ia-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .ia-icon-btn {
+            background: transparent;
+            border: none;
+            color: var(--ia-text-3);
+            width: 26px;
+            height: 26px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--ia-r-sm);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .ia-icon-btn:hover {
+            color: var(--ia-text);
+            background: var(--ia-hover);
+        }
+        .ia-icon-btn.btn-close:hover {
+            color: var(--ia-danger);
+            background: rgba(248, 81, 73, 0.15);
+        }
+
+        .ia-panel-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ia-card {
+            background: var(--ia-surface-item);
+            border: 1px solid var(--ia-border);
+            border-left: 2px solid var(--ia-brand-500);
+            border-radius: var(--ia-r-md);
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .ia-card-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ia-ticket-code {
+            font-family: var(--ia-mono);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--ia-brand-500);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .ia-card-meta {
+            font-size: 11px;
+            color: var(--ia-text-3);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ia-aging-tag {
+            font-family: var(--ia-mono);
+            font-weight: 600;
+            padding: 1px 5px;
+            border-radius: 3px;
+        }
+        .ia-card-desc {
+            font-size: 11px;
+            color: var(--ia-text-2);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .ia-control {
+            width: 100%;
+            height: 38px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--ia-border);
+            border-radius: var(--ia-r-sm);
+            color: var(--ia-text);
+            padding: 6px 8px;
+            font-family: var(--ia-font);
+            font-size: 11px;
+            outline: none;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+        .ia-control:focus {
+            border-color: var(--ia-border-focus);
+            box-shadow: 0 0 0 2px rgba(0, 153, 255, 0.15);
+        }
+
+        .ia-panel-footer {
+            padding: 10px 14px;
+            border-top: 1px solid var(--ia-border);
+            background: rgba(255, 255, 255, 0.01);
+        }
+        .ia-btn-primary {
+            width: 100%;
+            height: 34px;
+            background: var(--ia-brand-500);
+            border: 1px solid var(--ia-brand-500);
+            border-radius: var(--ia-r-md);
+            color: #ffffff;
+            font-family: var(--ia-font);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.18s var(--ia-ease);
+        }
+        .ia-btn-primary:hover {
+            background: var(--ia-brand-600);
+            border-color: var(--ia-brand-600);
+            box-shadow: 0 0 14px var(--ia-brand-glow);
+        }
+        .ia-btn-outline {
+            height: 30px;
+            padding: 0 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--ia-border);
+            border-radius: var(--ia-r-md);
+            color: var(--ia-text);
+            font-family: var(--ia-font);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.18s var(--ia-ease);
+        }
+        .ia-btn-outline:hover {
+            background: var(--ia-hover);
+            border-color: var(--ia-border-strong);
+        }
+
+        .ia-spinner {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            border: 2px solid var(--ia-brand-glow);
+            border-top-color: var(--ia-brand-500);
+            animation: ia-spin 0.7s linear infinite;
+        }
+        @keyframes ia-spin { to { transform: rotate(360deg); } }
+    `;
+
+    // =====================================================================
+    // CORE LOGIC & HELPERS
+    // =====================================================================
 
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-    // Espera a que el contenedor #example_wrapper o su tbody deje de mutar
     const esperarActualizacionDOM = (tiempoEsperaMs = 5000) => {
         return new Promise(resolve => {
             const wrapper = document.querySelector('#example_wrapper tbody') || document.querySelector('#example_wrapper') || document.body;
@@ -55,7 +446,6 @@
         });
     };
 
-    // Función para setear valor y disparar eventos de filtrado en DataTables
     const aplicarFiltroInput = async (selector, valor) => {
         const input = document.querySelector(selector);
         if (input) {
@@ -71,84 +461,110 @@
         }
     };
 
-    // Modal inicial: Pregunta primero qué zona quieres filtrar
+    // =====================================================================
+    // UI BUILDER (SHADOW DOM ISOLATED)
+    // =====================================================================
+
+    let host = document.getElementById('icf-reporte-zonas-host');
+    if (!host) {
+        host = document.createElement('div');
+        host.id = 'icf-reporte-zonas-host';
+        document.body.appendChild(host);
+    }
+    const shadowRoot = host.attachShadow({ mode: 'open' });
+
+    const styleEl = document.createElement('style');
+    styleEl.textContent = IADS_CSS;
+    shadowRoot.appendChild(styleEl);
+
+    // Modal inicial estilizado para elegir la zona
     const solicitarZonaInicial = () => {
         return new Promise(resolve => {
             const modalSel = document.createElement('div');
             modalSel.id = 'modal-seleccion-zona-previa';
-            modalSel.style.cssText = `
-                position: fixed;
-                top: 0; left: 0; width: 100vw; height: 100vh;
-                background-color: rgba(0,0,0,0.7);
-                display: flex; justify-content: center; align-items: center;
-                z-index: 1000000;
-                font-family: Arial, sans-serif;
-            `;
+            modalSel.className = 'ia-modal-overlay';
 
             modalSel.innerHTML = `
-                <div style="background: #222; color: #fff; padding: 24px; border-radius: 8px; border: 2px solid #555; width: 350px; box-shadow: 0 4px 16px rgba(0,0,0,0.8);">
-                    <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #80cbc4;">Seleccionar Zona a Filtrar</h3>
-                    <p style="font-size: 12px; color: #bbb; margin-bottom: 14px;">Este valor se colocará directamente en el buscador de <b>ResponsableICF</b>:</p>
-                    <select id="select-zona-input" style="width: 100%; padding: 8px; background: #333; color: #fff; border: 1px solid #666; border-radius: 4px; font-size: 14px; margin-bottom: 16px;">
-                        <option value="CENTRO">CENTRO (CLIENTES ZONA CENTRO)</option>
-                        <option value="SUR">SUR (CLIENTES ZONA SUR)</option>
-                        <option value="NORTE">NORTE (CLIENTES ZONA NORTE)</option>
-                        <option value="ESTE">ESTE (CLIENTES ZONA ESTE)</option>
-                        <option value="ZONA">ZONA (TODAS LAS ZONAS)</option>
-                    </select>
-                    <div style="display: flex; justify-content: flex-end; gap: 8px;">
-                        <button id="btn-cancelar-previa" style="padding: 8px 14px; background: #555; color: #fff; border: none; border-radius: 4px; cursor: pointer;">Cancelar</button>
-                        <button id="btn-confirmar-previa" style="padding: 8px 14px; background: #00796b; color: #fff; border: none; border-radius: 4px; font-weight: bold; cursor: pointer;">Filtrar</button>
+                <div class="ia-modal-box">
+                    <div class="ia-modal-title">
+                        ${iaIcon('map-pin', 16)}
+                        <span>Seleccionar Zona a Filtrar</span>
+                    </div>
+                    <div class="ia-modal-desc">
+                        Este valor se inyectará directamente en el filtro de búsqueda de <b>ResponsableICF</b>:
+                    </div>
+                    <div class="ia-select-wrapper">
+                        <select id="select-zona-input" class="ia-select">
+                            <option value="CENTRO">CENTRO (CLIENTES ZONA CENTRO)</option>
+                            <option value="SUR">SUR (CLIENTES ZONA SUR)</option>
+                            <option value="NORTE">NORTE (CLIENTES ZONA NORTE)</option>
+                            <option value="ESTE">ESTE (CLIENTES ZONA ESTE)</option>
+                            <option value="ZONA">ZONA (TODAS LAS ZONAS)</option>
+                        </select>
+                        <div class="ia-select-arrow">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m6 9 6 6 6-6"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ia-modal-actions">
+                        <button id="btn-cancelar-previa" class="ia-btn-outline">Cancelar</button>
+                        <button id="btn-confirmar-previa" class="ia-btn-primary" style="width: auto; padding: 0 16px; height: 30px;">Filtrar</button>
                     </div>
                 </div>
             `;
-            document.body.appendChild(modalSel);
+            shadowRoot.appendChild(modalSel);
 
-            document.getElementById('btn-confirmar-previa').onclick = () => {
-                const valor = document.getElementById('select-zona-input').value;
+            shadowRoot.getElementById('btn-confirmar-previa').onclick = () => {
+                const valor = shadowRoot.getElementById('select-zona-input').value;
                 modalSel.remove();
                 resolve(valor);
             };
 
-            document.getElementById('btn-cancelar-previa').onclick = () => {
+            shadowRoot.getElementById('btn-cancelar-previa').onclick = () => {
                 modalSel.remove();
                 resolve(null);
             };
         });
     };
 
-    btnIniciar.addEventListener('click', async () => {
-        // Eliminar modal previo si existiese
-        const modalPrevio = document.getElementById('panel-reporte-zonas');
-        if (modalPrevio) modalPrevio.remove();
+    // Botón flotante inicial
+    const btnFab = document.createElement('button');
+    btnFab.className = 'ia-fab';
+    btnFab.innerHTML = `${iaIcon('map-pin', 16)}<span>Reporte Zonas (≥36h)</span>`;
+    shadowRoot.appendChild(btnFab);
 
-        // 1. Preguntar la zona ANTES de tocar los inputs
+    btnFab.addEventListener('click', async () => {
+        const panelPrevio = shadowRoot.getElementById('ia-side-panel');
+        if (panelPrevio) panelPrevio.remove();
+
+        // 1. Preguntar zona
         const zonaSeleccionada = await solicitarZonaInicial();
         if (!zonaSeleccionada) return;
 
-        btnIniciar.style.backgroundColor = '#e65100';
+        btnFab.classList.add('is-busy');
 
-        // 2. Colocar directamente la zona elegida en Search ResponsableICF
-        btnIniciar.innerText = `⏳ Filtrando "${zonaSeleccionada}"...`;
+        // 2. Filtrar ResponsableICF
+        btnFab.innerHTML = `<span class="ia-spinner"></span><span>Filtrando "${zonaSeleccionada}"...</span>`;
         await aplicarFiltroInput(
             '#example_wrapper input.im[placeholder*="Search ResponsableICF"]',
             zonaSeleccionada
         );
 
-        // 3. Colocar "NO" en Devuelta
-        btnIniciar.innerText = '⏳ Filtrando "NO"...';
+        // 3. Filtrar Devuelta = NO
+        btnFab.innerHTML = `<span class="ia-spinner"></span><span>Filtrando "NO"...</span>`;
         await aplicarFiltroInput(
             '#example_wrapper input.im[placeholder*="Search Devuelta"]',
             'NO'
         );
 
-        btnIniciar.innerText = '📋 Extrayendo datos...';
+        btnFab.innerHTML = `<span class="ia-spinner"></span><span>Extrayendo datos...</span>`;
 
         const wrapper = document.getElementById('example_wrapper');
         if (!wrapper) {
             alert('No se encontró el contenedor #example_wrapper.');
-            btnIniciar.innerText = '📋 Reporte Zonas (>=36h)';
-            btnIniciar.style.backgroundColor = '#00796b';
+            btnFab.classList.remove('is-busy');
+            btnFab.innerHTML = `${iaIcon('map-pin', 16)}<span>Reporte Zonas (≥36h)</span>`;
             return;
         }
 
@@ -166,32 +582,28 @@
             if (!matchAging) return;
 
             const valorAging = parseFloat(matchAging[0].replace(',', '.'));
-            // Filtro de aging >= 36 (36 incluido en adelante)
             if (isNaN(valorAging) || valorAging < 36) return;
 
             // Índice 18: ResponsableICF
             const respICF = tds[18]?.innerText.trim() || '';
 
-            // Extracción de columnas según estructura DataTables
             const codigo = tds[4]?.innerText.trim() || '';
             const fechaCreacion = tds[5]?.innerText.trim() || '';
             const icfRed = tds[8]?.innerText.trim() || '';
             const nodo = tds[14]?.innerText.trim() || '';
             const celda = tds[15]?.innerText.trim() || '';
 
-            // Descripción (title si existe para evitar texto truncado con puntos suspensivos)
             const spanDesc = tds[44]?.querySelector('span[title]');
             const descripcion = spanDesc ? spanDesc.getAttribute('title').trim() : (tds[44]?.innerText.trim() || '');
 
             const zona = tds[49]?.innerText.trim() || '';
-
-            // Conservar el color de fondo del aging
             const colorOriginal = tds[0]?.style.backgroundColor;
             const bgAging = colorOriginal ? `background-color: ${colorOriginal}; color: #ffffff;` : 'color: #ffffff;';
 
             datosFiltrados.push({
                 aging: rawAging,
                 bgAging,
+                colorOriginal,
                 codigo,
                 fechaCreacion,
                 icfRed,
@@ -203,110 +615,87 @@
             });
         });
 
-        btnIniciar.innerText = '📋 Reporte Zonas (>=36h)';
-        btnIniciar.style.backgroundColor = '#00796b';
+        btnFab.classList.remove('is-busy');
+        btnFab.innerHTML = `${iaIcon('map-pin', 16)}<span>Reporte Zonas (≥36h)</span>`;
 
         if (datosFiltrados.length === 0) {
             alert(`No se encontraron registros en #example_wrapper con Aging >= 36 horas para "${zonaSeleccionada}".`);
             return;
         }
 
-        // 4. Panel interactivo para rellenar comentarios
+        // Crear ventana lateral
         const panel = document.createElement('div');
-        panel.id = 'panel-reporte-zonas';
-        panel.style.cssText = `
-            position: fixed;
-            bottom: 80px;
-            right: 25px;
-            width: 520px;
-            max-height: 75vh;
-            background-color: #222;
-            color: #fff;
-            border: 2px solid #555;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
-            z-index: 999999;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            font-family: Arial, sans-serif;
-            font-size: 13px;
-        `;
+        panel.id = 'ia-side-panel';
+        panel.className = 'ia-side-panel';
 
         let listadoHtml = '';
         datosFiltrados.forEach((caso, i) => {
+            const agingTagStyle = caso.colorOriginal ? `background-color: ${caso.colorOriginal}; color: #fff;` : 'background: rgba(255,255,255,0.1); color: #fff;';
             listadoHtml += `
-                <div style="border-bottom: 1px solid #444; padding-bottom: 10px; margin-bottom: 8px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                        <b style="color: #80cbc4;">${caso.codigo}</b>
-                        <span style="color: #aaa;">Aging: ${caso.aging} | ${caso.responsableICF}</span>
+                <div class="ia-card">
+                    <div class="ia-card-head">
+                        <span class="ia-ticket-code">${iaIcon('ticket', 13)} ${caso.codigo}</span>
+                        <div class="ia-card-meta">
+                            <span class="ia-aging-tag" style="${agingTagStyle}">${caso.aging}</span>
+                            <span>${caso.responsableICF || 'N/A'}</span>
+                        </div>
                     </div>
-                    <div style="font-size: 11px; color: #ccc; margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${caso.descripcion}">
+                    <div class="ia-card-desc" title="${caso.descripcion}">
                         ${caso.descripcion || 'Sin descripción'}
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 6px;">
-                        <textarea id="input-comentario-${i}" placeholder="Último comentario..." style="
-                            width: 100%;
-                            height: 40px;
-                            background: #333;
-                            color: #fff;
-                            border: 1px solid #666;
-                            border-radius: 4px;
-                            padding: 6px;
-                            box-sizing: border-box;
-                            font-family: inherit;
-                            font-size: 12px;
-                            resize: vertical;
-                        "></textarea>
-                        <textarea id="input-peticiones-${i}" placeholder="Peticiones..." style="
-                            width: 100%;
-                            height: 40px;
-                            background: #333;
-                            color: #fff;
-                            border: 1px solid #666;
-                            border-radius: 4px;
-                            padding: 6px;
-                            box-sizing: border-box;
-                            font-family: inherit;
-                            font-size: 12px;
-                            resize: vertical;
-                        "></textarea>
-                    </div>
+                    <textarea id="input-comentario-${i}" class="ia-control" placeholder="Último comentario..."></textarea>
+                    <textarea id="input-peticiones-${i}" class="ia-control" placeholder="Peticiones..."></textarea>
                 </div>
             `;
         });
 
         panel.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #555; padding-bottom: 6px;">
-                <span style="font-weight: bold; font-size: 14px;">📝 Reporte ${zonaSeleccionada} (${datosFiltrados.length} tickets)</span>
-                <button id="btn-cerrar-panel" style="background: none; border: none; color: #fff; font-size: 16px; cursor: pointer;">✕</button>
+            <div class="ia-panel-header">
+                <div class="ia-panel-brand">
+                    ${IADS_LOGO_SVG}
+                    <span class="ia-panel-title">
+                        ${zonaSeleccionada} (≥36h) <span class="ia-badge">${datosFiltrados.length} tickets</span>
+                    </span>
+                </div>
+                <div class="ia-actions">
+                    <button id="btn-minimize-panel" class="ia-icon-btn" title="Minimizar / Restaurar">${iaIcon('minimize', 14)}</button>
+                    <button id="btn-cerrar-panel" class="ia-icon-btn btn-close" title="Cerrar">${iaIcon('x', 14)}</button>
+                </div>
             </div>
-            <div style="overflow-y: auto; flex: 1; padding-right: 4px;">
+            <div id="ia-panel-content" class="ia-panel-body">
                 ${listadoHtml}
             </div>
-            <button id="btn-confirmar-copia" style="
-                width: 100%;
-                background-color: #2e7d32;
-                color: #ffffff;
-                border: none;
-                border-radius: 5px;
-                padding: 10px;
-                font-size: 14px;
-                font-weight: bold;
-                cursor: pointer;
-            ">Copiar Reporte Final al Portapapeles</button>
+            <div id="ia-panel-actions" class="ia-panel-footer">
+                <button id="btn-confirmar-copia" class="ia-btn-primary">
+                    ${iaIcon('clipboard', 14)} Copiar Reporte al Portapapeles
+                </button>
+            </div>
         `;
 
-        document.body.appendChild(panel);
+        shadowRoot.appendChild(panel);
 
-        document.getElementById('btn-cerrar-panel').onclick = () => panel.remove();
+        // Control Minimizar / Restaurar
+        const btnMinimizar = shadowRoot.getElementById('btn-minimize-panel');
+        const panelContent = shadowRoot.getElementById('ia-panel-content');
+        const panelActions = shadowRoot.getElementById('ia-panel-actions');
+        let isMinimized = false;
 
-        // 5. Copiar tabla final formateada
-        document.getElementById('btn-confirmar-copia').onclick = () => {
+        btnMinimizar.onclick = () => {
+            isMinimized = !isMinimized;
+            panel.classList.toggle('is-minimized', isMinimized);
+            panelContent.style.display = isMinimized ? 'none' : 'flex';
+            panelActions.style.display = isMinimized ? 'none' : 'block';
+            btnMinimizar.innerHTML = isMinimized ? iaIcon('maximize', 14) : iaIcon('minimize', 14);
+        };
+
+        // Control Cerrar
+        shadowRoot.getElementById('btn-cerrar-panel').onclick = () => panel.remove();
+
+        // Control Copiar
+        shadowRoot.getElementById('btn-confirmar-copia').onclick = () => {
             datosFiltrados.forEach((caso, i) => {
-                const txtComentario = document.getElementById(`input-comentario-${i}`);
-                const txtPeticiones = document.getElementById(`input-peticiones-${i}`);
+                const txtComentario = shadowRoot.getElementById(`input-comentario-${i}`);
+                const txtPeticiones = shadowRoot.getElementById(`input-peticiones-${i}`);
                 caso.ultimoComentario = txtComentario ? txtComentario.value.trim() : '';
                 caso.peticiones = txtPeticiones ? txtPeticiones.value.trim() : '';
             });
@@ -341,7 +730,7 @@
                 <br/>
                 <table style="border-collapse: collapse; width: 100%; font-family: Calibri, Arial, sans-serif; font-size: 10pt; color: #ffffff;">
                     <thead>
-                        <tr style="background-color: #00796b; color: #ffffff; font-weight: bold; text-align: left;">
+                        <tr style="background-color: #0288d1; color: #ffffff; font-weight: bold; text-align: left;">
                             <th style="border: 1px solid #777; padding: 4px 8px;">aging</th>
                             <th style="border: 1px solid #777; padding: 4px 8px;">codigo_oceane</th>
                             <th style="border: 1px solid #777; padding: 4px 8px;">fecha_creacion</th>
@@ -378,11 +767,11 @@
                 const exito = document.execCommand('copy');
                 if (exito) {
                     panel.remove();
-                    btnIniciar.innerText = '✅ ¡Copiado con éxito!';
-                    btnIniciar.style.backgroundColor = '#2e7d32';
+                    btnFab.innerHTML = `${iaIcon('check', 16)}<span>¡Copiado con éxito!</span>`;
+                    btnFab.style.borderLeftColor = 'var(--ia-success)';
                     setTimeout(() => {
-                        btnIniciar.innerText = '📋 Reporte Zonas (>=36h)';
-                        btnIniciar.style.backgroundColor = '#00796b';
+                        btnFab.innerHTML = `${iaIcon('map-pin', 16)}<span>Reporte Zonas (≥36h)</span>`;
+                        btnFab.style.borderLeftColor = 'var(--ia-brand-500)';
                     }, 2500);
                 } else {
                     alert('No se pudo copiar. Inténtalo de nuevo.');
