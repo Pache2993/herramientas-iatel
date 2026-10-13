@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name          Extractor de Reporte VDF (MC y DOWN) con MAIL PRUEBAAA
+// @name          Extractor de Reporte VDF (MC y DOWN) con MAIL
 // @namespace     http://tampermonkey.net/
-// @version       1.2
-// @description   Filtra, consolida filas y copia tabla en formato enriquecido para correo
+// @version       2.0
+// @description   Filtra, consolida filas y copia tabla en formato enriquecido para correo con diseño IATelecom
 // @match         http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant         GM_setClipboard
 // @run-at        document-idle
@@ -11,7 +11,237 @@
 (function() {
   'use strict';
 
-  // Configuración de columnas
+  // =====================================================================
+  // IATELECOM DESIGN SYSTEM - LOGO & ASSETS VECTORIALES
+  // =====================================================================
+
+  const IADS_LOGO_SVG = `
+    <svg class="ia-logo-svg" viewBox="0 0 420 100" fill="none" xmlns="http://www.w3.org/2000/svg" height="20" aria-label="IATelecom">
+      <defs>
+        <linearGradient id="iaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#00c6ff" />
+          <stop offset="100%" stop-color="#0072ff" />
+        </linearGradient>
+      </defs>
+      <path d="M22 68 A 36 36 0 0 1 22 28" stroke="url(#iaGrad)" stroke-width="8" stroke-linecap="round"/>
+      <path d="M36 60 A 24 24 0 0 1 36 36" stroke="url(#iaGrad)" stroke-width="8" stroke-linecap="round"/>
+      <circle cx="50" cy="48" r="7" fill="url(#iaGrad)"/>
+      <text x="75" y="62" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="44" fill="#ffffff" letter-spacing="-0.5">IA<tspan fill="url(#iaGrad)">Telecom</tspan></text>
+    </svg>
+  `;
+
+  const IADS_ICONS = {
+    'mail':      '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+    'filter':    '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
+    'trash':     '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+    'minimize':  '<path d="M4 14h6v6M20 10h-6V4"/>',
+    'maximize':  '<path d="M14 4h6v6M10 20H4v-6"/>',
+    'x':         '<path d="M18 6 6 18M6 6l12 12"/>',
+    'radio':     '<circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>'
+  };
+
+  function iaIcon(name, size = 14) {
+    return `<svg class="ia-icon" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IADS_ICONS[name] || ''}</svg>`;
+  }
+
+  const IADS_CSS = `
+    :host { all: initial; }
+    *, *::before, *::after { box-sizing: border-box; }
+
+    :host {
+      --ia-brand-500: #0099ff;
+      --ia-brand-600: #007acc;
+      --ia-brand-glow: rgba(0, 153, 255, 0.35);
+      --ia-brand-soft: rgba(0, 153, 255, 0.12);
+      --ia-success: #3fb950;
+      --ia-danger: #f85149;
+      --ia-surface-panel: rgba(13, 17, 23, 0.95);
+      --ia-surface-item: rgba(255, 255, 255, 0.04);
+      --ia-hover: rgba(255, 255, 255, 0.08);
+      --ia-border: rgba(255, 255, 255, 0.12);
+      --ia-text: #f0f6fc;
+      --ia-text-2: #c9d1d9;
+      --ia-text-3: #8b949e;
+      --ia-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --ia-mono: "JetBrains Mono", "SF Mono", Consolas, monospace;
+      --ia-r-sm: 4px;
+      --ia-r-md: 6px;
+      --ia-r-lg: 10px;
+      --ia-sh-panel: 0 16px 40px rgba(0, 0, 0, 0.65), 0 0 1px rgba(255, 255, 255, 0.2);
+      --ia-ease: cubic-bezier(0.16, 1, 0.3, 1);
+      --ia-z-top: 2147483647;
+    }
+
+    .ia-side-panel {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 330px;
+      background: var(--ia-surface-panel);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid var(--ia-border);
+      border-radius: var(--ia-r-lg);
+      box-shadow: var(--ia-sh-panel);
+      color: var(--ia-text);
+      font-family: var(--ia-font);
+      z-index: var(--ia-z-top);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.25s var(--ia-ease);
+    }
+
+    .ia-side-panel.is-minimized {
+      max-height: 48px !important;
+      width: 290px;
+    }
+
+    .ia-panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--ia-border);
+      user-select: none;
+    }
+    .ia-panel-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .ia-logo-svg {
+      display: block;
+      height: 18px;
+      width: auto;
+    }
+    .ia-badge {
+      font-size: 10px;
+      font-family: var(--ia-mono);
+      background: var(--ia-brand-soft);
+      color: var(--ia-brand-500);
+      border: 1px solid var(--ia-brand-glow);
+      padding: 2px 6px;
+      border-radius: 10px;
+    }
+
+    .ia-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .ia-icon-btn {
+      background: transparent;
+      border: none;
+      color: var(--ia-text-3);
+      width: 26px;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--ia-r-sm);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ia-icon-btn:hover {
+      color: var(--ia-text);
+      background: var(--ia-hover);
+    }
+    .ia-icon-btn.btn-close:hover {
+      color: var(--ia-danger);
+      background: rgba(248, 81, 73, 0.15);
+    }
+
+    .ia-panel-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ia-status-box {
+      background: var(--ia-surface-item);
+      border: 1px solid var(--ia-border);
+      border-radius: var(--ia-r-md);
+      padding: 8px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--ia-text-2);
+    }
+    .ia-status-num {
+      font-family: var(--ia-mono);
+      font-weight: 700;
+      color: var(--ia-brand-500);
+    }
+
+    .ia-btn {
+      width: 100%;
+      height: 32px;
+      border-radius: var(--ia-r-md);
+      font-family: var(--ia-font);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.18s var(--ia-ease);
+      border: 1px solid transparent;
+    }
+
+    .ia-btn-primary {
+      background: var(--ia-brand-500);
+      border-color: var(--ia-brand-500);
+      color: #ffffff;
+    }
+    .ia-btn-primary:hover {
+      background: var(--ia-brand-600);
+      box-shadow: 0 0 12px var(--ia-brand-glow);
+    }
+
+    .ia-btn-outline {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--ia-border);
+      color: var(--ia-text);
+    }
+    .ia-btn-outline:hover {
+      background: var(--ia-hover);
+      border-color: var(--ia-brand-500);
+      color: var(--ia-brand-500);
+    }
+
+    .ia-btn-danger-outline {
+      background: transparent;
+      border-color: rgba(248, 81, 73, 0.25);
+      color: var(--ia-text-3);
+      height: 26px;
+      font-size: 11px;
+    }
+    .ia-btn-danger-outline:hover {
+      background: rgba(248, 81, 73, 0.12);
+      border-color: var(--ia-danger);
+      color: var(--ia-danger);
+    }
+
+    .ia-spinner {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 2px solid var(--ia-brand-glow);
+      border-top-color: var(--ia-brand-500);
+      animation: ia-spin 0.7s linear infinite;
+    }
+    @keyframes ia-spin { to { transform: rotate(360deg); } }
+  `;
+
+  // =====================================================================
+  // CONFIGURACIÓN DE COLUMNAS & LÓGICA
+  // =====================================================================
+
   const configuracionColumnas = [
     { titulo: "aging", origen: "aging", exacto: true },
     { titulo: "Prio", origen: "Prio", exacto: true },
@@ -103,18 +333,15 @@
         if (idx === -1 || !tds[idx]) return '';
 
         const celda = tds[idx];
-        // Si hay un nodo interior (como <span class="ellipsis">) con atributo title, extraerlo
         const elementoConTitle = celda.querySelector('[title]');
         if (elementoConTitle && elementoConTitle.getAttribute('title').trim()) {
           return elementoConTitle.getAttribute('title').trim();
         }
 
-        // Si la propia celda td tiene el title
         if (celda.getAttribute('title') && celda.getAttribute('title').trim()) {
           return celda.getAttribute('title').trim();
         }
 
-        // Si no tiene title, toma el texto visible habitual
         return celda.innerText.trim();
       });
 
@@ -128,28 +355,10 @@
     return nuevas;
   }
 
-  async function aplicarFiltro(tipoCausa, boton) {
-    if (boton) boton.innerText = "Cargando...";
-
-    setInput("Search Devuelta", "NO");
-    setInput("Search ResponsableICF", "VDF");
-    setInput("Search causa", tipoCausa);
-
-    await esperarCargaCompleta(4500);
-
-    const agregadas = capturarFilasVisibles();
-    actualizarContador();
-
-    if (boton) {
-      boton.innerText = (tipoCausa === "MC") ? "1. Filtrar y Guardar MC" : "2. Filtrar y Guardar DOWN";
-    }
-
-    alert(`Filtro "${tipoCausa}" procesado.\nFilas añadidas: ${agregadas}\nTotal acumulado: ${bufferFilas.size}`);
-  }
-
   function construirHTMLTabla() {
+    // Cabecera unificada en azul #0288d1
     let theadHtml = configuracionColumnas.map(col =>
-      `<th style="background-color: #1e7e34; color: #ffffff; font-family: Segoe UI, Arial, sans-serif; font-size: 11px; font-weight: 600; padding: 7px 9px; border: 1px solid #dcdcdc; text-align: left; white-space: nowrap;">${col.titulo}</th>`
+      `<th style="background-color: #0288d1; color: #ffffff; font-family: Segoe UI, Arial, sans-serif; font-size: 11px; font-weight: 600; padding: 7px 9px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
     ).join('');
 
     let tbodyHtml = '';
@@ -232,54 +441,115 @@
     alert(`¡Reporte preparado!\n\n1. Asunto: ${asunto}\n2. Se ha abierto la aplicación de Outlook con Para, CC y Asunto listos.\n3. El texto y la tabla están copiados: pulsa Ctrl + V en el cuerpo del correo.`);
   }
 
+  // =====================================================================
+  // PANEL SHADOW DOM (IATelecom Design)
+  // =====================================================================
+
   function iniciarPanel() {
-    if (document.getElementById('report-tool-panel')) return;
+    if (document.getElementById('reporte-vdf-host')) return;
+
+    const host = document.createElement('div');
+    host.id = 'reporte-vdf-host';
+    document.body.appendChild(host);
+
+    const shadowRoot = host.attachShadow({ mode: 'open' });
+
+    const styleEl = document.createElement('style');
+    styleEl.textContent = IADS_CSS;
+    shadowRoot.appendChild(styleEl);
 
     const panel = document.createElement('div');
-    panel.id = 'report-tool-panel';
-    panel.style.cssText = `
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      z-index: 9999999;
-      background: #ffffff;
-      border: 2px solid #1e7e34;
-      padding: 12px;
-      border-radius: 6px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      color: #333;
-      font-family: Segoe UI, Arial, sans-serif;
-      font-size: 12px;
-      min-width: 200px;
-    `;
+    panel.id = 'ia-side-panel';
+    panel.className = 'ia-side-panel';
 
     panel.innerHTML = `
-      <div style="font-weight:bold; color:#1e7e34; text-align:center; font-size:13px;">Extractor de Reporte</div>
-      <div id="status-cache" style="color:#666; text-align:center; font-size:11px;">Filas acumuladas: 0</div>
-      <button id="btn-filtro-mc" style="background:#1e7e34; color:#fff; border:none; padding:7px; cursor:pointer; border-radius:4px; font-weight:bold;">1. Filtrar y Guardar MC</button>
-      <button id="btn-filtro-down" style="background:#1e7e34; color:#fff; border:none; padding:7px; cursor:pointer; border-radius:4px; font-weight:bold;">2. Filtrar y Guardar DOWN</button>
-      <button id="btn-preparar-correo" style="background:#0056b3; color:#fff; border:none; padding:8px; cursor:pointer; font-weight:bold; border-radius:4px;">✉️ 3. Preparar Reporte</button>
-      <button id="btn-borrar-cache" style="background:#6c757d; color:#fff; border:none; padding:4px; cursor:pointer; font-size:10px; border-radius:3px;">Vaciar Memoria</button>
+      <div class="ia-panel-header">
+        <div class="ia-panel-brand">
+          ${IADS_LOGO_SVG}
+          <span class="ia-badge">${iaIcon('radio', 10)} VDF (MC/DOWN)</span>
+        </div>
+        <div class="ia-actions">
+          <button id="btn-minimize-panel" class="ia-icon-btn" title="Minimizar / Restaurar">${iaIcon('minimize', 14)}</button>
+          <button id="btn-cerrar-panel" class="ia-icon-btn btn-close" title="Cerrar">${iaIcon('x', 14)}</button>
+        </div>
+      </div>
+      <div id="ia-panel-content" class="ia-panel-body">
+        <div class="ia-status-box">
+          <span>Filas en memoria:</span>
+          <span id="status-cache-vdf" class="ia-status-num">0</span>
+        </div>
+        <button id="btn-filtro-mc" class="ia-btn ia-btn-outline">
+          ${iaIcon('filter', 13)} 1. Filtrar y Guardar MC
+        </button>
+        <button id="btn-filtro-down" class="ia-btn ia-btn-outline">
+          ${iaIcon('filter', 13)} 2. Filtrar y Guardar DOWN
+        </button>
+        <button id="btn-preparar-correo" class="ia-btn ia-btn-primary">
+          ${iaIcon('mail', 14)} 3. Preparar Reporte
+        </button>
+        <button id="btn-borrar-cache" class="ia-btn ia-btn-danger-outline">
+          ${iaIcon('trash', 12)} Vaciar Memoria
+        </button>
+      </div>
     `;
 
-    document.body.appendChild(panel);
+    shadowRoot.appendChild(panel);
 
-    document.getElementById('btn-filtro-mc').onclick = function() { aplicarFiltro("MC", this); };
-    document.getElementById('btn-filtro-down').onclick = function() { aplicarFiltro("DOWN", this); };
-    document.getElementById('btn-preparar-correo').onclick = prepararReporteYOutlook;
-    document.getElementById('btn-borrar-cache').onclick = () => {
+    const statusEl = shadowRoot.getElementById('status-cache-vdf');
+    const panelContent = shadowRoot.getElementById('ia-panel-content');
+    const btnMinimizar = shadowRoot.getElementById('btn-minimize-panel');
+    const btnMC = shadowRoot.getElementById('btn-filtro-mc');
+    const btnDOWN = shadowRoot.getElementById('btn-filtro-down');
+    let isMinimized = false;
+
+    const actualizarContador = () => {
+      if (statusEl) statusEl.innerText = bufferFilas.size;
+    };
+
+    // Minimizar / Restaurar
+    btnMinimizar.onclick = () => {
+      isMinimized = !isMinimized;
+      panel.classList.toggle('is-minimized', isMinimized);
+      panelContent.style.display = isMinimized ? 'none' : 'flex';
+      btnMinimizar.innerHTML = isMinimized ? iaIcon('maximize', 14) : iaIcon('minimize', 14);
+    };
+
+    // Cerrar
+    shadowRoot.getElementById('btn-cerrar-panel').onclick = () => host.remove();
+
+    // Filtros
+    async function ejecutarFiltro(tipoCausa, boton) {
+      const textoOriginal = boton.innerHTML;
+      boton.innerHTML = `<span class="ia-spinner"></span> Filtrando ${tipoCausa}...`;
+      boton.style.pointerEvents = 'none';
+
+      setInput("Search Devuelta", "NO");
+      setInput("Search ResponsableICF", "VDF");
+      setInput("Search causa", tipoCausa);
+
+      await esperarCargaCompleta(4500);
+
+      const agregadas = capturarFilasVisibles();
+      actualizarContador();
+
+      boton.innerHTML = textoOriginal;
+      boton.style.pointerEvents = 'auto';
+
+      alert(`Filtro "${tipoCausa}" procesado.\nFilas añadidas: ${agregadas}\nTotal acumulado: ${bufferFilas.size}`);
+    }
+
+    btnMC.onclick = () => ejecutarFiltro("MC", btnMC);
+    btnDOWN.onclick = () => ejecutarFiltro("DOWN", btnDOWN);
+
+    // Preparar Correo
+    shadowRoot.getElementById('btn-preparar-correo').onclick = prepararReporteYOutlook;
+
+    // Vaciar Memoria
+    shadowRoot.getElementById('btn-borrar-cache').onclick = () => {
       bufferFilas.clear();
       actualizarContador();
       alert("Memoria vaciada.");
     };
-  }
-
-  function actualizarContador() {
-    const el = document.getElementById('status-cache');
-    if (el) el.innerText = `Filas acumuladas: ${bufferFilas.size}`;
   }
 
   if (document.readyState === 'loading') {
