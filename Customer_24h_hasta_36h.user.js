@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Generador Reporte ICFs (Customer Complaints) 24 a 36h diseño
+// @name         Generador Reporte ICFs (Customer Complaints) 24 a 36h 
 // @namespace    violentmonkey.custom
-// @version      2.1
-// @description  Filtra por ResponsableICF (Customer), Devuelta (NO), aging 24-36h leyendo de #example_wrapper con diseño IATelecom
+// @version      2.2
+// @description  Filtra por ResponsableICF (Customer), Devuelta (NO), aging 24-36h leyendo de #example_wrapper con diseño IATelecom, mailto para Outlook y título superior
 // @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant        none
 // ==/UserScript==
@@ -14,7 +14,6 @@
     // IATELECOM DESIGN SYSTEM - LOGO & ASSETS VECTORIALES
     // =====================================================================
 
-    // Logo SVG completo e independiente (sin cadenas base64 corruptas)
     const IADS_LOGO_SVG = `
         <svg class="ia-logo-svg" viewBox="0 0 420 100" fill="none" xmlns="http://www.w3.org/2000/svg" height="20" aria-label="IATelecom">
             <defs>
@@ -23,17 +22,16 @@
                     <stop offset="100%" stop-color="#0072ff" />
                 </linearGradient>
             </defs>
-            <!-- Isotipo ondas / antena -->
             <path d="M22 68 A 36 36 0 0 1 22 28" stroke="url(#iaGrad)" stroke-width="8" stroke-linecap="round"/>
             <path d="M36 60 A 24 24 0 0 1 36 36" stroke="url(#iaGrad)" stroke-width="8" stroke-linecap="round"/>
             <circle cx="50" cy="48" r="7" fill="url(#iaGrad)"/>
-            <!-- Wordmark IATelecom -->
             <text x="75" y="62" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="44" fill="#ffffff" letter-spacing="-0.5">IA<tspan fill="url(#iaGrad)">Telecom</tspan></text>
         </svg>
     `;
 
     const IADS_ICONS = {
         'clipboard': '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>',
+        'mail':      '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
         'check':     '<path d="m5 12 5 5 9-10"/>',
         'x':         '<path d="M18 6 6 18M6 6l12 12"/>',
         'minimize':  '<path d="M4 14h6v6M20 10h-6V4"/>',
@@ -79,7 +77,6 @@
             --ia-z-top: 2147483647;
         }
 
-        /* FAB Trigger Button */
         .ia-fab {
             position: fixed;
             bottom: 24px;
@@ -115,7 +112,6 @@
             pointer-events: none;
         }
 
-        /* Lateral Side Panel */
         .ia-side-panel {
             position: fixed;
             bottom: 24px;
@@ -168,7 +164,7 @@
             color: var(--ia-text);
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
         }
         .ia-badge {
             font-size: 10px;
@@ -178,6 +174,7 @@
             border: 1px solid var(--ia-brand-glow);
             padding: 2px 6px;
             border-radius: 10px;
+            font-weight: 500;
         }
 
         .ia-actions {
@@ -283,9 +280,11 @@
             padding: 10px 14px;
             border-top: 1px solid var(--ia-border);
             background: rgba(255, 255, 255, 0.01);
+            display: flex;
+            gap: 8px;
         }
         .ia-btn-primary {
-            width: 100%;
+            flex: 1;
             height: 34px;
             background: var(--ia-brand-500);
             border: 1px solid var(--ia-brand-500);
@@ -305,6 +304,27 @@
             background: var(--ia-brand-600);
             border-color: var(--ia-brand-600);
             box-shadow: 0 0 14px var(--ia-brand-glow);
+        }
+        .ia-btn-secondary {
+            flex: 1;
+            height: 34px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--ia-border-strong);
+            border-radius: var(--ia-r-md);
+            color: #ffffff;
+            font-family: var(--ia-font);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.18s var(--ia-ease);
+        }
+        .ia-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: var(--ia-border-focus);
         }
 
         .ia-spinner {
@@ -361,6 +381,24 @@
         }
     };
 
+    function obtenerFechaHoy() {
+        const ahora = new Date();
+        const dd = String(ahora.getDate()).padStart(2, '0');
+        const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+        const yyyy = ahora.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+    }
+
+    function abrirOutlookMailto() {
+        const fechaHoy = obtenerFechaHoy();
+        const to = "luis.eduardo.hernandez1@huawei-partners.com,antonio.freitas@huawei-partners.com,noelia.lopez@huawei-partners.com,genesisicfs@TechMahindra.com";
+        const cc = "net.cso@orange.es,icf@iatelecom.es";
+        const subject = `CASOS PENDIENTES DE CC +24 ${fechaHoy}`;
+
+        const mailtoUrl = `mailto:${to}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}`;
+        window.location.href = mailtoUrl;
+    }
+
     // =====================================================================
     // UI BUILDER (SHADOW DOM ISOLATED)
     // =====================================================================
@@ -412,7 +450,6 @@
         }
 
         const rows = wrapper.querySelectorAll('table#example tbody tr[role="row"]');
-        const ahora = new Date();
         const datosFiltrados = [];
 
         rows.forEach(tr => {
@@ -493,7 +530,7 @@
                 <div class="ia-panel-brand">
                     ${IADS_LOGO_SVG}
                     <span class="ia-panel-title">
-                        <span class="ia-badge">${datosFiltrados.length} tickets</span>
+                        Casos pendientes de CC +24h <span class="ia-badge">${datosFiltrados.length} tickets</span>
                     </span>
                 </div>
                 <div class="ia-actions">
@@ -506,7 +543,10 @@
             </div>
             <div id="ia-panel-actions" class="ia-panel-footer">
                 <button id="btn-confirmar-copia" class="ia-btn-primary">
-                    ${iaIcon('clipboard', 14)} Copiar Reporte al Portapapeles
+                    ${iaIcon('clipboard', 14)} Copiar Reporte
+                </button>
+                <button id="btn-abrir-outlook" class="ia-btn-secondary" title="Abrir Outlook con destinatarios y asunto">
+                    ${iaIcon('mail', 14)} Abrir Outlook
                 </button>
             </div>
         `;
@@ -523,12 +563,17 @@
             isMinimized = !isMinimized;
             panel.classList.toggle('is-minimized', isMinimized);
             panelContent.style.display = isMinimized ? 'none' : 'flex';
-            panelActions.style.display = isMinimized ? 'none' : 'block';
+            panelActions.style.display = isMinimized ? 'none' : 'flex';
             btnMinimizar.innerHTML = isMinimized ? iaIcon('maximize', 14) : iaIcon('minimize', 14);
         };
 
         // Control Cerrar
         shadowRoot.getElementById('btn-cerrar-panel').onclick = () => panel.remove();
+
+        // Control Abrir Outlook
+        shadowRoot.getElementById('btn-abrir-outlook').onclick = () => {
+            abrirOutlookMailto();
+        };
 
         // Control Copiar
         shadowRoot.getElementById('btn-confirmar-copia').onclick = () => {
@@ -538,11 +583,6 @@
                 caso.ultimoComentario = txtComentario ? txtComentario.value.trim() : '';
                 caso.peticiones = txtPeticiones ? txtPeticiones.value.trim() : '';
             });
-
-            const dd = String(ahora.getDate()).padStart(2, '0');
-            const mm = String(ahora.getMonth() + 1).padStart(2, '0');
-            const yyyy = ahora.getFullYear();
-            const fechaHoy = `${dd}/${mm}/${yyyy}`;
 
             let htmlRows = '';
             datosFiltrados.forEach(f => {
@@ -563,29 +603,33 @@
             });
 
             const htmlFinal = `
-                <p>Buenos días,</p>
-                <p>Adjunto el reporte de ICFs CUSTOMER COMPLAINTS entre 24 y 36 horas a día ${fechaHoy}.</p>
-                <br/>
-                <table style="border-collapse: collapse; width: 100%; font-family: Calibri, Arial, sans-serif; font-size: 10pt; color: #ffffff;">
-                    <thead>
-                        <tr style="background-color: #0288d1; color: #ffffff; font-weight: bold; text-align: left;">
-                            <th style="border: 1px solid #777; padding: 4px 8px;">aging</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">codigo_oceane</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">fecha_creacion</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">ICF_RED</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">descripcion</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">ResponsableICF</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">Nodo</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">Celda</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">zona</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">Ultimo comentario</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">Peticiones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${htmlRows}
-                    </tbody>
-                </table>
+                <div style="font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #ffffff;">
+                    <p style="margin: 0 0 14px 0;">Buenos días,</p>
+                    <p style="margin: 0 0 16px 0;">Necesitamos revisión y previsión de las icf escaladas a la cola de customer complaints con +24h</p>
+                    <br/>
+                    <table style="border-collapse: collapse; width: 100%; font-family: Calibri, Arial, sans-serif; font-size: 9.5pt; color: #ffffff;">
+                        <thead>
+                            <tr style="background-color: #0080d7; color: #ffffff; font-weight: bold; text-align: left;">
+                                <th style="border: 1px solid #777; padding: 4px 8px;">aging</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px;">codigo_oceane</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px;">fecha_creacion</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px;">ICF_RED</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px;">descripcion</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px;">ResponsableICF</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px;">Nodo</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px;">Celda</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px;">zona</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px;">Ultimo comentario</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px;">Peticiones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${htmlRows}
+                        </tbody>
+                    </table>
+                    <br/>
+                    <p style="margin: 16px 0 0 0;">Saludos</p>
+                </div>
             `;
 
             const tempContainer = document.createElement('div');
@@ -604,12 +648,14 @@
             try {
                 const exito = document.execCommand('copy');
                 if (exito) {
-                    panel.remove();
-                    btnFab.innerHTML = `${iaIcon('check', 16)}<span>¡Copiado con éxito!</span>`;
-                    btnFab.style.borderLeftColor = 'var(--ia-success)';
+                    const btnCopiar = shadowRoot.getElementById('btn-confirmar-copia');
+                    btnCopiar.innerHTML = `${iaIcon('check', 14)} ¡Copiado!`;
+                    btnCopiar.style.background = 'var(--ia-success)';
+                    btnCopiar.style.borderColor = 'var(--ia-success)';
                     setTimeout(() => {
-                        btnFab.innerHTML = `${iaIcon('clipboard', 16)}<span>Reporte ICFs</span>`;
-                        btnFab.style.borderLeftColor = 'var(--ia-brand-500)';
+                        btnCopiar.innerHTML = `${iaIcon('clipboard', 14)} Copiar Reporte`;
+                        btnCopiar.style.background = 'var(--ia-brand-500)';
+                        btnCopiar.style.borderColor = 'var(--ia-brand-500)';
                     }, 2500);
                 } else {
                     alert('No se pudo copiar. Inténtalo de nuevo.');
