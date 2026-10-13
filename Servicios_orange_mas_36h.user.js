@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Generador Reporte HUAWEI (>36h) SERVICIOS Orange
+// @name         Generador Reporte SERVICIOS Orange >36h
 // @namespace    violentmonkey.custom
 // @version      3.0
 // @description  Filtra Devuelta=NO, gestiona comentarios, copia correo y abre la app de Outlook con diseño IATelecom
