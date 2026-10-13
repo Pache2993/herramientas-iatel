@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Generador Reporte RSSI VDF -> Outlook diseño
 // @namespace    http://violentmonkey.net/
-// @version      2.0
+// @version      2.1
 // @description  Filtra estrictamente Devuelta="NO" y Causa="RSSI_VDF" (sin confundir con causa_especif), copia la tabla y prepara el correo en Outlook con diseño IATelecom.
 // @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant        GM_setClipboard
@@ -75,7 +75,7 @@
 
         .ia-side-panel {
             position: fixed;
-            bottom: 24px;
+            bottom: 60px;
             right: 24px;
             width: 350px;
             background: var(--ia-surface-panel);
@@ -357,7 +357,13 @@
     // =====================================================================
 
     function createUI() {
-        if (document.getElementById('reporte-rssi-vdf-host')) return;
+        // Si ya existe el panel, se elimina para recrearlo (permite relanzar desde el lanzador)
+        const oldHost = document.getElementById('reporte-rssi-vdf-host');
+        if (oldHost) oldHost.remove();
+
+        // Reiniciar datos generados
+        generatedReportHtml = '';
+        generatedReportText = '';
 
         const host = document.createElement('div');
         host.id = 'reporte-rssi-vdf-host';
@@ -547,6 +553,7 @@
                 document.body.removeChild(tempDiv);
             }
 
+            // GM_setClipboard (requiere @grant GM_setClipboard en el lanzador si se usa vía eval)
             if (!copied && typeof GM_setClipboard !== 'undefined') {
                 try {
                     GM_setClipboard(generatedReportHtml, 'html');
@@ -587,7 +594,14 @@
         };
     }
 
-    window.addEventListener('load', () => {
-        setTimeout(createUI, 1200);
-    });
+    // Arranque: funciona tanto si la página ya cargó (lanzador/eval) como si aún está cargando (instalación directa)
+    function init() {
+        setTimeout(createUI, 300);
+    }
+
+    if (document.readyState === 'complete') {
+        init();
+    } else {
+        window.addEventListener('load', init);
+    }
 })();
