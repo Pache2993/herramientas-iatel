@@ -1,12 +1,15 @@
 // ==UserScript==
 // @name         IATEL - Cargador Dinámico de Reportes (Oceane UI Categorizado)
 // @namespace    http://tampermonkey.net/
-// @version      3.3.1
+// @version      3.3.2
 // @description  Lanzador dinámico organizado por días y subcategorías con limpieza de reportes activos
 // @match        http://mxmefm01.wnet/private/zc/tools/smc*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_addStyle
+// @grant        GM_setClipboard
 // @connect      raw.githubusercontent.com
+// @updateURL    https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/Lanzador_IATEL.user.js
+// @downloadURL  https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/Lanzador_IATEL.user.js
 // ==/UserScript==
 
 (function() {
