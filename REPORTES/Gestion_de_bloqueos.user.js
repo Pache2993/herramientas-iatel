@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name          GESTION DE BLOQUEOS
+// @name          GESTION DE BLOQUEOS (Categorizado por causa_especif)
 // @namespace     http://tampermonkey.net/
-// @version       2.1
-// @description   Filtra por GESTION DE BLOQUEOS y Devuelta NO, guarda y copia la tabla para correo con diseño IATelecom y botón mailto
+// @version       2.6
+// @description   Filtra por GESTION DE BLOQUEOS, clasifica por ACCESOS, EVOLUTIVOS, REPUESTOS, CELLNEX y FLM, generando tablas independientes con estilo azul #0288d1 listas para Outlook.
 // @match         http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant         GM_setClipboard
 // @run-at        document-idle
@@ -250,7 +250,7 @@
   `;
 
   // =====================================================================
-  // CONFIGURACIÓN DE COLUMNAS & LOGICA
+  // CONFIGURACIÓN DE COLUMNAS & CATEGORÍAS
   // =====================================================================
 
   const configuracionColumnas = [
@@ -269,8 +269,35 @@
     { titulo: "site", origen: "site", exacto: true },
     { titulo: "caso_asociado", origen: "caso_asociado", exacto: true },
     { titulo: "ResponsableICF", origen: "ResponsableICF", exacto: true },
-    { titulo: "Siebel", origen: "Siebel", exacto: true }
+    { titulo: "Devuelta", origen: "Devuelta", exacto: true }
   ];
+
+  const DEFINICION_CATEGORIAS = {
+    ACCESOS: {
+      titulo: "ACCESOS",
+      textoHtml: `<span style="color: #004d80; font-weight: bold;">@miriam.alcaraz.hernando</span>, <span style="color: #004d80; font-weight: bold;">@MASORANGE, IMaccytransp</span>, <span style="color: #004d80; font-weight: bold;">@Escalado N3</span>, <span style="color: #004d80; font-weight: bold;">@OROSA GALAN Angel MASORANGE</span> <span style="background-color: #008000; color: #ffffff; padding: 1px 4px; font-weight: bold;">en la previsión está documentado el centrix</span>, por estos dos casos las gestiones están pendiente de contrata ¿podéis reclamar la gestión? y actualizar en el estado real que se encuentran.`
+    },
+    EVOLUTIVOS: {
+      titulo: "EVOLUTIVOS",
+      textoHtml: `<span style="color: #004d80; font-weight: bold;">@miriam.alcaraz.hernando</span>, <span style="color: #004d80; font-weight: bold;">@MASORANGE, IMaccytransp</span>, <span style="color: #004d80; font-weight: bold;">@Escalado N3</span>, <span style="color: #004d80; font-weight: bold;">@Pablo Fernandez Vilariño</span>, <span style="background-color: #008000; color: #ffffff; padding: 1px 4px; font-weight: bold;">en la previsión están documentados los casos de cada evolutivo</span> necesitamos saber si están aprobados todos estos evolutivos, y si tenemos fecha prevista para actuar.`
+    },
+    REPUESTOS: {
+      titulo: "REPUESTOS",
+      textoHtml: `<span style="color: #004d80; font-weight: bold;">@miriam.alcaraz.hernando</span>, <span style="color: #004d80; font-weight: bold;">@MASORANGE, IMaccytransp</span>, <span style="color: #004d80; font-weight: bold;">@Escalado N3</span>, <span style="color: #004d80; font-weight: bold;">@OROSA GALAN Angel MASORANGE</span> para está, necesitamos priorización, previsión y saber si hay stock o compatibles. <span style="background-color: #008000; color: #ffffff; padding: 1px 4px; font-weight: bold;">En la previsión esta documentado el numero de repuesto.</span>`
+    },
+    CELLNEX: {
+      titulo: "CELLNEX",
+      textoHtml: `<span style="color: #004d80; font-weight: bold;">@miriam.alcaraz.hernando</span>, <span style="color: #004d80; font-weight: bold;">@MASORANGE, IMaccytransp</span>, <span style="color: #004d80; font-weight: bold;">@Escalado N3</span>, necesitamos si se está realizando la gestión documentada.`
+    },
+    FLM: {
+      titulo: "FLM",
+      textoHtml: `<span style="color: #004d80; font-weight: bold;">@miriam.alcaraz.hernando</span>, <span style="color: #004d80; font-weight: bold;">@MASORANGE, IMaccytransp</span>, <span style="color: #004d80; font-weight: bold;">@Escalado N3</span>, necesitamos previsión y saber cuando se va a disponer de la cesta grúa.`
+    },
+    OTROS: {
+      titulo: "OTROS / PENDIENTE DE REVISIÓN",
+      textoHtml: `Casos en gestión de bloqueos con causa específica pendiente de clasificar:`
+    }
+  };
 
   let bufferFilas = new Map();
 
@@ -321,6 +348,15 @@
     }
   }
 
+  function extraerTextoCelda(td) {
+    if (!td) return '';
+    const spanConTitle = td.querySelector('span[title]') || td.querySelector('.ellipsis[title]');
+    if (spanConTitle && spanConTitle.getAttribute('title')) {
+      return spanConTitle.getAttribute('title').trim();
+    }
+    return td.innerText.trim();
+  }
+
   function resolverIndices(tabla) {
     const ths = Array.from(tabla.querySelectorAll('thead tr:first-child th, thead tr:first-child td'));
     return configuracionColumnas.map(col => {
@@ -341,6 +377,19 @@
     });
   }
 
+  function determinarCategoria(causaEspecifTexto) {
+    const texto = (causaEspecifTexto || '').toUpperCase();
+    const limpio = texto.replace(/^(\d{1,2}[\/\-]\d{1,2}([\/\-]\d{2,4})?)\s*/i, '');
+
+    if (limpio.includes('ACCESO') || limpio.includes('ACCESOS')) return 'ACCESOS';
+    if (limpio.includes('EVOLUTIVO') || limpio.includes('EVOLUTIVOS')) return 'EVOLUTIVOS';
+    if (limpio.includes('REPUESTO') || limpio.includes('REPUESTOS')) return 'REPUESTOS';
+    if (limpio.includes('CELLNEX')) return 'CELLNEX';
+    if (limpio.includes('FLM') || limpio.includes('CESTA')) return 'FLM';
+
+    return 'OTROS';
+  }
+
   function capturarFilasVisibles() {
     const tabla = document.querySelector('table.dataTable') || document.querySelector('table');
     if (!tabla) {
@@ -359,7 +408,7 @@
       if (tds.length <= 3) return;
 
       const filaDatos = indices.map(idx => {
-        return (idx !== -1 && tds[idx]) ? tds[idx].innerText.trim() : '';
+        return (idx !== -1 && tds[idx]) ? extraerTextoCelda(tds[idx]) : '';
       });
 
       const claveUnica = filaDatos[2] || JSON.stringify(filaDatos);
@@ -372,15 +421,15 @@
     return nuevas;
   }
 
-  function construirHTMLCompleto() {
+  // Genera cada tabla individual con el encabezado azul estándar #0288d1
+  function generarTablaHtml(filas) {
     let theadHtml = configuracionColumnas.map(col =>
-      `<th style="background-color: #0288d1; color: #ffffff; font-family: Calibri, Arial, sans-serif; font-size: 9.5pt; font-weight: bold; padding: 5px 8px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
+      `<th style="background-color: #0288d1; color: #ffffff; font-family: Calibri, Arial, sans-serif; font-size: 8.5pt; font-weight: bold; padding: 4px 6px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
     ).join('');
 
     let tbodyHtml = '';
-    let filaIndex = 0;
 
-    bufferFilas.forEach(fila => {
+    filas.forEach((fila, filaIndex) => {
       const bgColor = (filaIndex % 2 === 0) ? '#ffffff' : '#f8f9fa';
       tbodyHtml += `<tr style="background-color: ${bgColor};">`;
 
@@ -390,31 +439,60 @@
           ? 'background-color: #fff3cd; color: #856404; font-weight: bold;'
           : 'color: #212529;';
 
-        tbodyHtml += `<td style="padding: 5px 8px; border: 1px solid #777; font-family: Calibri, Arial, sans-serif; font-size: 9pt; vertical-align: middle; ${celdaColor}">${valor.replace(/\n/g, '<br>')}</td>`;
+        tbodyHtml += `<td style="padding: 4px 6px; border: 1px solid #777; font-family: Calibri, Arial, sans-serif; font-size: 8pt; vertical-align: middle; ${celdaColor}">${valor.replace(/\n/g, '<br>')}</td>`;
       });
 
       tbodyHtml += '</tr>';
-      filaIndex++;
+    });
+
+    return `<table style="border-collapse: collapse; width: 100%; border: 1px solid #777; background-color: #ffffff; margin: 6px 0 18px 0;">
+      <thead><tr>${theadHtml}</tr></thead>
+      <tbody>${tbodyHtml}</tbody>
+    </table>`;
+  }
+
+  function construirHTMLCompleto() {
+    const agrupados = {
+      ACCESOS: [],
+      EVOLUTIVOS: [],
+      REPUESTOS: [],
+      CELLNEX: [],
+      FLM: [],
+      OTROS: []
+    };
+
+    bufferFilas.forEach(fila => {
+      const causaEspecif = fila[7] || '';
+      const cat = determinarCategoria(causaEspecif);
+      agrupados[cat].push(fila);
+    });
+
+    let seccionesHtml = '';
+    const orden = ['ACCESOS', 'EVOLUTIVOS', 'REPUESTOS', 'CELLNEX', 'FLM', 'OTROS'];
+
+    orden.forEach(catKey => {
+      const filasDeGrupo = agrupados[catKey];
+      if (filasDeGrupo.length > 0) {
+        const def = DEFINICION_CATEGORIAS[catKey];
+        seccionesHtml += `
+          <div style="margin-bottom: 22px;">
+            <p style="margin: 0 0 6px 0; font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #000000;">
+              <u><b>${def.titulo}</b></u>
+            </p>
+            <p style="margin: 0 0 8px 0; font-family: Calibri, Arial, sans-serif; font-size: 10.5pt; color: #000000; line-height: 1.35;">
+              ${def.textoHtml}
+            </p>
+            ${generarTablaHtml(filasDeGrupo)}
+          </div>
+        `;
+      }
     });
 
     return `
       <div style="font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #000000;">
-        <p style="margin: 0 0 14px 0;">Buenos días, actualmente estos son los casos que se encuentran en gestión de bloqueos, necesitamos priorización y info de cada incidencia:</p>
-        <p style="margin: 0 0 10px 0;"><u><b>ACCESOS</b></u></p>
-        <p style="margin: 0 0 16px 0;">
-          <span style="color: #004d80; font-weight: bold;">@miriam.alcaraz.hernando</span>, 
-          <span style="color: #004d80; font-weight: bold;">@MASORANGE, IMaccytransp</span>, 
-          <span style="color: #004d80; font-weight: bold;">@Escalado N3</span>, 
-          <span style="color: #004d80; font-weight: bold;">@OROSA GALAN Angel MASORANGE</span> 
-          en la previsión está documentado el centrix, por estos dos casos las gestiones están pendiente de contrata ¿podéis reclamar la gestión? y actualizar en el estado real que se encuentran.
-        </p>
-        <br/>
-        <table style="border-collapse: collapse; width: 100%; border: 1px solid #777; background-color: #ffffff; margin: 8px 0;">
-          <thead><tr>${theadHtml}</tr></thead>
-          <tbody>${tbodyHtml}</tbody>
-        </table>
-        <br/>
-        <p style="margin: 16px 0 0 0;">Saludos</p>
+        <p style="margin: 0 0 16px 0;">Buenos días, actualmente estos son los casos que se encuentran en gestión de bloqueos, necesitamos priorización y info de cada incidencia:</p>
+        ${seccionesHtml}
+        <p style="margin: 16px 0 0 0; font-family: Calibri, Arial, sans-serif; font-size: 11pt;">Saludos</p>
       </div>
     `;
   }
@@ -433,7 +511,7 @@
       const data = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
 
       await navigator.clipboard.write(data);
-      alert("¡Reporte copiado con éxito!\n\nVe a tu correo y pulsa Ctrl + V para pegarlo.");
+      alert("¡Reporte categorizado copiado con éxito!\n\nVe a tu correo y pulsa Ctrl + V para pegarlo.");
     } catch (err) {
       const divOculto = document.createElement('div');
       divOculto.style.position = 'fixed';
@@ -449,7 +527,7 @@
       document.execCommand('copy');
       document.body.removeChild(divOculto);
 
-      alert("¡Reporte copiado con éxito!\n\nVe a tu correo y pulsa Ctrl + V para pegarlo.");
+      alert("¡Reporte categorizado copiado con éxito!\n\nVe a tu correo y pulsa Ctrl + V para pegarlo.");
     }
   }
 
