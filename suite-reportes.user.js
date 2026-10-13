@@ -58,7 +58,7 @@
         },
         {
             diaId: 4, titulo: 'Jueves', icono: '📅',
-            reportes: [...REPORTES_DIARIOS, SCRIPTS.CUST_COMP_24_36, SCRIPTS.QBOOST_24_36, SCRIPTS.QBOOST_36, SCRIPTS.BLOQUEOS]
+            reportes: [...REPORTES_DIARIOS, SCRIPTS.CUST_COMP_24_36, SCRIPTS.QBOOST_36, SCRIPTS.BLOQUEOS]
         },
         {
             diaId: 5, titulo: 'Viernes', icono: '📅',
