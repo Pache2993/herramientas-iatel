@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      6.1.0
 // @description  Esta herramienta trata de agilizar el trabajo y reducir errores humanos en la gestión de tickets de MasMóvil conservando la supervisión humana.
-// @author       Sergio Pacheco, Javier Marchal, Gemini, Claude, ChatGPT, IATelecom
+// @author       IATEL
 // @match        https://calipso-oceane.sso.infra.ftgroup/binOceane/*
 // @grant        none
 // ==/UserScript==
