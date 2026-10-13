@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name          Extractor Reporte PCAR (Aging >= 36)
 // @namespace     http://tampermonkey.net/
-// @version       2.1
-// @description   Filtra por Devuelta NO, Causa PCAR y aging >= 36. Panel no bloqueante con diseño IATelecom y botón mailto para Outlook.
+// @version       2.2
+// @description   Filtra por Devuelta NO, Causa PCAR y aging >= 36. Complementa descripción con causa_especif completa (title) y botón mailto para Outlook.
 // @match         http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant         none
 // @run-at        document-idle
@@ -396,6 +396,16 @@
     }
   }
 
+  // Extrae el texto completo evitando truncado por ellipsis
+  function extraerTextoCelda(td) {
+    if (!td) return '';
+    const spanConTitle = td.querySelector('span[title]') || td.querySelector('.ellipsis[title]');
+    if (spanConTitle && spanConTitle.getAttribute('title')) {
+      return spanConTitle.getAttribute('title').trim();
+    }
+    return td.innerText.trim();
+  }
+
   function resolverIndices(tabla) {
     const ths = Array.from(tabla.querySelectorAll('thead tr:first-child th, thead tr:first-child td'));
     return configuracionColumnas.map(col => {
@@ -486,6 +496,15 @@
     }
 
     const indices = resolverIndices(tabla);
+    const ths = Array.from(tabla.querySelectorAll('thead tr:first-child th, thead tr:first-child td'));
+    
+    // Buscar explícitamente el índice de causa_especif para la extracción completa
+    const idxCausaEspecifDirecto = ths.findIndex(th => {
+      const txt = th.innerText.toLowerCase();
+      const ph = (th.querySelector('input')?.getAttribute('placeholder') || '').toLowerCase();
+      return txt.includes('causa_especif') || ph.includes('causa_especif') || txt.includes('causa') || ph.includes('causa');
+    });
+
     const filas = tabla.querySelectorAll('tbody tr');
     let listaFilasTemp = [];
     let filasSinEstado = [];
@@ -496,8 +515,9 @@
       const tds = Array.from(tr.querySelectorAll('td'));
       if (tds.length <= 3) return;
 
+      // Extrae respetando el atributo title completo en cada celda
       const filaDatos = indices.map(idx => {
-        return (idx !== -1 && tds[idx]) ? tds[idx].innerText.trim() : '';
+        return (idx !== -1 && tds[idx]) ? extraerTextoCelda(tds[idx]) : '';
       });
 
       const agingTexto = (filaDatos[0] || '').replace(',', '.');
@@ -505,6 +525,17 @@
 
       if (isNaN(agingNumero) || agingNumero < 36) {
         return;
+      }
+
+      // Extraer causa_especif completa
+      const causaTextoCompleto = (idxCausaEspecifDirecto !== -1 && tds[idxCausaEspecifDirecto]) 
+        ? extraerTextoCelda(tds[idxCausaEspecifDirecto]) 
+        : (filaDatos[12] || '');
+
+      // Complementar descripción con causa_especif completa
+      const descBase = filaDatos[11] || '';
+      if (causaTextoCompleto && !descBase.includes(causaTextoCompleto)) {
+        filaDatos[11] = descBase ? `${descBase} - ${causaTextoCompleto}` : causaTextoCompleto;
       }
 
       listaFilasTemp.push(filaDatos);
