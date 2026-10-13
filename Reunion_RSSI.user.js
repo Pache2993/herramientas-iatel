@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Generador Informe Completo Reunión RSSI casos pendientes de 3PP, FLM y otros.
 // @namespace    http://violentmonkey.net/
-// @version      6.0
+// @version      6.1
 // @description  Filtra con retardo, extrae las 15 columnas requeridas, agrupa por categorías y proporciona botones para Copiar Tablas y Abrir Outlook con diseño IATelecom.
 // @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant        GM_setClipboard
@@ -60,6 +60,8 @@
             --ia-surface-item: rgba(255, 255, 255, 0.04);
             --ia-hover: rgba(255, 255, 255, 0.08);
             --ia-border: rgba(255, 255, 255, 0.12);
+            --ia-border-strong: rgba(255, 255, 255, 0.20);
+            --ia-border-focus: rgba(0, 153, 255, 0.60);
             --ia-text: #f0f6fc;
             --ia-text-2: #c9d1d9;
             --ia-text-3: #8b949e;
@@ -370,7 +372,8 @@
     // =====================================================================
 
     function createUI() {
-        if (document.getElementById('reporte-reunion-rssi-host')) return;
+        const prev = document.getElementById('reporte-reunion-rssi-host');
+        if (prev) prev.remove();
 
         const host = document.createElement('div');
         host.id = 'reporte-reunion-rssi-host';
@@ -622,7 +625,10 @@
         };
     }
 
-    window.addEventListener('load', () => {
-        setTimeout(createUI, 1200);
-    });
+    // Inicialización inmediata al inyectar por eval, o por DOMContentLoaded/fallback
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', createUI);
+    } else {
+        createUI();
+    }
 })();
