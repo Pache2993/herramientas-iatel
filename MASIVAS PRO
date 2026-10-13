@@ -9,7 +9,7 @@
 // @grant       GM_getValue
 // @grant       GM_deleteValue
 // @grant       GM_openInTab
-// @author      Iatel
+// @author      IATEL
 // @description Esta herramienta trata de agilizar el trabajo y reducir errores humanos en la gestión de Masivas conservando la supervisión humana.
 // ==/UserScript==
 
