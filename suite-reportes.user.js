@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IATEL - Cargador Dinámico de Reportes (Oceane UI Categorizado)
 // @namespace    http://tampermonkey.net/
-// @version      3.3.4
+// @version      3.3.5
 // @description  Lanzador dinámico organizado por días y subcategorías con limpieza de reportes activos
 // @match        http://mxmefm01.wnet/private/zc/tools/smc*
 // @grant        GM_xmlhttpRequest
