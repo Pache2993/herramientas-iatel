@@ -1,0 +1,162 @@
+import threading
+import time
+from datetime import datetime, timedelta
+import schedule
+import telebot
+from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+TOKEN = "8998395509:AAEmfRz4udeO53TM4spLHSp6d7RnBc9ZlU0"
+bot = telebot.TeleBot(TOKEN)
+
+# Desconectar webhooks previos
+bot.remove_webhook()
+
+# ID de tu grupo tal cual sale en tu navegador
+ID_CHAT_GRUPO = -5153832896
+
+# Reportes diarios base
+REPORTES_DIARIOS_BASE = [
+    "Servicios 24h-36h",
+    "Servicios +36h",
+    "MasMovil +36h"
+]
+
+# Distribución por días
+DISTRIBUCION_DIAS = {
+    0: {"nombre": "Lunes", "especificos": ["Cust. Complaints 24h-36h", "QBOOST 24h-36h", "VDF (MC y DOWN)"]},
+    1: {"nombre": "Martes", "especificos": ["Zona +36h", "PCAR +36h", "Despliegue SMC"]},
+    2: {"nombre": "Miércoles", "especificos": ["Cust. Complaints +36h", "RSSI VDF", "Reunión RSSI (3PP, FLM y otros)"]},
+    3: {"nombre": "Jueves", "especificos": ["Cust. Complaints 24h-36h", "QBOOST +36h", "Gestión Bloqueos FM"]},
+    4: {"nombre": "Viernes", "especificos": ["Estructural Servicios"]},
+    5: {"nombre": "Sábado", "especificos": []},
+    6: {"nombre": "Domingo", "especificos": []}
+}
+
+dia_actual_registrado = None
+reportes_db = {}
+
+def actualizar_reportes_del_dia():
+    global dia_actual_registrado, reportes_db
+    hoy = datetime.now()
+    fecha_hoy_str = hoy.strftime("%Y-%m-%d")
+
+    if dia_actual_registrado != fecha_hoy_str:
+        dia_semana = hoy.weekday()
+        config_dia = DISTRIBUCION_DIAS.get(dia_semana, {"nombre": "Día", "especificos": []})
+        lista_hoy = REPORTES_DIARIOS_BASE + config_dia["especificos"]
+
+        reportes_db = {
+            f"t{i+1}": {"nombre": nombre, "estado": "libre", "usuario": ""}
+            for i, nombre in enumerate(lista_hoy)
+        }
+        dia_actual_registrado = fecha_hoy_str
+
+actualizar_reportes_del_dia()
+
+def crear_teclado():
+    markup = InlineKeyboardMarkup()
+    for task_id, datos in reportes_db.items():
+        if datos["estado"] == "libre":
+            texto = f"📄 {datos['nombre']} (Libre)"
+        elif datos["estado"] == "en_curso":
+            texto = f"⏳ {datos['nombre']}: {datos['usuario']} (Pulsar para Finalizar)"
+        else:
+            texto = f"✅ {datos['nombre']}: {datos['usuario']} (Terminado)"
+
+        markup.add(InlineKeyboardButton(text=texto, callback_data=task_id))
+    return markup
+
+def enviar_aviso_matutino():
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] ¡Disparando aviso programado al grupo!")
+    actualizar_reportes_del_dia()
+    dia_semana = datetime.now().weekday()
+    nombre_dia = DISTRIBUCION_DIAS[dia_semana]["nombre"]
+
+    texto = (
+        f"🚨 *REPORTES DISPONIBLES DE HOY ({nombre_dia.upper()})*\n"
+        "Pulsad sobre el reporte que vayáis a gestionar:\n\n"
+        "@Hector\\_latel\n"
+        "@pacheco29\n"
+        "@javimm26\n"
+        "@rafaiatel"
+    )
+    try:
+        bot.send_message(
+            chat_id=ID_CHAT_GRUPO,
+            text=texto,
+            reply_markup=crear_teclado(),
+            parse_mode="Markdown"
+        )
+        print("Mensaje enviado con éxito al grupo.")
+    except Exception as e:
+        print("Error enviando mensaje:", e)
+
+# Manejadores manuales
+@bot.message_handler(commands=['reportes', 'start'])
+@bot.message_handler(func=lambda msg: msg.text and "reporte" in msg.text.lower())
+def enviar_lista(message):
+    actualizar_reportes_del_dia()
+    dia_semana = datetime.now().weekday()
+    nombre_dia = DISTRIBUCION_DIAS[dia_semana]["nombre"]
+
+    texto = (
+        f"🚨 *REPORTES DISPONIBLES DE HOY ({nombre_dia.upper()})*\n"
+        "Pulsad sobre el reporte que vayáis a gestionar:\n\n"
+        "@Hector\\_latel\n"
+        "@pacheco29\n"
+        "@javimm26\n"
+        "@rafaiatel"
+    )
+    bot.send_message(
+        chat_id=message.chat.id,
+        text=texto,
+        reply_markup=crear_teclado(),
+        parse_mode="Markdown"
+    )
+
+@bot.callback_query_handler(func=lambda call: True)
+def gestionar_pulsacion(call):
+    actualizar_reportes_del_dia()
+    task_id = call.data
+    usuario = call.from_user.first_name
+
+    if task_id in reportes_db:
+        estado_actual = reportes_db[task_id]["estado"]
+
+        if estado_actual == "libre":
+            reportes_db[task_id]["estado"] = "en_curso"
+            reportes_db[task_id]["usuario"] = usuario
+            bot.answer_callback_query(call.id, f"Has cogido: {reportes_db[task_id]['nombre']}")
+        elif estado_actual == "en_curso":
+            reportes_db[task_id]["estado"] = "finalizado"
+            reportes_db[task_id]["usuario"] = usuario
+            bot.answer_callback_query(call.id, f"Has finalizado: {reportes_db[task_id]['nombre']}")
+        else:
+            bot.answer_callback_query(call.id, "Este reporte ya está finalizado.", show_alert=True)
+            return
+
+        try:
+            bot.edit_message_reply_markup(
+                chat_id=call.message.chat.id,
+                message_id=call.message.message_id,
+                reply_markup=crear_teclado()
+            )
+        except Exception as e:
+            print("Aviso al actualizar markup:", e)
+
+# --- PROGRAMACIÓN DE PRUEBA EN 5 MINUTOS ---
+hora_objetivo = (datetime.now() + timedelta(minutes=5)).strftime("%H:%M")
+schedule.every().day.at(hora_objetivo).do(enviar_aviso_matutino)
+
+def bucle_horario():
+    while True:
+        schedule.run_pending()
+        time.sleep(5)
+
+threading.Thread(target=bucle_horario, daemon=True).start()
+
+print(f"Hora actual: {datetime.now().strftime('%H:%M:%S')}")
+print(f"Prueba programada para enviarse a las: {hora_objetivo}")
+print("El bot está escuchando clics mientras espera...")
+
+bot.infinity_polling(timeout=10, long_polling_timeout=5)
