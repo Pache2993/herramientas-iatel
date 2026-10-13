@@ -393,7 +393,7 @@
         const fechaHoy = obtenerFechaHoy();
         const to = "luis.eduardo.hernandez1@huawei-partners.com,antonio.freitas@huawei-partners.com,noelia.lopez@huawei-partners.com,genesisicfs@TechMahindra.com";
         const cc = "net.cso@orange.es,icf@iatelecom.es";
-        const subject = `CASOS PENDIENTES DE CC +24 ${fechaHoy}`;
+        const subject = `CASOS PENDIENTES DE CC +24h ${fechaHoy}`;
 
         const mailtoUrl = `mailto:${to}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}`;
         window.location.href = mailtoUrl;
