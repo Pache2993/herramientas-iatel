@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name          Extractor Reporte PCAR (Aging >= 36)
 // @namespace     http://tampermonkey.net/
-// @version       2.0
-// @description   Filtra por Devuelta NO, Causa PCAR y aging >= 36. Panel no bloqueante para estado vacío con diseño IATelecom.
+// @version       2.1
+// @description   Filtra por Devuelta NO, Causa PCAR y aging >= 36. Panel no bloqueante con diseño IATelecom y botón mailto para Outlook.
 // @match         http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
-// @grant         GM_setClipboard
+// @grant         none
 // @run-at        document-idle
 // ==/UserScript==
 
@@ -32,13 +32,15 @@
 
   const IADS_ICONS = {
     'clipboard': '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>',
+    'mail':      '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
     'filter':    '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
     'trash':     '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
     'minimize':  '<path d="M4 14h6v6M20 10h-6V4"/>',
     'maximize':  '<path d="M14 4h6v6M10 20H4v-6"/>',
     'x':         '<path d="M18 6 6 18M6 6l12 12"/>',
     'ticket':    '<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>',
-    'edit':      '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>'
+    'edit':      '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+    'check':     '<path d="m5 12 5 5 9-10"/>'
   };
 
   function iaIcon(name, size = 14) {
@@ -77,7 +79,7 @@
       position: fixed;
       bottom: 24px;
       right: 24px;
-      width: 330px;
+      width: 350px;
       background: var(--ia-surface-panel);
       backdrop-filter: blur(16px) saturate(180%);
       -webkit-backdrop-filter: blur(16px) saturate(180%);
@@ -204,6 +206,16 @@
       box-shadow: 0 0 12px var(--ia-brand-glow);
     }
 
+    .ia-btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--ia-border);
+      color: #ffffff;
+    }
+    .ia-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: var(--ia-brand-500);
+    }
+
     .ia-btn-outline {
       background: rgba(255, 255, 255, 0.04);
       border-color: var(--ia-border);
@@ -232,7 +244,7 @@
     .ia-modal-flotante {
       position: fixed;
       bottom: 24px;
-      right: 370px;
+      right: 390px;
       width: 480px;
       max-height: calc(100vh - 48px);
       background: var(--ia-surface-panel);
@@ -335,6 +347,24 @@
   ];
 
   let bufferFilas = new Map();
+
+  function obtenerFechaHoy() {
+    const ahora = new Date();
+    const dd = String(ahora.getDate()).padStart(2, '0');
+    const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+    const yyyy = ahora.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  function abrirOutlookMailto() {
+    const fechaHoy = obtenerFechaHoy();
+    const to = "a.azpiazu@huawei.com,jose.morais@huawei-partners.com,antonio.freitas@huawei-partners.com,rtm.genesis@techmahindra.com,rtpm.n2.escalados@huawei.com,n3.masorange@masorange.es";
+    const cc = "icf@iatelecom.es,gloria.arias@masorange.es,net.cso@masorange.es,performance.smc@masorange.es,raquel.diazcaldera@masorange.es";
+    const subject = `ESCALADOS PCAR +36H ${fechaHoy}`;
+
+    const mailtoUrl = `mailto:${to}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}`;
+    window.location.href = mailtoUrl;
+  }
 
   function setInput(placeholderText, value) {
     const input = document.querySelector(`input.im[placeholder="${placeholderText}"]`) ||
@@ -470,7 +500,6 @@
         return (idx !== -1 && tds[idx]) ? tds[idx].innerText.trim() : '';
       });
 
-      // Validar aging >= 36 (índice 0)
       const agingTexto = (filaDatos[0] || '').replace(',', '.');
       const agingNumero = parseFloat(agingTexto);
 
@@ -480,7 +509,6 @@
 
       listaFilasTemp.push(filaDatos);
 
-      // Revisar si falta estado (columna 12)
       const estadoActual = filaDatos[12];
       if (!estadoActual || estadoActual.trim() === '') {
         filasSinEstado.push({
@@ -509,10 +537,9 @@
     return nuevas;
   }
 
-  function construirHTMLTabla() {
-    // Cabecera unificada en azul corporativo #0288d1
+  function construirHTMLCompleto() {
     let theadHtml = configuracionColumnas.map(col =>
-      `<th style="background-color: #0288d1; color: #ffffff; font-family: Segoe UI, Arial, sans-serif; font-size: 11px; font-weight: 600; padding: 7px 9px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
+      `<th style="background-color: #945300; color: #ffffff; font-family: Calibri, Arial, sans-serif; font-size: 9.5pt; font-weight: bold; padding: 5px 8px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
     ).join('');
 
     let tbodyHtml = '';
@@ -530,17 +557,26 @@
           estiloCelda = 'background-color: #b71c1c; color: #ffffff; font-weight: bold; text-align: center;';
         }
 
-        tbodyHtml += `<td style="padding: 6px 9px; border: 1px solid #dee2e6; font-family: Segoe UI, Arial, sans-serif; font-size: 11px; vertical-align: middle; ${estiloCelda}">${valor.replace(/\n/g, '<br>')}</td>`;
+        tbodyHtml += `<td style="padding: 5px 8px; border: 1px solid #777; font-family: Calibri, Arial, sans-serif; font-size: 9pt; vertical-align: middle; ${estiloCelda}">${valor.replace(/\n/g, '<br>')}</td>`;
       });
 
       tbodyHtml += '</tr>';
       filaIndex++;
     });
 
-    return `<table style="border-collapse: collapse; width: 100%; border: 1px solid #dee2e6; background-color: #ffffff; margin: 8px 0;">
-      <thead><tr>${theadHtml}</tr></thead>
-      <tbody>${tbodyHtml}</tbody>
-    </table>`;
+    return `
+      <div style="font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #ffffff;">
+        <p style="margin: 0 0 14px 0;">Buenos días,</p>
+        <p style="margin: 0 0 16px 0;">Adjunto los <span style="background-color: yellow; color: black; font-weight: bold; padding: 1px 3px;">casos</span> con más <span style="background-color: yellow; color: black; font-weight: bold; padding: 1px 3px;">de 36h</span>,</p>
+        <p style="margin: 0 0 10px 0;"><span style="background-color: yellow; color: black; font-weight: bold; padding: 1px 3px;">CASOS</span> VDF:</p>
+        <table style="border-collapse: collapse; width: 100%; border: 1px solid #777; background-color: #ffffff; margin: 8px 0;">
+          <thead><tr>${theadHtml}</tr></thead>
+          <tbody>${tbodyHtml}</tbody>
+        </table>
+        <br/>
+        <p style="margin: 16px 0 0 0;">Un saludo.</p>
+      </div>
+    `;
   }
 
   async function copiarAlPortapapeles() {
@@ -549,31 +585,44 @@
       return;
     }
 
-    const htmlTabla = construirHTMLTabla();
+    const htmlFinal = construirHTMLCompleto();
+
+    const divOculto = document.createElement('div');
+    divOculto.style.position = 'fixed';
+    divOculto.style.left = '-9999px';
+    divOculto.style.top = '0';
+    divOculto.innerHTML = htmlFinal;
+    document.body.appendChild(divOculto);
+
+    const range = document.createRange();
+    range.selectNodeContents(divOculto);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
 
     try {
-      const blobHtml = new Blob([htmlTabla], { type: 'text/html' });
-      const blobText = new Blob([htmlTabla.replace(/<[^>]+>/g, '\t')], { type: 'text/plain' });
-      const data = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
-
-      await navigator.clipboard.write(data);
-      alert("¡Tabla PCAR copiada con éxito!\n\nVe a tu correo y pulsa Ctrl + V para pegarla.");
+      const exito = document.execCommand('copy');
+      if (exito) {
+        const btnCopiar = hostRef?.shadowRoot?.getElementById('btn-copiar-pcar');
+        if (btnCopiar) {
+          btnCopiar.innerHTML = `${iaIcon('check', 14)} ¡Copiado con éxito!`;
+          btnCopiar.style.background = 'var(--ia-success)';
+          btnCopiar.style.borderColor = 'var(--ia-success)';
+          setTimeout(() => {
+            btnCopiar.innerHTML = `${iaIcon('clipboard', 14)} Copiar para Correo`;
+            btnCopiar.style.background = 'var(--ia-brand-500)';
+            btnCopiar.style.borderColor = 'var(--ia-brand-500)';
+          }, 2500);
+        }
+      } else {
+        alert("No se pudo copiar. Inténtalo de nuevo.");
+      }
     } catch (err) {
-      const divOculto = document.createElement('div');
-      divOculto.style.position = 'fixed';
-      divOculto.style.left = '-9999px';
-      divOculto.innerHTML = htmlTabla;
-      document.body.appendChild(divOculto);
-
-      const range = document.createRange();
-      range.selectNodeContents(divOculto);
-      const sel = window.getSelection();
+      console.error(err);
+      alert("Error al copiar.");
+    } finally {
       sel.removeAllRanges();
-      sel.addRange(range);
-      document.execCommand('copy');
       document.body.removeChild(divOculto);
-
-      alert("¡Tabla PCAR copiada con éxito!\n\nVe a tu correo y pulsa Ctrl + V para pegarla.");
     }
   }
 
@@ -581,12 +630,15 @@
   // PANEL SHADOW DOM (IATelecom Design)
   // =====================================================================
 
+  let hostRef = null;
+
   function iniciarPanel() {
     if (document.getElementById('reporte-pcar-host')) return;
 
     const host = document.createElement('div');
     host.id = 'reporte-pcar-host';
     document.body.appendChild(host);
+    hostRef = host;
 
     const shadowRoot = host.attachShadow({ mode: 'open' });
 
@@ -602,7 +654,7 @@
       <div class="ia-panel-header">
         <div class="ia-panel-brand">
           ${IADS_LOGO_SVG}
-          <span class="ia-badge">PCAR (≥36)</span>
+          <span class="ia-badge">PCAR (≥36h)</span>
         </div>
         <div class="ia-actions">
           <button id="btn-minimize-panel" class="ia-icon-btn" title="Minimizar / Restaurar">${iaIcon('minimize', 14)}</button>
@@ -619,6 +671,9 @@
         </button>
         <button id="btn-copiar-pcar" class="ia-btn ia-btn-primary">
           ${iaIcon('clipboard', 14)} Copiar para Correo
+        </button>
+        <button id="btn-abrir-outlook" class="ia-btn ia-btn-secondary" title="Abrir Outlook con destinatarios y asunto">
+          ${iaIcon('mail', 14)} Abrir Outlook
         </button>
         <button id="btn-borrar-pcar" class="ia-btn ia-btn-danger-outline">
           ${iaIcon('trash', 12)} Vaciar Memoria
@@ -671,6 +726,9 @@
 
     // Copiar
     shadowRoot.getElementById('btn-copiar-pcar').onclick = copiarAlPortapapeles;
+
+    // Abrir Outlook
+    shadowRoot.getElementById('btn-abrir-outlook').onclick = abrirOutlookMailto;
 
     // Vaciar
     shadowRoot.getElementById('btn-borrar-pcar').onclick = () => {
