@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         IATEL - Cargador Dinámico de Reportes (Oceane UI Categorizado)
+// @name         IATEL - Cargador Dinámico de Reportes (Oceane UI Categorizado) v2
 // @namespace    http://tampermonkey.net/
-// @version      3.3.5
-// @description  Lanzador dinámico organizado por días y subcategorías con limpieza de reportes activos
+// @version      3.3.6
+// @description  Lanzador dinámico organizado por días y subcategorías con limpieza de reportes activos y acordeón exclusivo
 // @match        http://mxmefm01.wnet/private/zc/tools/smc*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_addStyle
@@ -175,10 +175,8 @@
 
     // --- FUNCIÓN DE LIMPIEZA DE REPORTES PREVIOS ---
     function limpiarReportesPrevios() {
-        // 1. Eliminar cualquier elemento previamente etiquetado como reporte activo
         document.querySelectorAll('.iatel-report-instance').forEach(el => el.remove());
 
-        // 2. Selectores de contenedores/modales/paneles habituales creados por los scripts individuales
         const selectoresComunes = [
             'div[id*="reporte"]',
             'div[id*="Reporte"]',
@@ -194,9 +192,8 @@
 
         selectoresComunes.forEach(selector => {
             document.querySelectorAll(selector).forEach(el => {
-                // No eliminar la barra lanzadora ni el botón flotante
-                if (el.id !== "iatel-launcher-container" && 
-                    el.id !== "helper-hide-toggle" && 
+                if (el.id !== "iatel-launcher-container" &&
+                    el.id !== "helper-hide-toggle" &&
                     el.id !== "helper-toast-msg" &&
                     !menu.contains(el)) {
                     el.remove();
@@ -207,19 +204,17 @@
 
     // --- CARGADOR SEGURO DE SCRIPTS ---
     function cargarYEjecutarScript(nombreArchivo, tituloReporte) {
-        // Limpia cualquier interfaz o modal dejado por el reporte anterior
         limpiarReportesPrevios();
 
         const urlFinal = BASE_GITHUB_URL + encodeURIComponent(nombreArchivo);
         mostrarToast(`Cargando reporte...`, '⏳');
 
-        // Observer temporal para detectar y etiquetar nodos inyectados por el script cargado
         const observer = new MutationObserver(mutations => {
             mutations.forEach(mutation => {
                 mutation.addedNodes.forEach(node => {
-                    if (node.nodeType === 1 && 
-                        node.id !== "iatel-launcher-container" && 
-                        node.id !== "helper-hide-toggle" && 
+                    if (node.nodeType === 1 &&
+                        node.id !== "iatel-launcher-container" &&
+                        node.id !== "helper-hide-toggle" &&
                         node.id !== "helper-toast-msg" &&
                         !menu.contains(node)) {
                         node.classList.add('iatel-report-instance');
@@ -246,7 +241,6 @@
                 } else {
                     mostrarToast("Error de red", "⚠");
                 }
-                // Desconectar el observador tras 3.5 segundos para no consumir recursos
                 setTimeout(() => observer.disconnect(), 3500);
             },
             onerror: function(err) {
@@ -285,7 +279,19 @@
     DIAS_DISTRIBUCION.forEach(seccion => {
         const detalle = document.createElement('details');
         detalle.className = 'oceane-day-accordion';
+        detalle.name = 'oceane-dias-semana'; // Comportamiento exclusivo nativo de HTML
         if (seccion.diaId === diaActual) detalle.open = true;
+
+        // Cierre manual garantizado al hacer clic entre días
+        detalle.addEventListener('toggle', () => {
+            if (detalle.open) {
+                dropdownPanel.querySelectorAll('details.oceane-day-accordion').forEach(otro => {
+                    if (otro !== detalle && otro.open) {
+                        otro.open = false;
+                    }
+                });
+            }
+        });
 
         const summary = document.createElement('summary');
         const esHoy = (seccion.diaId === diaActual);
