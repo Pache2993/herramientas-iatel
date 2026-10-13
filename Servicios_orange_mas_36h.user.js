@@ -474,7 +474,7 @@
                 <div class="ia-panel-brand">
                     ${IADS_LOGO_SVG}
                     <span class="ia-panel-title">
-                        HUAWEI Orange (>36h) <span class="ia-badge">${datosFiltrados.length} tickets</span>
+                        Orange Servicios (>36h) <span class="ia-badge">${datosFiltrados.length} tickets</span>
                     </span>
                 </div>
                 <div class="ia-actions">
