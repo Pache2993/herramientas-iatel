@@ -592,7 +592,7 @@
                     // Destinatarios y asunto
                     const para = "ana.corredor@masorange.es";
                     const cc = "icf@iatelecom.es; net.cso@masorange.es";
-                    const asunto = `RE: ESCALADOS TTs 36 HORAS GNOCe ${fechaHoy}`;
+                    const asunto = `ESCALADOS TTs 36 HORAS GNOCe ${fechaHoy}`;
 
                     // Abrir cliente de Outlook
                     const mailtoUrl = `mailto:${encodeURIComponent(para)}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(asunto)}`;
