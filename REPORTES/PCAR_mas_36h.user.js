@@ -570,7 +570,7 @@
 
   function construirHTMLCompleto() {
     let theadHtml = configuracionColumnas.map(col =>
-      `<th style="background-color: #945300; color: #ffffff; font-family: Calibri, Arial, sans-serif; font-size: 9.5pt; font-weight: bold; padding: 5px 8px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
+      `<th style="background-color: #004094; color: #ffffff; font-family: Calibri, Arial, sans-serif; font-size: 9.5pt; font-weight: bold; padding: 5px 8px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
     ).join('');
 
     let tbodyHtml = '';
