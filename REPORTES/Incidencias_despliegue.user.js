@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name         Extractor Reporte Incidencias Despliegue (Conteo Global caso_asociado)
-// @namespace    http://tampermonkey.net/
-// @version      2.0
-// @description  Filtra por Devuelta NO y ResponsableICF INCIDENCIAS DESPLIEGUE, cuenta cuántas veces aparece cada caso_asociado en la tabla y copia para correo con diseño IATelecom
-// @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
-// @grant        GM_setClipboard
-// @run-at       document-idle
+// @name          Extractor Reporte Incidencias Despliegue (Conteo Global caso_asociado)
+// @namespace     http://tampermonkey.net/
+// @version       2.1
+// @description   Filtra por Devuelta NO y ResponsableICF INCIDENCIAS DESPLIEGUE, cuenta cuántas veces aparece cada caso_asociado en la tabla y copia para correo con diseño IATelecom y botón mailto
+// @match         http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
+// @grant         GM_setClipboard
+// @run-at        document-idle
 // ==/UserScript==
 
 (function() {
@@ -32,12 +32,14 @@
 
   const IADS_ICONS = {
     'clipboard': '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>',
+    'mail':      '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
     'x':         '<path d="M18 6 6 18M6 6l12 12"/>',
     'minimize':  '<path d="M4 14h6v6M20 10h-6V4"/>',
     'maximize':  '<path d="M14 4h6v6M10 20H4v-6"/>',
     'trash':     '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
     'filter':    '<polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>',
-    'layers':    '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>'
+    'layers':    '<polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/>',
+    'check':     '<path d="m5 12 5 5 9-10"/>'
   };
 
   function iaIcon(name, size = 14) {
@@ -203,6 +205,16 @@
       box-shadow: 0 0 12px var(--ia-brand-glow);
     }
 
+    .ia-btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--ia-border);
+      color: #ffffff;
+    }
+    .ia-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: var(--ia-brand-500);
+    }
+
     .ia-btn-outline {
       background: rgba(255, 255, 255, 0.04);
       border-color: var(--ia-border);
@@ -261,6 +273,23 @@
   ];
 
   let bufferFilas = [];
+
+  function obtenerFechaCorta() {
+    const ahora = new Date();
+    const dd = String(ahora.getDate()).padStart(2, '0');
+    const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}`;
+  }
+
+  function abrirOutlookMailto() {
+    const fecha = obtenerFechaCorta();
+    const to = "n3.masorange@orange.es,IMaccytransp.masorange@orange.es,gloria.arias@masorange.es";
+    const cc = "net.cso@masorange.es,icf@iatelecom.es";
+    const subject = `PRIORIZACIÓN INCIDENCIAS DESPLIEGUE ${fecha}`;
+
+    const mailtoUrl = `mailto:${to}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}`;
+    window.location.href = mailtoUrl;
+  }
 
   function setInput(placeholderText, value) {
     const input = document.querySelector(`input.im[placeholder="${placeholderText}"]`) ||
@@ -360,10 +389,9 @@
     return listaFilas.length;
   }
 
-  function construirHTMLTabla() {
-    // Cabecera estandarizada en azul #0288d1
+  function construirHTMLCompleto() {
     let theadHtml = configuracionColumnas.map(col =>
-      `<th style="background-color: #0288d1; color: #ffffff; font-family: Segoe UI, Arial, sans-serif; font-size: 11px; font-weight: 600; padding: 7px 9px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
+      `<th style="background-color: #0288d1; color: #ffffff; font-family: Calibri, Arial, sans-serif; font-size: 9.5pt; font-weight: bold; padding: 5px 8px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
     ).join('');
 
     let tbodyHtml = '';
@@ -384,16 +412,25 @@
           estiloCelda = 'background-color: #fff3cd; color: #856404; font-weight: bold;';
         }
 
-        tbodyHtml += `<td style="padding: 6px 9px; border: 1px solid #dee2e6; font-family: Segoe UI, Arial, sans-serif; font-size: 11px; vertical-align: middle; ${estiloCelda}">${valor.replace(/\n/g, '<br>')}</td>`;
+        tbodyHtml += `<td style="padding: 5px 8px; border: 1px solid #777; font-family: Calibri, Arial, sans-serif; font-size: 9pt; vertical-align: middle; ${estiloCelda}">${valor.replace(/\n/g, '<br>')}</td>`;
       });
 
       tbodyHtml += '</tr>';
     });
 
-    return `<table style="border-collapse: collapse; width: 100%; border: 1px solid #dee2e6; background-color: #ffffff; margin: 8px 0;">
-      <thead><tr>${theadHtml}</tr></thead>
-      <tbody>${tbodyHtml}</tbody>
-    </table>`;
+    return `
+      <div style="font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #212529;">
+        <p style="margin: 0 0 14px 0;">Buenos días,</p>
+        <p style="margin: 0 0 16px 0;">solicitamos FB, priorización y previsión de estas incidencias, los casos marcados en azul son por donde los estáis tratando.</p>
+        <br/>
+        <table style="border-collapse: collapse; width: 100%; border: 1px solid #777; background-color: #ffffff; margin: 8px 0;">
+          <thead><tr>${theadHtml}</tr></thead>
+          <tbody>${tbodyHtml}</tbody>
+        </table>
+        <br/>
+        <p style="margin: 16px 0 0 0;">Saludos</p>
+      </div>
+    `;
   }
 
   async function copiarAlPortapapeles() {
@@ -402,31 +439,44 @@
       return;
     }
 
-    const htmlTabla = construirHTMLTabla();
+    const htmlFinal = construirHTMLCompleto();
+    const btnCopiar = hostRef?.shadowRoot?.getElementById('btn-copiar-despliegue');
+
+    const divOculto = document.createElement('div');
+    divOculto.style.position = 'fixed';
+    divOculto.style.left = '-9999px';
+    divOculto.style.top = '0';
+    divOculto.innerHTML = htmlFinal;
+    document.body.appendChild(divOculto);
+
+    const range = document.createRange();
+    range.selectNodeContents(divOculto);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
 
     try {
-      const blobHtml = new Blob([htmlTabla], { type: 'text/html' });
-      const blobText = new Blob([htmlTabla.replace(/<[^>]+>/g, '\t')], { type: 'text/plain' });
-      const data = [new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })];
-
-      await navigator.clipboard.write(data);
-      alert("¡Tabla copiada con éxito!\n\nVe a tu correo y pulsa Ctrl + V para pegarla.");
+      const exito = document.execCommand('copy');
+      if (exito) {
+        if (btnCopiar) {
+          btnCopiar.innerHTML = `${iaIcon('check', 14)} ¡Copiado con éxito!`;
+          btnCopiar.style.background = 'var(--ia-success)';
+          btnCopiar.style.borderColor = 'var(--ia-success)';
+          setTimeout(() => {
+            btnCopiar.innerHTML = `${iaIcon('clipboard', 14)} Copiar para Correo`;
+            btnCopiar.style.background = 'var(--ia-brand-500)';
+            btnCopiar.style.borderColor = 'var(--ia-brand-500)';
+          }, 2500);
+        }
+      } else {
+        alert("No se pudo copiar. Inténtalo de nuevo.");
+      }
     } catch (err) {
-      const divOculto = document.createElement('div');
-      divOculto.style.position = 'fixed';
-      divOculto.style.left = '-9999px';
-      divOculto.innerHTML = htmlTabla;
-      document.body.appendChild(divOculto);
-
-      const range = document.createRange();
-      range.selectNodeContents(divOculto);
-      const sel = window.getSelection();
+      console.error(err);
+      alert("Error al copiar.");
+    } finally {
       sel.removeAllRanges();
-      sel.addRange(range);
-      document.execCommand('copy');
       document.body.removeChild(divOculto);
-
-      alert("¡Tabla copiada con éxito!\n\nVe a tu correo y pulsa Ctrl + V para pegarla.");
     }
   }
 
@@ -434,12 +484,15 @@
   // PANEL SHADOW DOM (IATelecom Design)
   // =====================================================================
 
+  let hostRef = null;
+
   function iniciarPanel() {
     if (document.getElementById('reporte-despliegue-host')) return;
 
     const host = document.createElement('div');
     host.id = 'reporte-despliegue-host';
     document.body.appendChild(host);
+    hostRef = host;
 
     const shadowRoot = host.attachShadow({ mode: 'open' });
 
@@ -472,6 +525,9 @@
         </button>
         <button id="btn-copiar-despliegue" class="ia-btn ia-btn-primary">
           ${iaIcon('clipboard', 14)} Copiar para Correo
+        </button>
+        <button id="btn-abrir-outlook" class="ia-btn ia-btn-secondary" title="Abrir Outlook con destinatarios y asunto">
+          ${iaIcon('mail', 14)} Abrir Outlook
         </button>
         <button id="btn-borrar-despliegue" class="ia-btn ia-btn-danger-outline">
           ${iaIcon('trash', 12)} Vaciar Memoria
@@ -524,6 +580,9 @@
 
     // Copiar
     shadowRoot.getElementById('btn-copiar-despliegue').onclick = copiarAlPortapapeles;
+
+    // Abrir Outlook
+    shadowRoot.getElementById('btn-abrir-outlook').onclick = abrirOutlookMailto;
 
     // Vaciar
     shadowRoot.getElementById('btn-borrar-despliegue').onclick = () => {
