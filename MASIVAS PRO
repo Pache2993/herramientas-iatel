@@ -9,8 +9,8 @@
 // @grant       GM_getValue
 // @grant       GM_deleteValue
 // @grant       GM_openInTab
-// @author      Sergio Y Javi
-// @description Suite unificada de Masivas con IATelecom Design System v1.7: Analizar, Rellenar Fijo, Rellenar Móvil y Comprobar estado / Cerrar (MAQA + Brújula). Agiliza el trabajo y reduce errores humanos conservando la supervisión humana.
+// @author      Iatel
+// @description Esta herramienta trata de agilizar el trabajo y reducir errores humanos en la gestión de Masivas conservando la supervisión humana.
 // ==/UserScript==
 
 /*
