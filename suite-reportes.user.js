@@ -16,7 +16,7 @@
     'use strict';
 
     // --- CONFIGURACIÓN REPOSITORIO GITHUB ---
-    const BASE_GITHUB_URL = "https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/";
+    const BASE_GITHUB_URL = "https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/REPORTES/";
 
     // --- CATÁLOGO DE REPORTES ---
     const SCRIPTS = {
