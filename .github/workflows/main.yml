@@ -1,0 +1,24 @@
+name: Enviar Reportes Bot
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '5 5 * * 1-5'
+
+jobs:
+  enviar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Instalar pyTelegramBotAPI
+        run: pip install pyTelegramBotAPI
+
+      - name: Ejecutar script de envio
+        run: python enviar_reporte.py
