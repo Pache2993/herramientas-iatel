@@ -473,7 +473,7 @@
                 <div class="ia-panel-brand">
                     ${IADS_LOGO_SVG}
                     <span class="ia-panel-title">
-                        HUAWEI (>36h) <span class="ia-badge">${datosFiltrados.length} tickets</span>
+                        MasMovil Servicios (>36h) <span class="ia-badge">${datosFiltrados.length} tickets</span>
                     </span>
                 </div>
                 <div class="ia-actions">
