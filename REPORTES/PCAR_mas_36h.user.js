@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name          Extractor Reporte PCAR (Aging >= 36)
-// @namespace     http://tampermonkey.net/
-// @version       2.2
-// @description   Filtra por Devuelta NO, Causa PCAR y aging >= 36. Complementa descripción con causa_especif completa (title) y botón mailto para Outlook.
-// @match         http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
-// @grant         none
-// @run-at        document-idle
+// @name         Extractor Reporte PCAR (Aging >= 36)
+// @namespace    http://tampermonkey.net/
+// @version      2.2
+// @description  Filtra por Devuelta NO, Causa PCAR y aging >= 36. Complementa descripción con causa_especif completa (title) y botón mailto para Outlook.
+// @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
+// @grant        none
+// @run-at       document-idle
 // ==/UserScript==
 
 (function() {
@@ -570,7 +570,7 @@
 
   function construirHTMLCompleto() {
     let theadHtml = configuracionColumnas.map(col =>
-      `<th style="background-color: #004094; color: #ffffff; font-family: Calibri, Arial, sans-serif; font-size: 9.5pt; font-weight: bold; padding: 5px 8px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
+      `<th style="background-color: #0080d7; color: #ffffff; font-family: Calibri, Arial, sans-serif; font-size: 9.5pt; font-weight: bold; padding: 5px 8px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
     ).join('');
 
     let tbodyHtml = '';
