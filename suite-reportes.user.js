@@ -8,8 +8,8 @@
 // @grant        GM_addStyle
 // @grant        GM_setClipboard
 // @connect      raw.githubusercontent.com
-// @updateURL    https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/Lanzador_IATEL.user.js
-// @downloadURL  https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/Lanzador_IATEL.user.js
+// @updateURL    https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/suite-reportes.user.js
+// @downloadURL  https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/suite-reportes.user.js
 // ==/UserScript==
 
 (function() {
