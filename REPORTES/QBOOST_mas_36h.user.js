@@ -1,10 +1,11 @@
 // ==UserScript==
-// @name         Generador Reporte ICFs (QBOOST >= 36h)
-// @namespace    violentmonkey.custom
-// @version      2.0
-// @description  Filtra por ResponsableICF (QBOOST), Devuelta (NO), aging >= 36h leyendo de #example_wrapper con diseño IATelecom
-// @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
-// @grant        none
+// @name          Generador Reporte ICFs (QBOOST >= 36h)
+// @namespace     violentmonkey.custom
+// @version       2.2
+// @description   Filtra por ResponsableICF (QBOOST), Devuelta (NO), aging >= 36h leyendo de #example_wrapper con diseño IATelecom, botón mailto y tabla azul #0288d1
+// @match         http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
+// @grant         none
+// @run-at        document-idle
 // ==/UserScript==
 
 (function() {
@@ -31,6 +32,7 @@
 
     const IADS_ICONS = {
         'clipboard': '<path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>',
+        'mail':      '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
         'check':     '<path d="m5 12 5 5 9-10"/>',
         'x':         '<path d="M18 6 6 18M6 6l12 12"/>',
         'minimize':  '<path d="M4 14h6v6M20 10h-6V4"/>',
@@ -277,9 +279,11 @@
             padding: 10px 14px;
             border-top: 1px solid var(--ia-border);
             background: rgba(255, 255, 255, 0.01);
+            display: flex;
+            gap: 8px;
         }
         .ia-btn-primary {
-            width: 100%;
+            flex: 1;
             height: 34px;
             background: var(--ia-brand-500);
             border: 1px solid var(--ia-brand-500);
@@ -300,6 +304,27 @@
             border-color: var(--ia-brand-600);
             box-shadow: 0 0 14px var(--ia-brand-glow);
         }
+        .ia-btn-secondary {
+            flex: 1;
+            height: 34px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--ia-border-strong);
+            border-radius: var(--ia-r-md);
+            color: #ffffff;
+            font-family: var(--ia-font);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.18s var(--ia-ease);
+        }
+        .ia-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.14);
+            border-color: var(--ia-border-focus);
+        }
 
         .ia-spinner {
             width: 12px;
@@ -317,6 +342,23 @@
     // =====================================================================
 
     const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    function obtenerFechaCorta() {
+        const ahora = new Date();
+        const dd = String(ahora.getDate()).padStart(2, '0');
+        const mm = String(ahora.getMonth() + 1).padStart(2, '0');
+        return `${dd}/${mm}`;
+    }
+
+    function abrirOutlookMailto() {
+        const fecha = obtenerFechaCorta();
+        const to = "gloria.arias@masorange.es;david.garciamartinez@masorange.es";
+        const cc = "icf@iatelecom.es;net.cso@masorange.es";
+        const subject = `ICFs QBOOST +36H ${fecha}`;
+
+        const mailtoUrl = `mailto:${to}?cc=${encodeURIComponent(cc)}&subject=${encodeURIComponent(subject)}`;
+        window.location.href = mailtoUrl;
+    }
 
     const esperarActualizacionDOM = (tiempoEsperaMs = 5000) => {
         return new Promise(resolve => {
@@ -406,7 +448,6 @@
         }
 
         const rows = wrapper.querySelectorAll('table#example tbody tr[role="row"]');
-        const ahora = new Date();
         const datosFiltrados = [];
 
         rows.forEach(tr => {
@@ -500,7 +541,10 @@
             </div>
             <div id="ia-panel-actions" class="ia-panel-footer">
                 <button id="btn-confirmar-copia" class="ia-btn-primary">
-                    ${iaIcon('clipboard', 14)} Copiar Reporte al Portapapeles
+                    ${iaIcon('clipboard', 14)} Copiar Reporte
+                </button>
+                <button id="btn-abrir-outlook" class="ia-btn-secondary" title="Abrir Outlook con destinatarios y asunto">
+                    ${iaIcon('mail', 14)} Abrir Outlook
                 </button>
             </div>
         `;
@@ -517,12 +561,15 @@
             isMinimized = !isMinimized;
             panel.classList.toggle('is-minimized', isMinimized);
             panelContent.style.display = isMinimized ? 'none' : 'flex';
-            panelActions.style.display = isMinimized ? 'none' : 'block';
+            panelActions.style.display = isMinimized ? 'none' : 'flex';
             btnMinimizar.innerHTML = isMinimized ? iaIcon('maximize', 14) : iaIcon('minimize', 14);
         };
 
         // Control Cerrar
         shadowRoot.getElementById('btn-cerrar-panel').onclick = () => panel.remove();
+
+        // Control Abrir Outlook
+        shadowRoot.getElementById('btn-abrir-outlook').onclick = abrirOutlookMailto;
 
         // Control Copiar
         shadowRoot.getElementById('btn-confirmar-copia').onclick = () => {
@@ -533,53 +580,50 @@
                 caso.peticiones = txtPeticiones ? txtPeticiones.value.trim() : '';
             });
 
-            const dd = String(ahora.getDate()).padStart(2, '0');
-            const mm = String(ahora.getMonth() + 1).padStart(2, '0');
-            const yyyy = ahora.getFullYear();
-            const fechaHoy = `${dd}/${mm}/${yyyy}`;
-
             let htmlRows = '';
             datosFiltrados.forEach(f => {
                 htmlRows += `
                     <tr>
-                        <td style="border: 1px solid #777; padding: 4px 8px; ${f.bgAging} font-weight: bold;">${f.aging}</td>
+                        <td style="border: 1px solid #777; padding: 4px 8px; ${f.bgAging} font-weight: bold; text-align: center;">${f.aging}</td>
                         <td style="border: 1px solid #777; padding: 4px 8px;">${f.codigo}</td>
                         <td style="border: 1px solid #777; padding: 4px 8px;">${f.fechaCreacion}</td>
                         <td style="border: 1px solid #777; padding: 4px 8px;">${f.icfRed}</td>
                         <td style="border: 1px solid #777; padding: 4px 8px;">${f.descripcion}</td>
-                        <td style="border: 1px solid #777; padding: 4px 8px;">${f.responsableICF}</td>
+                        <td style="border: 1px solid #777; padding: 4px 8px; font-weight: bold; background-color: #fff3cd; color: #856404;">Clientes QBOOST HUAWEI REST</td>
                         <td style="border: 1px solid #777; padding: 4px 8px;">${f.nodo}</td>
                         <td style="border: 1px solid #777; padding: 4px 8px;">${f.celda}</td>
-                        <td style="border: 1px solid #777; padding: 4px 8px;">${f.zona}</td>
                         <td style="border: 1px solid #777; padding: 4px 8px;">${f.ultimoComentario}</td>
                         <td style="border: 1px solid #777; padding: 4px 8px;">${f.peticiones}</td>
+                        <td style="border: 1px solid #777; padding: 4px 8px;">${f.zona}</td>
                     </tr>`;
             });
 
             const htmlFinal = `
-                <p>Buenos días,</p>
-                <p>Adjunto el reporte de ICFs QBOOST con aging superior o igual a 36 horas a día ${fechaHoy}.</p>
-                <br/>
-                <table style="border-collapse: collapse; width: 100%; font-family: Calibri, Arial, sans-serif; font-size: 10pt; color: #ffffff;">
-                    <thead>
-                        <tr style="background-color: #0288d1; color: #ffffff; font-weight: bold; text-align: left;">
-                            <th style="border: 1px solid #777; padding: 4px 8px;">aging</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">codigo_oceane</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">fecha_creacion</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">ICF_RED</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">descripcion</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">ResponsableICF</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">Nodo</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">Celda</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">zona</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">Ultimo comentario</th>
-                            <th style="border: 1px solid #777; padding: 4px 8px;">Peticiones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${htmlRows}
-                    </tbody>
-                </table>
+                <div style="font-family: Calibri, Arial, sans-serif; font-size: 11pt; color: #000000;">
+                    <p style="margin: 0 0 16px 0;">Buenos días, tenemos las siguientes ICF asignadas en la cola de QBOOST pendientes de revisión o actualización +36H.</p>
+                    <table style="border-collapse: collapse; width: 100%; font-family: Calibri, Arial, sans-serif; font-size: 9.5pt; color: #000000; border: 1px solid #777; margin: 8px 0;">
+                        <thead>
+                            <tr style="background-color: #0288d1; color: #ffffff; font-weight: bold; text-align: left;">
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">aging</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">codigo_oceane</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">fecha_creacion</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">ICF_RED</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">descripcion</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">GRUPO ACTIVO</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">Nodo</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">Celda</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">ULTIMO COMENTARIO</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">PETICIONES</th>
+                                <th style="border: 1px solid #777; padding: 4px 8px; white-space: nowrap;">REGION</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${htmlRows}
+                        </tbody>
+                    </table>
+                    <br/>
+                    <p style="margin: 16px 0 0 0;">Saludos</p>
+                </div>
             `;
 
             const tempContainer = document.createElement('div');
@@ -598,12 +642,14 @@
             try {
                 const exito = document.execCommand('copy');
                 if (exito) {
-                    panel.remove();
-                    btnFab.innerHTML = `${iaIcon('check', 16)}<span>¡Copiado con éxito!</span>`;
-                    btnFab.style.borderLeftColor = 'var(--ia-success)';
+                    const btnCopiar = shadowRoot.getElementById('btn-confirmar-copia');
+                    btnCopiar.innerHTML = `${iaIcon('check', 14)} ¡Copiado con éxito!`;
+                    btnCopiar.style.background = 'var(--ia-success)';
+                    btnCopiar.style.borderColor = 'var(--ia-success)';
                     setTimeout(() => {
-                        btnFab.innerHTML = `${iaIcon('bolt', 16)}<span>Reporte QBOOST (≥36h)</span>`;
-                        btnFab.style.borderLeftColor = 'var(--ia-brand-500)';
+                        btnCopiar.innerHTML = `${iaIcon('clipboard', 14)} Copiar Reporte`;
+                        btnCopiar.style.background = 'var(--ia-brand-500)';
+                        btnCopiar.style.borderColor = 'var(--ia-brand-500)';
                     }, 2500);
                 } else {
                     alert('No se pudo copiar. Inténtalo de nuevo.');
