@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         IATEL - Cargador Dinámico de Reportes (Oceane UI Categorizado)
 // @namespace    http://tampermonkey.net/
-// @version      3.2.1
-// @description  Lanzador dinámico organizado por días y subcategorías
+// @version      3.3.0
+// @description  Lanzador dinámico organizado por días y subcategorías con limpieza de reportes activos
 // @match        http://mxmefm01.wnet/private/zc/tools/smc*
 // @grant        GM_xmlhttpRequest
 // @grant        GM_addStyle
@@ -11,9 +11,6 @@
 
 (function() {
     'use strict';
-
-    // Se deshabilita el bloqueo de iframes por si SMC renderiza su contenido dentro de marcos
-    // if (window.top !== window.self) return;
 
     // --- CONFIGURACIÓN REPOSITORIO GITHUB ---
     const BASE_GITHUB_URL = "https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/";
@@ -73,7 +70,7 @@
         return 'cobertura';
     }
 
-    // --- ESTILOS GLASSMORPHISM (Inyectados de forma segura) ---
+    // --- ESTILOS GLASSMORPHISM ---
     GM_addStyle(`
         :root {
             --op-bg-glass: rgba(13, 17, 23, 0.75);
@@ -173,10 +170,62 @@
         setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 2200);
     }
 
+    // --- FUNCIÓN DE LIMPIEZA DE REPORTES PREVIOS ---
+    function limpiarReportesPrevios() {
+        // 1. Eliminar cualquier elemento previamente etiquetado como reporte activo
+        document.querySelectorAll('.iatel-report-instance').forEach(el => el.remove());
+
+        // 2. Selectores de contenedores/modales/paneles habituales creados por los scripts individuales
+        const selectoresComunes = [
+            'div[id*="reporte"]',
+            'div[id*="Reporte"]',
+            'div[id*="panel-reporte"]',
+            'div[class*="reporte-container"]',
+            'div[id*="modal-report"]',
+            'div[id*="iatel-panel"]',
+            'div[id*="iatel_"]',
+            '#smc-report-container',
+            '.report-overlay',
+            '.floating-report-panel'
+        ];
+
+        selectoresComunes.forEach(selector => {
+            document.querySelectorAll(selector).forEach(el => {
+                // No eliminar la barra lanzadora ni el botón flotante
+                if (el.id !== "iatel-launcher-container" && 
+                    el.id !== "helper-hide-toggle" && 
+                    el.id !== "helper-toast-msg" &&
+                    !menu.contains(el)) {
+                    el.remove();
+                }
+            });
+        });
+    }
+
     // --- CARGADOR SEGURO DE SCRIPTS ---
     function cargarYEjecutarScript(nombreArchivo, tituloReporte) {
+        // Limpia cualquier interfaz o modal dejado por el reporte anterior
+        limpiarReportesPrevios();
+
         const urlFinal = BASE_GITHUB_URL + encodeURIComponent(nombreArchivo);
         mostrarToast(`Cargando reporte...`, '⏳');
+
+        // Observer temporal para detectar y etiquetar nodos inyectados por el script cargado
+        const observer = new MutationObserver(mutations => {
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (node.nodeType === 1 && 
+                        node.id !== "iatel-launcher-container" && 
+                        node.id !== "helper-hide-toggle" && 
+                        node.id !== "helper-toast-msg" &&
+                        !menu.contains(node)) {
+                        node.classList.add('iatel-report-instance');
+                    }
+                });
+            });
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
 
         GM_xmlhttpRequest({
             method: "GET",
@@ -185,8 +234,6 @@
             onload: function(response) {
                 if (response.status === 200) {
                     try {
-                        // Ejecuta el código dentro del entorno de la extensión
-                        // Esto evita los bloqueos de Content Security Policy (CSP) y permite retener permisos GM_
                         eval(response.responseText);
                         mostrarToast(`${tituloReporte} listo`, '⚡');
                     } catch (error) {
@@ -196,8 +243,11 @@
                 } else {
                     mostrarToast("Error de red", "⚠");
                 }
+                // Desconectar el observador tras 3.5 segundos para no consumir recursos
+                setTimeout(() => observer.disconnect(), 3500);
             },
             onerror: function(err) {
+                observer.disconnect();
                 console.error("Error en la conexión:", err);
                 mostrarToast("Fallo de red", "⚠");
             }
