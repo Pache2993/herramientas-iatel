@@ -54,7 +54,7 @@
         },
         {
             diaId: 3, titulo: 'Miércoles', icono: '📅',
-            reportes: [...REPORTES_DIARIOS, SCRIPTS.CUST_COMP_36, SCRIPTS.RSSI_OUTLOOK]
+            reportes: [...REPORTES_DIARIOS, SCRIPTS.CUST_COMP_36, SCRIPTS.RSSI_OUTLOOK, SCRIPTS.REUNION_RSSI]
         },
         {
             diaId: 4, titulo: 'Jueves', icono: '📅',
@@ -62,7 +62,7 @@
         },
         {
             diaId: 5, titulo: 'Viernes', icono: '📅',
-            reportes: [...REPORTES_DIARIOS, SCRIPTS.ESTRUCTURAL, SCRIPTS.REUNION_RSSI]
+            reportes: [...REPORTES_DIARIOS, SCRIPTS.ESTRUCTURAL]
         }
     ];
 
