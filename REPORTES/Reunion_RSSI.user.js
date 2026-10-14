@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Generador Informe Completo Reunión RSSI casos pendientes de 3PP, FLM y otros.
 // @namespace    http://violentmonkey.net/
-// @version      6.0
-// @description  Filtra con retardo, extrae las 15 columnas requeridas, agrupa por categorías y proporciona botones para Copiar Tablas y Abrir Outlook con diseño IATelecom.
+// @version      6.1
+// @description  Filtra con retardo, extrae las 15 columnas requeridas (causa_especif y Prevision completas), agrupa por categorías y proporciona botones para Copiar Tablas y Abrir Outlook con diseño IATelecom.
 // @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant        GM_setClipboard
 // ==/UserScript==
@@ -261,6 +261,9 @@
         'Oceane_RSSI'
     ];
 
+    // Columnas cuyo texto se recorta en pantalla (span.ellipsis); se lee el title completo
+    const FULL_TEXT_COLUMNS = ['causa_especif', 'Prevision'];
+
     // Variables globales para almacenar los datos generados
     let generatedReportHtml = '';
     let generatedReportText = '';
@@ -293,6 +296,25 @@
             await sleep(1000);
             remaining--;
         }
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // Devuelve el texto completo de la celda: si hay un span.ellipsis con title, usa el title
+    function getCellFullText(cell) {
+        if (!cell) return '';
+        const ell = cell.querySelector('.ellipsis[title]');
+        if (ell) {
+            const t = (ell.getAttribute('title') || '').trim();
+            if (t) return t;
+        }
+        return cell.innerText.trim();
     }
 
     function extractGroupCategory(text) {
@@ -498,12 +520,19 @@
 
             rows.forEach(tr => {
                 const cells = Array.from(tr.querySelectorAll('td'));
-                const causaText = (causaIndex !== -1 && cells[causaIndex]) ? cells[causaIndex].innerText.trim() : '';
+
+                // Texto completo (title) para clasificar, no el recortado
+                const causaText = (causaIndex !== -1 && cells[causaIndex]) ? getCellFullText(cells[causaIndex]) : '';
                 const category = extractGroupCategory(causaText);
 
                 const extractedRowHtml = TARGET_COLUMNS.map(colName => {
                     const idx = colIndices[colName];
-                    return (idx !== -1 && cells[idx]) ? cells[idx].innerHTML.trim() : '';
+                    const cell = (idx !== -1) ? cells[idx] : null;
+                    if (!cell) return '';
+                    if (FULL_TEXT_COLUMNS.includes(colName)) {
+                        return escapeHtml(getCellFullText(cell));
+                    }
+                    return cell.innerHTML.trim();
                 });
 
                 if (!groupedData[category]) {
