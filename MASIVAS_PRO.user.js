@@ -11,6 +11,8 @@
 // @grant       GM_openInTab
 // @author      IATEL
 // @description Esta herramienta trata de agilizar el trabajo y reducir errores humanos en la gestión de Masivas conservando la supervisión humana.
+// @updateURL    https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/MASIVAS_PRO.user.js
+// @downloadURL  https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/MASIVAS_PRO.user.js
 // ==/UserScript==
 
 /*
