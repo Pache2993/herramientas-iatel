@@ -6,6 +6,8 @@
 // @author       IATEL
 // @match        https://calipso-oceane.sso.infra.ftgroup/binOceane/*
 // @grant        none
+// @downloadURL  https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/OCEANE_MASMOVIL.user.js
+// @updateURL    https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/OCEANE_MASMOVIL.user.js
 // ==/UserScript==
 
 (function() {
