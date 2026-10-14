@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal de Herramientas | IATEL</title>
+    <style>
+        :root {
+            --primary-color: #003366; /* Azul corporativo oscuro */
+            --secondary-color: #0066cc; /* Azul brillante tecnológico */
+            --accent-color: #00c853; /* Verde para acciones positivas */
+            --bg-color: #f4f7f6;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .logo-container img {
+            max-height: 60px;
+            border-radius: 8px; /* Por si el logo necesita bordes suaves */
+            background-color: white; /* Resalta el logo si tiene transparencias oscuras */
+            padding: 5px;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .hero {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 700px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Sección de Instalación */
+        .instruction-panel {
+            background-color: var(--card-bg);
+            border-left: 5px solid var(--secondary-color);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 3rem;
+        }
+
+        .instruction-panel h2 {
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .step-card {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: var(--secondary-color);
+            color: white;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        /* Sección de Herramientas */
+        .section-title {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+            font-size: 2rem;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .tool-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border-top: 4px solid var(--secondary-color);
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .tool-title {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .tool-desc {
+            color: #555;
+            flex-grow: 1;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-install {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .btn-install:hover {
+            background-color: var(--primary-color);
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 3rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <!-- Logo proporcionado -->
+            <img src="https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/iatel.png" alt="Logo IATEL">
+        </div>
+        <div class="header-title">
+            Dpto. Telecomunicaciones e IA
+        </div>
+    </header>
+
+    <div class="hero">
+        <h1>Portal de Soluciones y Automatización</h1>
+        <p>Optimiza tu flujo de trabajo diario con nuestra suite de herramientas y scripts avanzados, diseñados exclusivamente para la gestión de telecomunicaciones.</p>
+    </div>
+
+    <div class="container">
+        
+        <!-- Instrucciones de Violentmonkey -->
+        <div class="instruction-panel">
+            <h2>⚙️ Guía de Instalación Rápida</h2>
+            <p>Nuestras herramientas funcionan como "Userscripts" que se ejecutan directamente en tu navegador para mejorar las plataformas de la empresa. Para utilizarlos, sigue estos sencillos pasos:</p>
+            
+            <div class="steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Instala la Extensión</h3>
+                    <p>Añade la extensión <strong>Violentmonkey</strong> a tu navegador web (Chrome, Edge o Firefox) desde la tienda oficial de complementos.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Selecciona una Herramienta</h3>
+                    <p>Haz clic en el botón <strong>"Instalar Script"</strong> de cualquiera de las herramientas listadas en el catálogo de abajo.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Confirma la Instalación</h3>
+                    <p>Se abrirá una nueva pestaña de Violentmonkey. Simplemente haz clic en el botón <strong>"Confirmar instalación"</strong> y actualiza tu página de trabajo.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Catálogo de Herramientas -->
+        <h2 class="section-title">Catálogo de Herramientas Disponibles</h2>
+        
+        <div class="tools-grid">
+            
+            <!-- Herramienta 1 -->
+            <div class="tool-card">
+                <div class="tool-title">📊 Suite de Reportes Avanzados</div>
+                <div class="tool-desc">
+                    Módulo de automatización diseñado para la extracción y consolidación de métricas diarias. Optimiza la generación de informes, reduce el tiempo de análisis manual y garantiza la precisión en la entrega de resultados ejecutivos.
+                </div>
+                <a href="https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/suite-reportes.user.js" class="btn-install">Instalar Script</a>
+            </div>
+
+            <!-- Herramienta 2 -->
+            <div class="tool-card">
+                <div class="tool-title">🎫 Gestor de Ticketing Oceane</div>
+                <div class="tool-desc">
+                    Extensión de interfaz para la plataforma Oceane de MásMóvil. Facilita la categorización, el seguimiento de SLAs y la resolución ágil de incidencias técnicas. Mejora la experiencia del usuario y la eficiencia del soporte.
+                </div>
+                <a href="https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/OCEANE_MASMOVIL.user.js" class="btn-install">Instalar Script</a>
+            </div>
+
+            <!-- Herramienta 3 -->
+            <div class="tool-card">
+                <div class="tool-title">⚠️ Administrador de Masivas Pro</div>
+                <div class="tool-desc">
+                    Solución especializada para la monitorización y control de afectaciones de servicio a gran escala (averías masivas). Centraliza la información, agiliza la comunicación técnica y permite un seguimiento en tiempo real del impacto.
+                </div>
+                <a href="https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/MASIVAS_PRO.user.js" class="btn-install">Instalar Script</a>
+            </div>
+
+        </div>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Dpto. Telecomunicaciones e Inteligencia Artificial - IATEL. Uso interno exclusivo.</p>
+    </footer>
+
+</body>
+</html>
