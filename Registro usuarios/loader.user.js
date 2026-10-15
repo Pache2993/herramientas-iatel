@@ -17,7 +17,7 @@
     const BACKEND_URL = "https://script.google.com/macros/s/AKfycby96zqDtqcVIQidb-DmKba3x7XMwINHmoi0McdB-AxVQOG7vZI_Uf6Ysk7c-TVDpz7p/exec";
     
     // 2. Identificador de esta herramienta (crm, informes, etc.)
-    const ID_HERRAMIENTA = "crm";
+    const ID_HERRAMIENTA = "masmovil";
 
     // 3. Logo oficial en GitHub (Raw)
     const LOGO_IATEL = "https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/iatel.png";
