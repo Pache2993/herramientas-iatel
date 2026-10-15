@@ -51,22 +51,34 @@
             idEquipo: deviceId,
             herramienta: ID_HERRAMIENTA
         }),
-        onload: function(response) {
+       
+       onload: function(response) {
             try {
                 const res = JSON.parse(response.responseText);
                 if (res.error) {
                     alert("Aviso [" + ID_HERRAMIENTA.toUpperCase() + "]: " + res.error);
-                    if (res.error.includes("Licencia no válida") || res.error.includes("otro equipo")) {
-                        GM_setValue("user_license_key", null);
-                    }
+                    return;
                 }
             } catch (e) {
-                // Validación correcta: lanzamos la intro interactiva y ejecutamos en memoria
-                mostrarBienvenidaIatel(() => {
+                // Si la respuesta es el código JavaScript puro:
+                const ejecutarHerramienta = () => {
                     new Function(response.responseText)();
-                });
+                };
+
+                // Comprobamos si la animación ya se mostró en esta sesión de trabajo
+                const yaMostrada = sessionStorage.getItem("iatel_splash_mostrado");
+
+                if (!yaMostrada) {
+                    // Primera vez en el día / turno: mostramos la animación
+                    sessionStorage.setItem("iatel_splash_mostrado", "true");
+                    mostrarBienvenidaIatel(ejecutarHerramienta);
+                } else {
+                    // Recargas posteriores o cambio de página: carga directa e instantánea
+                    ejecutarHerramienta();
+                }
             }
         },
+    
         onerror: function() {
             console.error("Error al conectar con el servidor de licencias.");
         }
