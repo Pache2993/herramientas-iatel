@@ -1,598 +1,1421 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IATEL | Ecosistema de Herramientas IA & Telco</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #0f172a;      
-            --bg-secondary: #1e293b;    
-            --text-main: #f8fafc;       
-            --text-muted: #94a3b8;      
-            --accent-blue: #3b82f6;     
-            --accent-cyan: #06b6d4;     
-            --success: #10b981;         
-            --warning: #f59e0b;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IATEL · Herramientas</title>
+<meta name="description" content="Herramientas del Dpto. de Telecomunicaciones e IA (IATEL) para Oceane, Brújula, MAQA, el CRM 360 y el portal del empleado.">
+<meta name="theme-color" content="#0d1117">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABT0lEQVQ4T42RvS9DURjGfy+taCNEdJBYqokRQwcdDEisJlaLiAGTv8BssvsbLAaJREIsNh+xSIcOSDRBEB+ht33l3NPT3nt7qd9yznnOe55znvdIZRkFATP4CIIGVm4nrDvEGoSJL41irWMN/kecgZkZ3RFdN3DBxBk0kwYJq8FVi0FYjuO3vTY9iDtmNIPV2xjEETb9sweO+G+1Z3wDEdD6ftPKzcJPbmJtGxEiD2uxiVZYIr9gaS20SsBqIAu5AryWEW81rTK7gVa/4eUekilbmOxGulKQ7kcv9pD8PHpzDj0ZpDNB7WTHzy3e5phKYRH9eEIyOfRgC8bnkOEJe/31EQyNoqVTJJOFkSn0bBc93K5HWElox8waWq3A1ztc7cPkEvL2iFY+4aEENQ+ZXofnO/T2EnoH/YtMqEgPXM5IH1J9SH4BisdoudiQzeQHb9SQjlYmmBsAAAAASUVORK5CYII=">
+<style>
+/* =====================================================================
+   IATELECOM DESIGN SYSTEM · tokens (copiados tal cual del bloque :host de los userscripts)
+   ===================================================================== */
+:root {
+    /* Color · marca */
+    --ia-brand-500: #0099ff;
+    --ia-brand-600: #007acc;
+    --ia-brand-glow: rgba(0, 153, 255, 0.35);
+    --ia-brand-soft: rgba(0, 153, 255, 0.12);
+    /* Color · estado */
+    --ia-success: #3fb950;
+    --ia-warning: #d29922;
+    --ia-danger: #f85149;
+    /* Color · superficies */
+    --ia-surface-glass: rgba(13, 17, 23, 0.65);
+    --ia-surface-bar: rgba(13, 17, 23, 0.85);
+    --ia-surface-raised: rgba(13, 17, 23, 0.88);
+    --ia-surface-modal: rgba(13, 17, 23, 0.97);
+    --ia-surface-solid: #0d1117;
+    --ia-hover: rgba(255, 255, 255, 0.08);
+    --ia-field: rgba(255, 255, 255, 0.05);
+    --ia-overlay: rgba(0, 0, 0, 0.65);
+    /* Color · bordes y texto */
+    --ia-border: rgba(255, 255, 255, 0.10);
+    --ia-border-strong: rgba(255, 255, 255, 0.18);
+    --ia-border-focus: rgba(0, 153, 255, 0.60);
+    --ia-text: #f0f6fc;
+    --ia-text-2: #c9d1d9;
+    --ia-text-3: #8b949e;
+    --ia-dot-off: #555555;
+    /* Tipografía */
+    --ia-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --ia-mono: "JetBrains Mono", "SF Mono", Consolas, Menlo, monospace;
+    --ia-fs-2xs: 9px;
+    --ia-fs-xs: 11px;
+    --ia-fs-sm: 12px;
+    --ia-fs-lg: 15px;
+    /* Espaciado */
+    --ia-sp-1: 4px;
+    --ia-sp-2: 6px;
+    --ia-sp-3: 8px;
+    --ia-sp-4: 12px;
+    --ia-sp-5: 16px;
+    --ia-sp-6: 24px;
+    /* Radios */
+    --ia-r-sm: 4px;
+    --ia-r-md: 6px;
+    --ia-r-lg: 8px;
+    --ia-r-xl: 10px;
+    /* Sombras */
+    --ia-sh-bar: 0 12px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    --ia-sh-menu: 0 16px 36px rgba(0, 0, 0, 0.60), 0 0 1px rgba(255, 255, 255, 0.20);
+    --ia-sh-modal: 0 24px 60px rgba(0, 0, 0, 0.70);
+    /* Movimiento */
+    --ia-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --ia-ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* Capas */
+    --ia-z-menu: 9999;
+    --ia-z-bar: 9999999;
+    --ia-z-modal: 2147483646;
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', sans-serif;
-            scroll-behavior: smooth;
-        }
+    /* ---- Extensión web v1.9 (escala de página; mismos tipos, pesos y colores) ---- */
+    --ia-fs-md: 14px;
+    --ia-fs-xl: 18px;
+    --ia-fs-2xl: 24px;
+    --ia-fs-3xl: clamp(26px, 3.2vw, 34px);
+    --ia-fs-display: clamp(36px, 5.4vw, 62px);
+    --ia-sp-7: 32px;
+    --ia-sp-8: 48px;
+    --ia-sp-9: 72px;
+    --ia-sp-10: 112px;
+    --ia-r-2xl: 16px;
+    --ia-page: 1180px;
+    --ia-gutter: clamp(16px, 4vw, 40px);
+}
 
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 96px; background: var(--ia-surface-solid); }
+body { margin: 0; min-height: 100vh; font-family: var(--ia-font); font-size: var(--ia-fs-md); line-height: 1.6; color: var(--ia-text-2); background: var(--ia-surface-solid); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+h1, h2, h3, h4, p { margin: 0; }
+h1, h2, h3, h4 { color: var(--ia-text); font-weight: 700; line-height: 1.15; }
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; }
+img { display: block; max-width: 100%; }
+::selection { background: rgba(0, 153, 255, 0.35); color: #fff; }
+* { scrollbar-width: thin; scrollbar-color: var(--ia-border-strong) transparent; }
 
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
-        }
+/* Fondo: halos de marca (mismo recurso que la cabecera del widget de FICHAJE PRO) */
+.ws-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background: radial-gradient(70% 55% at 78% -8%, rgba(0, 153, 255, 0.20), transparent 62%), radial-gradient(55% 45% at -10% 30%, rgba(0, 119, 255, 0.10), transparent 70%), radial-gradient(60% 50% at 50% 115%, rgba(0, 153, 255, 0.08), transparent 70%), var(--ia-surface-solid); }
 
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
+.ia-icon { flex: none; }
+.ia-hidden { display: none !important; }
+.ws-skip { position: fixed; left: 16px; top: -60px; z-index: var(--ia-z-modal); padding: 8px 14px; border-radius: var(--ia-r-md); background: var(--ia-brand-500); color: #fff; font-weight: 600; transition: top 0.2s var(--ia-ease); }
+.ws-skip:focus { top: 16px; }
+.ws-wrap { width: min(var(--ia-page), 100% - 2 * var(--ia-gutter)); margin-inline: auto; }
 
-        /* --- Header --- */
-        header {
-            background: rgba(15, 23, 42, 0.9);
-            backdrop-filter: blur(10px);
-            position: fixed;
-            width: 100%;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding: 1rem 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+/* =====================================================================
+   COMPONENTES DEL SISTEMA (mismas reglas que en los userscripts)
+   ===================================================================== */
+/* Barra de herramientas (OCEANE PRO) */
+.ia-toolbar { position: fixed; top: 14px; left: 0; right: 0; margin: 0 auto; width: max-content; max-width: calc(100% - 24px); display: flex; align-items: center; padding: 6px var(--ia-sp-3); gap: var(--ia-sp-2); font-size: var(--ia-fs-xs); color: var(--ia-text); z-index: var(--ia-z-bar); border-radius: var(--ia-r-lg); user-select: none; animation: ia-bar-in 0.6s var(--ia-ease) backwards; }
+.ia-toolbar::before { content: ""; position: absolute; inset: 0; backdrop-filter: blur(14px) saturate(180%); -webkit-backdrop-filter: blur(14px) saturate(180%); background-color: var(--ia-surface-bar); border: 1px solid var(--ia-border-strong); border-radius: var(--ia-r-lg); box-shadow: var(--ia-sh-bar); z-index: -1; }
+.ia-brand { display: flex; align-items: center; padding: 0 var(--ia-sp-4) 0 2px; margin-right: var(--ia-sp-1); border-right: 1px solid var(--ia-border); }
+.ia-brand img { height: 18px; width: auto; }
 
-        .logo-container img {
-            max-height: 50px;
-            background: white;
-            padding: 4px;
-            border-radius: 8px;
-        }
+/* Botón */
+.ia-btn { position: relative; background: transparent; color: var(--ia-text-2); border: 1px solid transparent; border-left: 2px solid transparent; padding: 0 10px; border-radius: var(--ia-r-md); cursor: pointer; font-family: inherit; font-weight: 600; font-size: var(--ia-fs-xs); letter-spacing: 0.2px; transition: all 0.18s var(--ia-ease); height: 26px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; gap: var(--ia-sp-1); overflow: hidden; text-decoration: none; }
+.ia-btn:hover { color: var(--ia-text); background-color: var(--ia-hover); border-color: var(--ia-border); }
+.ia-btn:active { transform: scale(0.96); transition-duration: 0.06s; }
+.ia-btn:focus-visible, .ia-menu-item:focus-visible, .ia-icon-btn:focus-visible, .ws-focus:focus-visible { outline: 2px solid var(--ia-brand-500); outline-offset: 1px; }
+.ia-btn.is-active { color: var(--ia-brand-500); border-left-color: var(--ia-brand-500); background-color: var(--ia-brand-soft); }
+.ia-btn--primary { background-color: var(--ia-brand-500); border-color: var(--ia-brand-500); color: #fff; }
+.ia-btn--primary:hover { background-color: var(--ia-brand-600); border-color: var(--ia-brand-600); color: #fff; box-shadow: 0 0 14px var(--ia-brand-glow); }
+.ia-btn:disabled, .ia-btn[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+.ia-btn.is-busy { color: var(--ia-brand-500); border-color: var(--ia-border); border-left-color: var(--ia-brand-500); background-color: var(--ia-brand-soft); pointer-events: none; }
+.ia-btn.is-success { color: var(--ia-success); border-color: var(--ia-border); border-left-color: var(--ia-success); background-color: rgba(63, 185, 80, 0.12); box-shadow: none; }
+.ia-btn.is-warning { color: var(--ia-warning); border-color: var(--ia-border); border-left-color: var(--ia-warning); background-color: rgba(210, 153, 34, 0.12); box-shadow: none; }
+.ia-btn .ia-icon { transition: transform 0.3s var(--ia-ease); }
+.ia-btn:hover > .ia-icon:first-child { transform: translateY(-1px); }
+.ia-btn:hover > .ia-icon[data-i="arrow-right"]:last-child, .ia-btn:hover > .ia-icon[data-i="arrow-right"] { transform: translateX(3px); }
+.ia-btn:hover > .ia-icon[data-i="refresh"] { transform: rotate(-90deg); }
+.ia-btn:hover > .ia-icon[data-i="escalate"], .ia-btn:hover > .ia-icon[data-i="external"] { transform: translate(1.5px, -1.5px); }
+.ia-btn:hover > .ia-icon[data-i="check-circle"], .ia-btn:hover > .ia-icon[data-i="table"] { transform: scale(1.12); }
+.ia-btn:hover > .ia-icon[data-i="download"] { transform: translateY(2px); }
+.ia-btn.is-busy > span:not(.ia-spinner), .ia-btn.is-success > *, .ia-btn.is-warning > * { animation: ia-swap-in 0.24s var(--ia-ease) backwards; }
+.ia-btn.is-success > .ia-icon { animation: ia-pop 0.45s var(--ia-ease-pop) backwards; }
+.ia-btn.is-success { animation: ia-ring-ok 0.7s ease-out; }
+.ia-btn.is-warning { animation: ia-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+/* Tamaño de página para botones (misma forma, más alto) */
+.ia-btn--lg { height: 40px; padding: 0 18px; font-size: 13px; border-radius: var(--ia-r-lg); gap: var(--ia-sp-2); }
+.ia-btn--md { height: 32px; padding: 0 14px; font-size: var(--ia-fs-sm); gap: var(--ia-sp-2); }
+.ia-btn--outline { border-color: var(--ia-border); background: var(--ia-field); }
 
-        .header-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-            letter-spacing: 0.5px;
-            color: var(--text-main);
-        }
+/* Menú */
+.ia-menu { display: none; position: absolute; top: calc(100% + 8px); right: 0; background-color: var(--ia-surface-raised); backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border: 1px solid var(--ia-border); border-radius: var(--ia-r-lg); width: max-content; min-width: 200px; box-shadow: var(--ia-sh-menu); z-index: var(--ia-z-menu); padding: var(--ia-sp-2); transform-origin: top right; animation: ia-dd-in 0.18s var(--ia-ease); }
+.ia-menu.is-open { display: block; }
+.ia-menu > * { animation: ia-item-in 0.24s var(--ia-ease) backwards; }
+.ia-menu > :nth-child(2) { animation-delay: 0.02s; } .ia-menu > :nth-child(3) { animation-delay: 0.04s; } .ia-menu > :nth-child(4) { animation-delay: 0.06s; } .ia-menu > :nth-child(n+5) { animation-delay: 0.08s; }
+.ia-menu-item { display: flex; align-items: center; gap: var(--ia-sp-3); width: 100%; background: transparent; color: var(--ia-text-2); border: none; border-left: 2px solid transparent; padding: 9px var(--ia-sp-4); cursor: pointer; text-align: left; font-family: inherit; font-size: 13px; font-weight: 500; border-radius: var(--ia-r-sm); transition: all 0.15s ease; }
+.ia-menu-item:hover { color: var(--ia-brand-500); border-left-color: var(--ia-brand-500); background-color: var(--ia-brand-soft); padding-left: 14px; }
+.ia-menu-item.is-active { color: var(--ia-brand-500); border-left-color: var(--ia-brand-500); background-color: var(--ia-brand-soft); font-weight: 600; }
 
-        /* --- Hero Section --- */
-        .hero {
-            padding: 12rem 5% 6rem 5%;
-            text-align: center;
-            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
-            position: relative;
-            overflow: hidden;
-        }
+/* Botón de icono, contador, punto, spinner, tecla */
+.ia-icon-btn { flex: none; width: 30px; height: 30px; background: transparent; border: 1px solid transparent; color: var(--ia-text-3); cursor: pointer; border-radius: var(--ia-r-md); display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease; }
+.ia-icon-btn:hover { color: var(--ia-text); background: var(--ia-hover); border-color: var(--ia-border); }
+.ia-count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--ia-brand-soft); border: 1px solid var(--ia-brand-glow); color: var(--ia-brand-500); font-size: var(--ia-fs-2xs); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.ia-dot { width: 6px; height: 6px; border-radius: 50%; background-color: var(--ia-dot-off); display: inline-block; transition: background-color 0.25s ease, box-shadow 0.25s ease; }
+.ia-dot.is-on { background-color: var(--ia-brand-500); box-shadow: 0 0 6px var(--ia-brand-glow); }
+.ia-spinner { width: 10px; height: 10px; flex: none; border-radius: 50%; border: 2px solid var(--ia-brand-glow); border-top-color: var(--ia-brand-500); animation: ia-spin 0.7s linear infinite; }
+.ia-kbd { font-family: var(--ia-mono); background: var(--ia-brand-soft); color: var(--ia-brand-500); padding: 1px var(--ia-sp-2); border-radius: var(--ia-r-sm); font-size: var(--ia-fs-xs); font-weight: 700; border: 1px solid var(--ia-brand-glow); }
+.ia-empty { padding: var(--ia-sp-6); border: 1px dashed var(--ia-border-strong); border-radius: var(--ia-r-lg); color: var(--ia-text-3); text-align: center; }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%; left: -50%; width: 200%; height: 200%;
-            background: radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 60%);
-            animation: rotate 30s linear infinite;
-            z-index: 0;
-        }
+/* Chip de estado (FICHAJE PRO .fp-chip) */
+.ia-chip { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 9px; border-radius: 11px; font-size: var(--ia-fs-xs); font-weight: 600; white-space: nowrap; color: var(--ia-text-2); background: rgba(255, 255, 255, 0.05); border: 1px solid var(--ia-border); }
+.ia-chip i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.ia-chip[data-tono="brand"] { color: var(--ia-brand-500); background: var(--ia-brand-soft); border-color: var(--ia-brand-glow); }
+.ia-chip[data-tono="brand"] i { animation: fp-beat 1.6s ease-in-out infinite; }
+.ia-chip[data-tono="success"] { color: var(--ia-success); background: rgba(63, 185, 80, 0.12); border-color: rgba(63, 185, 80, 0.35); }
+.ia-chip[data-tono="warning"] { color: var(--ia-warning); background: rgba(210, 153, 34, 0.12); border-color: rgba(210, 153, 34, 0.35); }
 
-        @keyframes rotate {
-            100% { transform: rotate(360deg); }
-        }
+/* Valor destacado y etiqueta (360 PRO .tw-chip / .tw-pill) */
+.tw-chip, .tw-copy { display: inline-flex; align-items: center; gap: 6px; padding: 2px var(--ia-sp-2); background: var(--ia-brand-soft); border: 1px solid var(--ia-brand-glow); border-radius: var(--ia-r-sm); color: var(--ia-brand-500); font-family: var(--ia-mono); font-size: var(--ia-fs-sm); font-weight: 700; line-height: 1.4; }
+.tw-pill { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 2px var(--ia-sp-2); border-radius: 9px; font-size: var(--ia-fs-xs); font-weight: 600; border: 1px solid var(--ia-border); color: var(--ia-text-2); background: rgba(255, 255, 255, 0.04); }
+/* Título de sección y fila de dato (360 PRO .tw-section-title / .tw-row) */
+.tw-section-title { display: flex; align-items: center; gap: var(--ia-sp-2); margin: 0 0 var(--ia-sp-3); font-size: var(--ia-fs-xs); font-weight: 700; color: var(--ia-text); letter-spacing: 0.2px; }
+.tw-section-title::before { content: ""; flex: none; width: 3px; height: 12px; border-radius: 2px; background-color: var(--ia-brand-500); }
+.tw-row { display: grid; grid-template-columns: minmax(96px, 1fr) minmax(0, max-content); align-items: center; column-gap: var(--ia-sp-4); padding: 7px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: var(--ia-fs-sm); line-height: 1.4; }
+.tw-row:last-child { border-bottom: none; }
+.tw-row > span:first-child { color: var(--ia-text-3); font-weight: 500; }
+.tw-row > :last-child { justify-self: end; text-align: right; }
+.tw-row b { color: var(--ia-text); font-weight: 600; }
+.tw-badge { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: var(--ia-fs-xs); color: var(--ia-text-2); }
+.tw-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background-color: var(--ia-dot-off); }
+.tw-badge.is-good { color: var(--ia-success); } .tw-badge.is-good::before { background: var(--ia-success); }
+.tw-badge.is-info { color: var(--ia-brand-500); } .tw-badge.is-info::before { background: var(--ia-brand-500); }
 
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 800px;
-            margin: 0 auto;
-        }
+/* Pasos (FICHAJE PRO .fp-steps) */
+.fp-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.fp-steps > li { position: relative; display: grid; grid-template-columns: 30px 1fr; gap: var(--ia-sp-5); padding-bottom: var(--ia-sp-7); }
+.fp-steps > li:last-child { padding-bottom: 0; }
+.fp-steps > li + li::before { content: ""; position: absolute; left: 14px; top: calc(-1 * var(--ia-sp-7) + 30px); height: calc(var(--ia-sp-7) - 4px); width: 2px; border-radius: 1px; background: var(--ia-border); }
+.fp-steps > li.is-in + li.is-in::before { background: linear-gradient(var(--ia-brand-500), var(--ia-border)); transition: background 0.6s ease 0.2s; }
+.fp-node { position: relative; z-index: 1; width: 30px; height: 30px; border-radius: 50%; border: 2px solid var(--ia-brand-500); background: var(--ia-surface-solid); color: var(--ia-brand-500); display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; box-shadow: 0 0 0 5px var(--ia-brand-soft); }
+.fp-steps h3 { font-size: var(--ia-fs-xl); margin: 3px 0 var(--ia-sp-2); }
+.fp-steps p { color: var(--ia-text-3); max-width: 60ch; }
 
-        .badge {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background: rgba(59, 130, 246, 0.1);
-            color: var(--accent-cyan);
-            border: 1px solid rgba(6, 182, 212, 0.2);
-            border-radius: 50px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
+/* Modal */
+.ia-overlay { display: none; position: fixed; inset: 0; background: var(--ia-overlay); z-index: var(--ia-z-modal); align-items: center; justify-content: center; padding: 16px; animation: ia-fade 0.2s ease-out; }
+.ia-overlay.is-open { display: flex; }
+.ia-modal { background-color: var(--ia-surface-modal); border: 1px solid var(--ia-border); border-radius: var(--ia-r-xl); padding: var(--ia-sp-6); width: 480px; max-width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--ia-sh-modal); color: var(--ia-text-2); animation: ia-modal-in 0.34s var(--ia-ease); }
+.ia-modal > * { animation: ia-rise 0.38s var(--ia-ease) backwards; }
+.ia-modal > :nth-child(1) { animation-delay: 0.04s; } .ia-modal > :nth-child(2) { animation-delay: 0.07s; } .ia-modal > :nth-child(3) { animation-delay: 0.10s; } .ia-modal > :nth-child(n+4) { animation-delay: 0.13s; }
+.ia-modal-title { font-size: var(--ia-fs-lg); font-weight: 700; margin-bottom: var(--ia-sp-5); color: var(--ia-brand-500); display: flex; align-items: center; gap: var(--ia-sp-2); }
+.ia-modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: var(--ia-sp-6); }
+.ia-modal .ia-btn { height: 32px; padding: 0 14px; font-size: var(--ia-fs-sm); }
+.ia-label { display: block; font-size: var(--ia-fs-xs); color: var(--ia-text-2); font-weight: 600; margin-bottom: var(--ia-sp-2); }
+.ia-control { background-color: var(--ia-field); border: 1px solid var(--ia-border); color: var(--ia-text); border-radius: var(--ia-r-md); padding: 0 10px; height: 32px; font-size: var(--ia-fs-sm); font-weight: 500; font-family: inherit; outline: none; width: 100%; transition: border-color 0.2s, box-shadow 0.2s; }
+.ia-control:focus { border-color: var(--ia-border-focus); box-shadow: 0 0 0 2px rgba(0, 153, 255, 0.15); }
+.ia-control::placeholder { color: var(--ia-text-3); }
+.ia-hint { display: flex; align-items: flex-start; gap: var(--ia-sp-2); font-size: var(--ia-fs-sm); color: var(--ia-text-3); line-height: 1.5; animation: ia-reveal 0.26s var(--ia-ease); }
+.ia-hint .ia-icon { margin-top: 2px; color: var(--ia-brand-500); }
+.ia-hint--warning, .ia-hint--warning .ia-icon { color: var(--ia-warning); }
 
-        .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            line-height: 1.2;
-            background: linear-gradient(to right, #fff, var(--text-muted));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+/* =====================================================================
+   PATRONES DE LA WEB (extensión v1.9: composición de página con los mismos tokens)
+   ===================================================================== */
+/* Barra de navegación = barra de herramientas + indicador deslizante (menú lateral de 360 PRO, en horizontal) */
+.ws-nav { position: relative; display: flex; align-items: center; gap: 2px; }
+.ws-nav .ia-btn { height: 30px; padding: 0 12px; font-size: var(--ia-fs-sm); z-index: 1; border-color: transparent !important; background: transparent !important; }
+.ws-nav .ia-btn:hover { color: var(--ia-text); }
+.ws-nav .ia-btn[aria-current="page"] { color: var(--ia-brand-500); }
+.ws-nav-ind { position: absolute; top: 0; bottom: 0; left: 0; width: 0; border-left: 2px solid var(--ia-brand-500); border-radius: var(--ia-r-md); background: var(--ia-brand-soft); opacity: 0; pointer-events: none; transition: transform 0.36s var(--ia-ease), width 0.36s var(--ia-ease), opacity 0.2s ease; }
+.ws-bar-sep { width: 1px; height: 18px; background: var(--ia-border); margin: 0 var(--ia-sp-1); }
+.ws-bar-title { display: none; font-size: var(--ia-fs-sm); font-weight: 600; color: var(--ia-text); padding: 0 var(--ia-sp-2); }
+.ws-menu-wrap { position: relative; display: none; }
 
-        .hero p {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            margin-bottom: 2.5rem;
-        }
+/* Secciones */
+.ws-section { padding: var(--ia-sp-10) 0 0; }
+.ws-section:last-of-type { padding-bottom: var(--ia-sp-9); }
+.ws-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--ia-sp-6); margin-bottom: var(--ia-sp-8); flex-wrap: wrap; }
+.ws-head .tw-section-title { font-size: var(--ia-fs-sm); color: var(--ia-brand-500); margin-bottom: var(--ia-sp-4); }
+.ws-head h2 { font-size: var(--ia-fs-3xl); letter-spacing: -0.5px; max-width: 22ch; }
+.ws-head p { margin-top: var(--ia-sp-4); max-width: 58ch; color: var(--ia-text-3); font-size: var(--ia-fs-lg); }
 
-        /* --- Secciones Generales --- */
-        .section {
-            padding: 6rem 5%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+/* Hero */
+.ws-hero { position: relative; padding: 150px 0 var(--ia-sp-8); }
+.ws-hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--ia-sp-8); align-items: center; }
+.ws-hero h1 { font-size: var(--ia-fs-display); letter-spacing: -1.6px; line-height: 1.04; margin: var(--ia-sp-6) 0 var(--ia-sp-6); }
+.ws-hero h1 span { background: linear-gradient(100deg, #36c8ff, var(--ia-brand-500) 45%, #0077ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.ws-lead { font-size: var(--ia-fs-xl); color: var(--ia-text-3); max-width: 50ch; line-height: 1.6; }
+.ws-cta { display: flex; flex-wrap: wrap; gap: var(--ia-sp-4); margin-top: var(--ia-sp-7); }
+.ws-stats { display: flex; flex-wrap: wrap; gap: var(--ia-sp-8); margin-top: var(--ia-sp-8); padding-top: var(--ia-sp-6); border-top: 1px solid var(--ia-border); }
+.ws-stat b { display: block; font-size: var(--ia-fs-3xl); color: var(--ia-text); font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.ws-stat span { font-size: var(--ia-fs-sm); color: var(--ia-text-3); font-weight: 500; }
 
-        .section-header {
-            text-align: center;
-            margin-bottom: 4rem;
-        }
+/* Escena del hero: componentes reales del sistema */
+.ws-stage { position: relative; height: 470px; perspective: 1400px; }
+.ws-layer { position: absolute; transition: transform 0.5s var(--ia-ease); will-change: transform; }
+.ws-float { animation: ws-float 7s ease-in-out infinite; }
+.ws-l-card { top: 74px; left: 0; width: 330px; animation-delay: -2s; }
+.ws-l-bar { top: 6px; right: 0; }
+.ws-l-ring { bottom: -6px; right: 0; animation-delay: -4s; }
+.ws-l-bar .ia-toolbar { position: relative; top: 0; animation: none; max-width: none; }
+.ws-mock-card { background: rgba(13, 17, 23, 0.94); border: 1px solid var(--ia-border); border-radius: var(--ia-r-xl); padding: var(--ia-sp-5) var(--ia-sp-5) var(--ia-sp-4); box-shadow: var(--ia-sh-modal); }
+.ws-mock-card .ws-mock-head { display: flex; align-items: center; gap: var(--ia-sp-2); font-size: var(--ia-fs-lg); font-weight: 700; color: var(--ia-brand-500); padding-bottom: var(--ia-sp-4); margin-bottom: var(--ia-sp-4); border-bottom: 1px solid var(--ia-border); }
+.ws-mock-inner { background: var(--ia-field); border: 1px solid var(--ia-border); border-radius: var(--ia-r-md); padding: var(--ia-sp-4) var(--ia-sp-5); }
+.ws-mini-ring { position: relative; width: 236px; padding: var(--ia-sp-5); border-radius: var(--ia-r-2xl); overflow: hidden;
+    background: radial-gradient(120% 60% at 50% -5%, rgba(0, 153, 255, 0.22), transparent 62%), var(--ia-surface-modal); border: 1px solid var(--ia-border-strong); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+.ws-mini-ring::before, .ws-filo::before { content: ""; position: absolute; top: 0; left: 12%; right: 12%; height: 1px; background: linear-gradient(90deg, transparent, rgba(54, 200, 255, 0.9), transparent); }
+.ws-mini-ring-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--ia-sp-3); font-size: var(--ia-fs-sm); font-weight: 700; color: var(--ia-text); }
+.ws-mini-ring svg { width: 150px; height: 150px; display: block; margin: 0 auto; overflow: visible; }
+.ws-ring-track { fill: none; stroke: rgba(255, 255, 255, 0.07); stroke-width: 8; }
+.ws-ring-arc { fill: none; stroke: url(#ws-grad); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; filter: drop-shadow(0 0 6px rgba(0, 153, 255, 0.55)); }
+.ws-ring-dot { fill: #fff; filter: drop-shadow(0 0 6px rgba(54, 200, 255, 0.95)); transition: cx 1s linear, cy 1s linear; }
+.ws-ring-center { position: absolute; left: 0; right: 0; top: 50px; height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+.ws-ring-time { font-size: 32px; font-weight: 700; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums; background: linear-gradient(180deg, #ffffff, #b9d9ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.ws-ring-sub { font-size: var(--ia-fs-xs); color: var(--ia-text-3); margin-top: 4px; }
 
-        .section-header h2 {
-            font-size: 2.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
+/* Tarjeta (base 360 PRO .tw-card, a escala de página) */
+.ws-card { position: relative; display: flex; flex-direction: column; min-width: 0; background: var(--ia-field); border: 1px solid var(--ia-border); border-radius: var(--ia-r-xl); padding: var(--ia-sp-6); overflow: hidden; isolation: isolate;
+    transition: transform 0.35s var(--ia-ease), border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.35s var(--ia-ease); }
+.ws-card::after { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity 0.3s ease; background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 0%), rgba(0, 153, 255, 0.12), transparent 60%); }
+.ws-card::before { content: ""; position: absolute; top: 0; left: 12%; right: 12%; height: 1px; opacity: 0; transition: opacity 0.3s ease; background: linear-gradient(90deg, transparent, rgba(54, 200, 255, 0.9), transparent); }
+.ws-card:hover::after, .ws-card:hover::before, .ws-card:focus-within::before { opacity: 1; }
+a.ws-card:hover, .ws-card--link:hover { transform: translateY(-4px); border-color: rgba(0, 153, 255, 0.35); background-color: rgba(255, 255, 255, 0.06); box-shadow: 0 24px 50px rgba(0, 0, 0, 0.45); }
+a.ws-card:focus-visible { outline: 2px solid var(--ia-brand-500); outline-offset: 2px; }
+.ws-tile { flex: none; width: 44px; height: 44px; border-radius: var(--ia-r-lg); display: inline-flex; align-items: center; justify-content: center; color: var(--ia-brand-500); background: var(--ia-brand-soft); border: 1px solid var(--ia-brand-glow); transition: transform 0.35s var(--ia-ease-pop), box-shadow 0.3s ease; }
+a.ws-card:hover .ws-tile { transform: scale(1.06) rotate(-4deg); box-shadow: 0 0 22px var(--ia-brand-glow); }
+.ws-tile--lg { width: 64px; height: 64px; border-radius: var(--ia-r-xl); }
 
-        .section-header p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-        }
+/* Principios */
+.ws-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--ia-sp-5); }
+.ws-principle h3 { font-size: var(--ia-fs-lg); margin: var(--ia-sp-5) 0 var(--ia-sp-2); }
+.ws-principle p { color: var(--ia-text-3); font-size: var(--ia-fs-md); }
 
-        /* --- Beneficios --- */
-        .benefits-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-        }
+/* Catálogo */
+.ws-tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: var(--ia-sp-5); }
+.ws-tool-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ia-sp-4); margin-bottom: var(--ia-sp-5); }
+.ws-tool h3 { font-size: var(--ia-fs-xl); display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 var(--ia-sp-2); }
+.ws-tool h3 small { font-size: var(--ia-fs-md); font-weight: 600; color: var(--ia-text-3); }
+.ws-plat { display: flex; align-items: center; gap: var(--ia-sp-1); margin: var(--ia-sp-1) 0 var(--ia-sp-4); font-size: var(--ia-fs-sm); color: var(--ia-text-3); font-weight: 500; }
+.ws-tool p { color: var(--ia-text-3); flex: 1; }
+.ws-tool-foot { display: flex; align-items: center; gap: var(--ia-sp-2); flex-wrap: wrap; margin-top: var(--ia-sp-6); padding-top: var(--ia-sp-4); border-top: 1px solid var(--ia-border); }
+.ws-tool-foot .ws-go { margin-left: auto; display: inline-flex; align-items: center; gap: var(--ia-sp-1); color: var(--ia-brand-500); font-weight: 600; font-size: var(--ia-fs-sm); }
+.ws-tool-foot .ws-go .ia-icon { transition: transform 0.3s var(--ia-ease); }
+a.ws-card:hover .ws-go .ia-icon { transform: translateX(4px); }
+.ws-toolbar-filters { display: flex; flex-wrap: wrap; align-items: center; gap: var(--ia-sp-4); margin-bottom: var(--ia-sp-6); }
+.ws-filters { position: relative; display: inline-flex; flex-wrap: wrap; gap: 2px; padding: 4px; border-radius: var(--ia-r-lg); background: var(--ia-field); border: 1px solid var(--ia-border); }
+.ws-filters .ia-btn { height: 30px; font-size: var(--ia-fs-sm); padding: 0 12px; }
+.ws-search { position: relative; margin-left: auto; width: min(300px, 100%); }
+.ws-search .ia-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--ia-text-3); pointer-events: none; }
+.ws-search .ia-control { height: 40px; padding-left: 34px; font-size: var(--ia-fs-md); border-radius: var(--ia-r-lg); }
 
-        .benefit-card {
-            background: var(--bg-secondary);
-            padding: 2rem;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: transform 0.3s ease;
-        }
+/* Novedades (línea de tiempo con chips) */
+.ws-log { position: relative; display: flex; flex-direction: column; gap: var(--ia-sp-4); max-width: 860px; }
+.ws-log-item { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: var(--ia-sp-6); }
+.ws-log-date { font-size: var(--ia-fs-sm); color: var(--ia-text-3); font-weight: 600; padding-top: var(--ia-sp-6); font-variant-numeric: tabular-nums; }
+.ws-log .ws-card { padding: var(--ia-sp-5) var(--ia-sp-6); }
+.ws-log-head { display: flex; align-items: center; gap: var(--ia-sp-3); flex-wrap: wrap; margin-bottom: var(--ia-sp-2); }
+.ws-log-head h3 { font-size: var(--ia-fs-lg); }
+.ws-log p { color: var(--ia-text-3); }
 
-        .benefit-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(6, 182, 212, 0.3);
-        }
+/* Hoja de ruta */
+.ws-road { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ia-sp-5); }
+.ws-road .ws-card { border-style: dashed; background: transparent; }
+.ws-road h3 { font-size: var(--ia-fs-lg); margin: var(--ia-sp-4) 0 var(--ia-sp-2); }
+.ws-road p { color: var(--ia-text-3); }
 
-        .benefit-icon {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-        }
+/* Instalación */
+.ws-install { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: var(--ia-sp-8); align-items: start; }
+.ws-aside { position: sticky; top: 96px; display: flex; flex-direction: column; gap: var(--ia-sp-4); }
 
-        /* --- Guía de Instalación --- */
-        .steps-container {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            background: var(--bg-secondary);
-            padding: 3rem;
-            border-radius: 16px;
-            border-left: 4px solid var(--accent-blue);
-        }
+/* Ficha de herramienta */
+.ws-page { padding: 128px 0 var(--ia-sp-9); }
+.ws-crumbs { display: flex; align-items: center; gap: var(--ia-sp-2); font-size: var(--ia-fs-sm); color: var(--ia-text-3); margin-bottom: var(--ia-sp-7); }
+.ws-crumbs a { color: var(--ia-text-2); font-weight: 500; transition: color 0.15s; }
+.ws-crumbs a:hover { color: var(--ia-brand-500); }
+.ws-detail { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: var(--ia-sp-8); align-items: start; }
+.ws-detail-head { display: flex; gap: var(--ia-sp-6); align-items: flex-start; margin-bottom: var(--ia-sp-8); }
+.ws-detail-head h1 { font-size: var(--ia-fs-3xl); letter-spacing: -0.5px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 var(--ia-sp-4); }
+.ws-detail-head h1 small { font-size: var(--ia-fs-xl); color: var(--ia-text-3); font-weight: 600; }
+.ws-detail-head p { margin-top: var(--ia-sp-4); font-size: var(--ia-fs-lg); color: var(--ia-text-3); max-width: 62ch; }
+.ws-block { margin-top: var(--ia-sp-8); }
+.ws-block > .tw-section-title { font-size: var(--ia-fs-sm); margin-bottom: var(--ia-sp-5); }
+.ws-feats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--ia-sp-4); }
+.ws-feat { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: var(--ia-sp-4); padding: var(--ia-sp-5); }
+.ws-feat .ws-tile { width: 36px; height: 36px; }
+.ws-feat h3 { font-size: var(--ia-fs-md); margin-bottom: 2px; }
+.ws-feat p { font-size: var(--ia-fs-md); color: var(--ia-text-3); line-height: 1.55; }
+.ws-panel { position: sticky; top: 96px; padding: var(--ia-sp-6); border-radius: var(--ia-r-2xl);
+    background: radial-gradient(120% 60% at 50% -5%, rgba(0, 153, 255, 0.18), transparent 62%), var(--ia-surface-modal); border: 1px solid var(--ia-border-strong); box-shadow: 0 30px 70px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08); overflow: hidden; }
+.ws-panel .ia-btn--lg { width: 100%; }
+.ws-panel-actions { display: flex; flex-direction: column; gap: var(--ia-sp-3); margin-top: var(--ia-sp-5); }
+.ws-panel .tw-row { font-size: var(--ia-fs-sm); }
+.ws-tags { display: flex; flex-wrap: wrap; gap: var(--ia-sp-2); }
+.ws-mono { font-family: var(--ia-mono); font-size: var(--ia-fs-sm); color: var(--ia-text-2); background: var(--ia-field); border: 1px solid var(--ia-border); border-radius: var(--ia-r-sm); padding: 3px var(--ia-sp-2); overflow-wrap: anywhere; }
+.ws-perm { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: var(--ia-sp-3); padding: var(--ia-sp-3) 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+.ws-perm:last-child { border-bottom: none; }
+.ws-perm .ia-icon { color: var(--ia-brand-500); margin-top: 3px; }
+.ws-perm b { color: var(--ia-text); font-weight: 600; display: block; }
+.ws-perm span { color: var(--ia-text-3); font-size: var(--ia-fs-sm); }
+.ws-week { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--ia-sp-3); }
+.ws-day { padding: var(--ia-sp-4); }
+.ws-day h3 { font-size: var(--ia-fs-md); margin-bottom: var(--ia-sp-3); display: flex; align-items: center; justify-content: space-between; }
+.ws-day.is-today { border-color: rgba(0, 153, 255, 0.45); background: var(--ia-brand-soft); }
+.ws-day ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.ws-day li { font-size: var(--ia-fs-sm); color: var(--ia-text-2); line-height: 1.35; }
+.ws-day li.is-daily { color: var(--ia-text-3); }
+.ws-reports { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 var(--ia-sp-6); }
+.ws-report { display: flex; align-items: center; gap: var(--ia-sp-3); padding: 10px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: var(--ia-fs-md); color: var(--ia-text-2); transition: color 0.15s; }
+.ws-report .ia-icon { color: var(--ia-text-3); transition: transform 0.3s var(--ia-ease), color 0.15s; }
+.ws-report:hover { color: var(--ia-brand-500); }
+.ws-report:hover .ia-icon { color: var(--ia-brand-500); transform: translateX(3px); }
+.ws-report span { flex: 1; }
 
-        .step-row {
-            display: flex;
-            align-items: flex-start;
-            gap: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
+/* Visor de código: menú lateral (360 PRO .tw-rail) + editor */
+.ws-viewer { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: calc(100vh - 160px); border: 1px solid var(--ia-border); border-radius: var(--ia-r-xl); overflow: hidden; background: var(--ia-surface-solid); box-shadow: var(--ia-sh-modal); }
+.ws-rail { position: relative; padding: var(--ia-sp-5) var(--ia-sp-3); background: linear-gradient(180deg, rgba(0, 153, 255, 0.05), rgba(255, 255, 255, 0.015) 40%); border-right: 1px solid var(--ia-border); overflow-y: auto; max-height: calc(100vh - 160px); }
+.ws-rail-group { font-size: var(--ia-fs-xs); font-weight: 700; color: var(--ia-text-3); padding: var(--ia-sp-4) var(--ia-sp-4) var(--ia-sp-2); }
+.tw-cat-btn { position: relative; z-index: 1; display: flex; align-items: center; gap: var(--ia-sp-3); width: 100%; padding: 8px var(--ia-sp-4); background: transparent; border: none; border-radius: var(--ia-r-sm); color: var(--ia-text-2); font-family: inherit; font-size: var(--ia-fs-sm); font-weight: 500; text-align: left; cursor: pointer; transition: color 0.2s ease, background-color 0.2s ease; }
+.tw-cat-btn span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tw-cat-btn .ia-icon { transition: transform 0.25s var(--ia-ease); color: var(--ia-text-3); }
+.tw-cat-btn:hover { color: var(--ia-text); background-color: var(--ia-hover); }
+.tw-cat-btn:hover .ia-icon { transform: translateX(2px); }
+.tw-cat-btn.active { color: var(--ia-brand-500); font-weight: 600; background-color: transparent; }
+.tw-cat-btn.active .ia-icon { color: var(--ia-brand-500); }
+.tw-cat-btn:focus-visible { outline: 2px solid var(--ia-brand-500); outline-offset: 1px; }
+.tw-nav-ind { position: absolute; left: 0; right: 0; top: 0; height: 0; border-left: 2px solid var(--ia-brand-500); border-radius: var(--ia-r-sm); background-color: var(--ia-brand-soft); pointer-events: none; opacity: 0; transition: transform 0.32s var(--ia-ease), height 0.32s var(--ia-ease), opacity 0.2s ease; }
+.ws-code-main { min-width: 0; display: flex; flex-direction: column; }
+.ws-code-head { display: flex; align-items: center; gap: var(--ia-sp-4); flex-wrap: wrap; padding: var(--ia-sp-5) var(--ia-sp-6); border-bottom: 1px solid var(--ia-border); background: rgba(255, 255, 255, 0.02); }
+.ws-code-head h1 { font-size: var(--ia-fs-xl); display: flex; align-items: center; gap: var(--ia-sp-3); flex-wrap: wrap; }
+.ws-code-path { font-family: var(--ia-mono); font-size: var(--ia-fs-sm); color: var(--ia-text-3); margin-top: 2px; overflow-wrap: anywhere; }
+.ws-code-actions { margin-left: auto; display: flex; gap: var(--ia-sp-2); flex-wrap: wrap; }
+.ws-code-meta { display: flex; flex-wrap: wrap; gap: var(--ia-sp-2); padding: var(--ia-sp-3) var(--ia-sp-6); border-bottom: 1px solid var(--ia-border); }
+.ws-code { position: relative; flex: 1; overflow: auto; max-height: calc(100vh - 290px); min-height: 360px; font-family: var(--ia-mono); font-size: 12.5px; line-height: 1.65; color: var(--ia-text-2); tab-size: 4; counter-reset: none; }
+.cv-chunk { content-visibility: auto; contain-intrinsic-size: auto 8000px; }
+.cv-line { display: grid; grid-template-columns: 64px minmax(0, 1fr); white-space: pre; }
+.ws-code.is-wrap .cv-line { white-space: pre-wrap; overflow-wrap: anywhere; }
+.cv-n { position: sticky; left: 0; padding-right: var(--ia-sp-4); text-align: right; color: rgba(139, 148, 158, 0.55); user-select: none; background: var(--ia-surface-solid); border-right: 1px solid rgba(255, 255, 255, 0.05); cursor: pointer; }
+.cv-n:hover { color: var(--ia-text-2); }
+.cv-c { padding: 0 var(--ia-sp-6) 0 var(--ia-sp-4); }
+.cv-line.is-hl { background: var(--ia-brand-soft); }
+.cv-line.is-hl .cv-n { color: var(--ia-brand-500); background: rgba(0, 153, 255, 0.16); }
+.t-c { color: var(--ia-text-3); font-style: italic; }
+.t-m { color: var(--ia-text-3); }
+.t-m b { color: var(--ia-brand-500); font-weight: 600; font-style: normal; }
+.t-s { color: var(--ia-success); }
+.t-k { color: var(--ia-brand-500); }
+.t-n { color: var(--ia-warning); }
+.cv-more { display: inline-flex; align-items: center; margin-left: var(--ia-sp-2); padding: 0 var(--ia-sp-2); height: 18px; border-radius: 9px; border: 1px solid var(--ia-brand-glow); background: var(--ia-brand-soft); color: var(--ia-brand-500); font: 600 var(--ia-fs-xs) var(--ia-font); cursor: pointer; vertical-align: 1px; }
+.cv-more:hover { background: rgba(0, 153, 255, 0.2); }
+.ws-code-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--ia-sp-4); min-height: 360px; color: var(--ia-text-3); font-family: var(--ia-font); }
 
-        .step-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
+/* Pie */
+.ws-foot { margin-top: var(--ia-sp-10); border-top: 1px solid var(--ia-border); padding: var(--ia-sp-8) 0; font-size: var(--ia-fs-sm); color: var(--ia-text-3); }
+.ws-foot-row { display: flex; align-items: center; justify-content: space-between; gap: var(--ia-sp-6); flex-wrap: wrap; }
+.ws-foot .ia-brand { border-right: 1px solid var(--ia-border); }
+.ws-foot-links { display: flex; gap: var(--ia-sp-5); flex-wrap: wrap; }
+.ws-foot-links a { transition: color 0.15s; }
+.ws-foot-links a:hover { color: var(--ia-brand-500); }
 
-        .step-number {
-            background: var(--accent-blue);
-            color: white;
-            min-width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-weight: 700;
-            font-size: 1.2rem;
-        }
+/* Entrada al hacer scroll y al cambiar de página */
+.ws-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s var(--ia-ease), transform 0.7s var(--ia-ease); transition-delay: var(--d, 0s); }
+.ws-reveal.is-in { opacity: 1; transform: none; }
 
-        /* --- Catálogo de Herramientas --- */
-        .tools-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 2.5rem;
-        }
+/* =====================================================================
+   MOVIMIENTO (catálogo del Design System v1.7)
+   ===================================================================== */
+@keyframes ia-bar-in { from { opacity: 0; transform: translateY(-14px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes ia-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes ia-item-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+@keyframes ia-reveal { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: none; } }
+@keyframes ia-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ia-dd-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes ia-modal-in { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes ia-swap-in { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+@keyframes ia-pop { from { opacity: 0; transform: scale(0.3) rotate(-25deg); } to { opacity: 1; transform: none; } }
+@keyframes ia-ring-ok { from { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.5); } to { box-shadow: 0 0 0 9px rgba(63, 185, 80, 0); } }
+@keyframes ia-shake { 15%, 55% { transform: translateX(-3px); } 35%, 75% { transform: translateX(3px); } 100% { transform: none; } }
+@keyframes ia-autofill { from { border-color: var(--ia-brand-500); box-shadow: 0 0 0 0 rgba(0, 153, 255, 0.55); } to { box-shadow: 0 0 0 7px rgba(0, 153, 255, 0); } }
+@keyframes ia-spin { to { transform: rotate(360deg); } }
+@keyframes fp-beat { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.75); } }
+@keyframes ws-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+.is-autofill { animation: ia-autofill 0.9s ease-out; }
 
-        .tool-card {
-            background: linear-gradient(145deg, var(--bg-secondary) 0%, rgba(30, 41, 59, 0.5) 100%);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 2.5rem;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.4s ease;
-        }
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; transition-delay: 0s !important; }
+    .ws-reveal { opacity: 1; transform: none; }
+}
 
-        .tool-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 4px;
-            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.4s ease;
-        }
-
-        .tool-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-
-        .tool-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .tool-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .tool-desc {
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            flex-grow: 1;
-        }
-
-        .btn-install {
-            display: inline-block;
-            background: var(--accent-blue);
-            color: white;
-            text-decoration: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 600;
-            transition: all 0.3s;
-            border: 1px solid transparent;
-        }
-
-        .btn-install:hover {
-            background: transparent;
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
-        }
-
-        /* --- Changelog --- */
-        .changelog-container {
-            max-width: 800px;
-            margin: 0 auto;
-            border-left: 2px solid var(--bg-secondary);
-            padding-left: 2rem;
-            position: relative;
-        }
-
-        .changelog-item {
-            position: relative;
-            margin-bottom: 3rem;
-        }
-
-        .changelog-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .changelog-item::before {
-            content: '';
-            position: absolute;
-            left: -39px; /* Ajuste para centrar en la línea */
-            top: 0;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--accent-blue);
-            border: 4px solid var(--bg-primary);
-        }
-
-        .changelog-date {
-            font-size: 0.9rem;
-            color: var(--accent-cyan);
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .changelog-title {
-            font-size: 1.3rem;
-            color: var(--text-main);
-            margin-bottom: 0.5rem;
-        }
-
-        .tag-container {
-            display: flex;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .tag {
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.2rem 0.6rem;
-            border-radius: 4px;
-        }
-
-        .tag.new { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
-        .tag.fix { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.3); }
-        .tag.update { background: rgba(59, 130, 246, 0.15); color: var(--accent-blue); border: 1px solid rgba(59, 130, 246, 0.3); }
-
-        .changelog-desc {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-        }
-
-        /* --- Roadmap / Próximamente --- */
-        .roadmap {
-            background: var(--bg-secondary);
-            padding: 4rem 5%;
-            margin-top: 4rem;
-        }
-
-        .roadmap-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .roadmap-item {
-            border-left: 2px dashed var(--text-muted);
-            padding-left: 1.5rem;
-            position: relative;
-        }
-
-        .roadmap-item::before {
-            content: '';
-            position: absolute;
-            left: -6px;
-            top: 0;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--text-muted);
-        }
-
-        /* --- Footer --- */
-        footer {
-            border-top: 1px solid rgba(255,255,255,0.05);
-            padding: 3rem 5%;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        @media (max-width: 768px) {
-            .hero h1 { font-size: 2.5rem; }
-            header { flex-direction: column; gap: 1rem; padding: 1rem; }
-        }
-    </style>
+/* =====================================================================
+   RESPONSIVE
+   ===================================================================== */
+@media (max-width: 1320px) {
+    .ws-l-ring { scale: 0.82; transform-origin: right bottom; }
+    .ws-l-card { width: min(330px, calc(100% - 206px)); }
+}
+@media (max-width: 1080px) {
+    .ws-hero-grid { grid-template-columns: 1fr; }
+    .ws-stage { height: 430px; max-width: 620px; width: 100%; margin: 0 auto; }
+    .ws-grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ws-detail { grid-template-columns: 1fr; }
+    .ws-panel { position: relative; top: 0; }
+    .ws-install { grid-template-columns: 1fr; }
+    .ws-aside { position: relative; top: 0; }
+    .ws-week { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 820px) {
+    .ws-nav, .ws-bar-sep, .ws-bar-gh { display: none; }
+    .ws-bar-title { display: block; }
+    .ws-menu-wrap { display: block; margin-left: auto; }
+    .ia-toolbar { left: 12px; right: 12px; width: auto; }
+    .ws-viewer { grid-template-columns: 1fr; }
+    .ws-rail { max-height: none; border-right: none; border-bottom: 1px solid var(--ia-border); display: flex; gap: var(--ia-sp-2); overflow-x: auto; padding: var(--ia-sp-3); }
+    .ws-rail-group { display: none; }
+    .ws-rail-list { display: flex; gap: 2px; }
+    .ws-rail .tw-cat-btn { width: auto; white-space: nowrap; }
+    .ws-rail .tw-nav-ind { display: none; }
+    .ws-rail .tw-cat-btn.active { background: var(--ia-brand-soft); }
+    .ws-code { max-height: 70vh; }
+}
+@media (max-width: 640px) {
+    .ws-hero { padding-top: 116px; }
+    .ws-stage { height: 548px; }
+    .ws-l-card { width: min(330px, 100%); left: 0; top: 72px; }
+    .ws-l-bar { left: 0; right: auto; transform-origin: left top; scale: 0.84; }
+    .ws-l-bar .ws-hide-sm { display: none; }
+    .ws-l-ring { right: 0; scale: 0.82; transform-origin: right bottom; }
+    .ws-grid-4, .ws-feats, .ws-road, .ws-reports { grid-template-columns: 1fr; }
+    .ws-tools { grid-template-columns: 1fr; }
+    .ws-week { grid-template-columns: 1fr 1fr; }
+    .ws-log-item { grid-template-columns: 1fr; gap: var(--ia-sp-2); }
+    .ws-log-date { padding-top: 0; }
+    .ws-detail-head { flex-direction: column; gap: var(--ia-sp-4); }
+    .ws-section { padding-top: var(--ia-sp-9); }
+    .ws-stats { gap: var(--ia-sp-6); }
+    .ws-search { margin-left: 0; width: 100%; }
+    .cv-line { grid-template-columns: 48px minmax(0, 1fr); }
+    .ws-code-head { padding: var(--ia-sp-4); }
+    .ws-code-actions { margin-left: 0; }
+}
+</style>
 </head>
 <body>
+<a class="ws-skip" href="#main">Saltar al contenido</a>
+<div class="ws-bg" aria-hidden="true"></div>
 
-    <header>
-        <div class="logo-container">
-            <img src="https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/iatel.png" alt="Logo IATEL">
-        </div>
-        <div class="header-title">
-            Laboratorio de Sistemas | IATEL
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <div class="hero">
-        <div class="hero-content reveal">
-            <div class="badge">v2.0 - Suite Corporativa</div>
-            <h1>Automatización Inteligente para Telecomunicaciones</h1>
-            <p>Ecosistema de scripts y micro-herramientas diseñadas para potenciar la gestión de incidencias, análisis de datos y operativas diarias en plataformas de red.</p>
-            <a href="#catalogo" class="btn-install" style="padding: 1rem 2rem; font-size: 1.1rem;">Explorar Herramientas</a>
-        </div>
+<header class="ia-toolbar" id="barra">
+    <a class="ia-brand ws-focus" href="#/" aria-label="IATEL · Inicio"><img src="iatel.png" alt="IATEL" width="75" height="18"></a>
+    <nav class="ws-nav" id="nav" aria-label="Principal">
+        <span class="ws-nav-ind" id="nav-ind" aria-hidden="true"></span>
+        <a class="ia-btn" href="#/" data-ruta="inicio">Inicio</a>
+        <a class="ia-btn" href="#/herramientas" data-ruta="herramientas">Herramientas</a>
+        <a class="ia-btn" href="#/instalacion" data-ruta="instalacion">Instalación</a>
+        <a class="ia-btn" href="#/novedades" data-ruta="novedades">Novedades</a>
+        <a class="ia-btn" href="#/codigo" data-ruta="codigo">Código</a>
+    </nav>
+    <span class="ws-bar-title" id="bar-title">Inicio</span>
+    <span class="ws-bar-sep" aria-hidden="true"></span>
+    <a class="ia-icon-btn ws-bar-gh" id="gh" target="_blank" rel="noopener" aria-label="Repositorio en GitHub" title="Repositorio en GitHub"></a>
+    <div class="ws-menu-wrap">
+        <button class="ia-icon-btn" id="menu-btn" aria-label="Abrir menú" aria-haspopup="true" aria-expanded="false"></button>
+        <div class="ia-menu" id="menu-movil" role="menu"></div>
     </div>
+</header>
 
-    <!-- Beneficios -->
-    <div class="section">
-        <div class="section-header reveal">
-            <h2>Por qué utilizar nuestro ecosistema</h2>
-            <p>Impacto directo en los KPIs del departamento</p>
+<main id="main" tabindex="-1"><div id="vista"></div></main>
+
+<footer class="ws-foot">
+    <div class="ws-wrap ws-foot-row">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <span class="ia-brand"><img src="iatel.png" alt="IATEL" width="75" height="18"></span>
+            <span>© 2026 Dpto. de Telecomunicaciones e Inteligencia Artificial (IATEL) · Uso interno</span>
         </div>
-        <div class="benefits-grid">
-            <div class="benefit-card reveal">
-                <div class="benefit-icon">⚡</div>
-                <h3>Eficiencia Operativa</h3>
-                <p>Reduce hasta un 40% el tiempo invertido en clics manuales y navegación por menús redundantes dentro de las plataformas corporativas.</p>
-            </div>
-            <div class="benefit-card reveal" style="transition-delay: 100ms;">
-                <div class="benefit-icon">🎯</div>
-                <h3>Precisión de Datos</h3>
-                <p>Extracción y consolidación automatizada que elimina el error humano en la generación de reportes de afectaciones masivas.</p>
-            </div>
-            <div class="benefit-card reveal" style="transition-delay: 200ms;">
-                <div class="benefit-icon">🧠</div>
-                <h3>Preparado para IA</h3>
-                <p>Estructuras de datos optimizadas en el frontend para futuras integraciones con modelos de lenguaje y análisis predictivo.</p>
-            </div>
-        </div>
+        <nav class="ws-foot-links" aria-label="Pie">
+            <a href="#/herramientas">Herramientas</a>
+            <a href="#/instalacion">Instalación</a>
+            <a href="#/codigo">Código</a>
+            <a id="gh-foot" target="_blank" rel="noopener">GitHub</a>
+        </nav>
     </div>
+</footer>
 
-    <!-- Instalación -->
-    <div class="section bg-alt" id="instalacion">
-        <div class="section-header reveal">
-            <h2>Despliegue del Entorno</h2>
-            <p>Arquitectura basada en Userscripts (Violentmonkey)</p>
-        </div>
-        <div class="steps-container reveal">
-            <div class="step-row">
-                <div class="step-number">1</div>
-                <div>
-                    <h3 style="margin-bottom: 0.5rem; color: white;">Requisito de Motor (Extension)</h3>
-                    <p style="color: var(--text-muted);">Instala la extensión <strong>Violentmonkey</strong> en tu navegador corporativo (Chrome o Edge). Este es el motor seguro que permite inyectar nuestras herramientas en la capa visual de las webs de trabajo.</p>
-                </div>
-            </div>
-            <div class="step-row">
-                <div class="step-number">2</div>
-                <div>
-                    <h3 style="margin-bottom: 0.5rem; color: white;">Inyección de Código</h3>
-                    <p style="color: var(--text-muted);">Navega al catálogo inferior y haz clic en "Instalar Módulo" en la herramienta que necesites. Se abrirá el editor de Violentmonkey.</p>
-                </div>
-            </div>
-            <div class="step-row">
-                <div class="step-number">3</div>
-                <div>
-                    <h3 style="margin-bottom: 0.5rem; color: white;">Confirmación y Sincronización</h3>
-                    <p style="color: var(--text-muted);">Haz clic en "Confirmar instalación" en la parte superior derecha. Los scripts se mantendrán actualizados automáticamente al estar enlazados al repositorio RAW de GitHub.</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="ia-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo"><div class="ia-modal" id="modal-caja"></div></div>
 
-    <!-- Catálogo -->
-    <div class="section" id="catalogo">
-        <div class="section-header reveal">
-            <h2>Módulos Activos</h2>
-            <p>Suite de producción actual</p>
-        </div>
-        
-        <div class="tools-grid">
-            <div class="tool-card reveal">
-                <div class="tool-title">📊 Suite de Reportes</div>
-                <div class="tool-desc">
-                    Motor de consolidación de métricas. Intercepta los datos del frontend para generar informes diarios ejecutivos con formato unificado, reduciendo el volcado manual.
-                </div>
-                <a href="https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/suite-reportes.user.js" class="btn-install">Instalar Módulo</a>
-            </div>
+<script>
+(function () {
+'use strict';
 
-            <div class="tool-card reveal" style="transition-delay: 150ms;">
-                <div class="tool-title">🎫 Oceane Core Script</div>
-                <div class="tool-desc">
-                    Capa de personalización profunda para el sistema de ticketing Oceane (MásMóvil). Añade atajos de teclado, filtrado avanzado y alertas visuales de SLA en cola.
-                </div>
-                <a href="https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/OCEANE_MASMOVIL.user.js" class="btn-install">Instalar Módulo</a>
-            </div>
+/* =====================================================================
+   DATOS · todo lo que se ve sale de aquí. Para añadir una herramienta, añade un objeto a HERRAMIENTAS.
+   "archivo" es la ruta dentro del repositorio. Si el archivo aún no está subido, la web lo muestra como "Próximamente".
+   ===================================================================== */
+const REPO = { usuario: 'Pache2993', nombre: 'herramientas-iatel', rama: 'main' };
 
-            <div class="tool-card reveal" style="transition-delay: 300ms;">
-                <div class="tool-title">⚠️ Masivas Pro Tracker</div>
-                <div class="tool-desc">
-                    Panel de telemetría inyectado para la gestión de crisis. Identifica, agrupa y clasifica incidencias masivas en la red, proporcionando visibilidad instantánea del impacto.
-                </div>
-                <a href="https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/MASIVAS_PRO.user.js" class="btn-install">Instalar Módulo</a>
-            </div>
-        </div>
-    </div>
+const HERRAMIENTAS = [
+    {
+        id: 'oceane-masmovil', nombre: 'OCEANE PRO', variante: 'MásMóvil', icono: 'ticket', tipo: 'userscript',
+        archivo: 'OCEANE PRO/OCEANE_PRO_MM.js', version: '6.1.1', plataformas: ['Oceane'],
+        resumen: 'Cierra y escala tickets de MásMóvil en Oceane: etiqueta, comentario y estado se proponen solos según las reglas del equipo y tú confirmas.',
+        funciones: [
+            ['check-circle', 'Cerrar', 'Etiqueta, comentario y estado en un paso. La etiqueta propone el comentario y el estado; todo se puede cambiar antes de aceptar.'],
+            ['escalate', 'Escalar', 'Etiqueta de apertura, comentario y grupo (Huawei o IREG). Añade ICF_CORE cuando toca y deja el grupo buscado en Intervenciones.'],
+            ['table', 'Excel', 'Copia la fila del ticket lista para pegar, con causa y estado. Reconoce los escalados.'],
+            ['keyboard', 'Atajos', 'Combinaciones de teclas propias para los cierres que más se repiten.'],
+            ['refresh', 'Refresh', 'Recarga automática de Llegada, Returned o las dos alternando.'],
+            ['globe', 'País de roaming', 'Lee la checklist y propone el país para la etiqueta de roaming.']
+        ],
+        uso: [
+            ['Abre un ticket de MásMóvil', 'La barra de OCEANE PRO aparece arriba, centrada, en todas las páginas de Oceane.'],
+            ['Elige qué hacer', 'Cerrar, Escalar, Excel o un atajo. Las reglas rellenan los campos y te avisan de lo que han puesto.'],
+            ['Revisa y acepta', 'El progreso se ve dentro del propio botón. Si un paso ya estaba hecho, se omite.']
+        ]
+    },
+    {
+        id: 'oceane-cobertura', nombre: 'OCEANE PRO', variante: 'Cobertura', icono: 'signal', tipo: 'userscript',
+        archivo: 'OCEANE PRO/OCEANE_PRO_COBER.js', version: '44.0', plataformas: ['Oceane'],
+        resumen: 'Para las incidencias de cobertura en Oceane: toma los datos del ticket hijo, rellena el padre, lo asocia a la ICF de red, lo lleva a Brújula y prepara el Excel de llegadas.',
+        funciones: [
+            ['download', 'Extraer datos', 'Lee del ticket hijo el MSISDN, el segmento, la dirección, la checklist y la referencia.'],
+            ['pencil', 'Rellenar padre', 'Completa el ticket padre con descripción, prioridad según el segmento, checklist y fecha prevista.'],
+            ['link', 'Asociar a ICF de red', 'Asocia el ticket hijo al padre.'],
+            ['compass', 'Rellenar Brújula', 'Lleva el padre y el nodo afectado a Brújula con la afectación elegida.'],
+            ['table', 'Excel de llegadas', 'Copia la fila del Excel de llegadas.']
+        ],
+        uso: [
+            ['Abre el ticket hijo', 'Pulsa Extraer datos para guardar la información del cliente.'],
+            ['Rellena y asocia', 'Rellena el padre y asócialo a la ICF de red.'],
+            ['Cierra el circuito', 'Rellena Brújula y copia el Excel de llegadas.']
+        ]
+    },
+    {
+        id: 'masivas', nombre: 'MASIVAS PRO', variante: '', icono: 'layers', tipo: 'userscript',
+        archivo: 'MASIVAS PRO/MASIVAS_PRO.js', version: '5.5.6', plataformas: ['Brújula', 'MAQA'],
+        resumen: 'Gestiona las masivas entre Brújula y MAQA: analiza la masiva, rellena fijo y móvil, comprueba el estado de cada ticket y cierra con revisión previa.',
+        funciones: [
+            ['search', 'Analizar masiva', 'Analiza la masiva abierta en Brújula.'],
+            ['pencil', 'Rellenar fijo y móvil', 'Completa los datos de la masiva para fijo o para móvil.'],
+            ['refresh', 'Comprobar estado', 'En MAQA revisa cada ticket y deja en cola los cerrados para Brújula.'],
+            ['check-circle', 'Cerrar fijo y móvil', 'Barra de revisión antes de guardar cada cierre y resumen al terminar.'],
+            ['table', 'Excel fijo y móvil', 'Copia las filas para el Excel, con gestor incluido.'],
+            ['shield', 'Una tarea a la vez', 'Mientras una herramienta trabaja, las demás esperan: sin cierres cruzados.']
+        ],
+        uso: [
+            ['En MAQA', 'Usa el botón flotante para analizar fijo o móvil.'],
+            ['En Brújula', 'Usa la barra: Analizar, Rellenar, Cerrar o Excel. Cerrar muestra cuántos pendientes dejó MAQA.'],
+            ['Revisa antes de guardar', 'El cierre se detiene en una barra de revisión y termina con un resumen.']
+        ]
+    },
+    {
+        id: 'brujula', nombre: 'BRÚJULA PRO', variante: '', icono: 'compass', tipo: 'userscript',
+        archivo: 'BRUJULA PRO/BRUJULA_PRO.js', version: '1.9.17', plataformas: ['Brújula', 'MAQA', 'Oceane'],
+        resumen: 'Saca más partido al mapa de cobertura de Brújula: nombres de nodo visibles, búsqueda y selección por lotes, accesos directos a MAQA y salto a Oceane desde una incidencia.',
+        funciones: [
+            ['pin', 'Nombres en el mapa', 'Cada nodo muestra su nombre encima del marcador.'],
+            ['search', 'Buscador de nodos', 'Filtra el mapa por uno o varios nodos (separados por comas) y márcalos para trabajar en lote.'],
+            ['layers', 'Lote y abrir todo', 'KPI 2G a 5G, Bender, OceaneLittle, alarmas, TP y OT en MAQA, para uno o varios nodos de una vez.'],
+            ['ruler', 'Distancia', 'Con dos nodos marcados, muestra la distancia en línea recta.'],
+            ['ticket', 'Clic derecho en incidencias', 'Un ticket se abre en Oceane ya buscado; un nodo, en MAQA.'],
+            ['shield', 'Acceso con token', 'Cada persona entra con su token; el acceso se puede revocar.']
+        ],
+        uso: [
+            ['Abre el mapa de cobertura', 'La primera vez te pedirá tu token personal.'],
+            ['Clic derecho en un nodo', 'Elige qué abrir en MAQA, o Ctrl + clic para abrir el nodo directamente.'],
+            ['Despliega el buscador', 'Filtra, marca varios nodos y usa Lote.']
+        ]
+    },
+    {
+        id: '360', nombre: '360 PRO', variante: '', icono: 'phone', tipo: 'marcador',
+        archivo: '360 PRO/360_PRO.js', version: '6.6', plataformas: ['CRM 360'],
+        resumen: 'Resumen de la línea en el CRM 360: busca el número, copia el IMSI y ordena cliente, voz, datos, roaming, SMS y buzón, con alertas de bloqueos, servicios y bonos.',
+        funciones: [
+            ['search', 'Búsqueda', 'Escribe el número en la casilla del CRM, pulsa su lupa y lee los datos.'],
+            ['copy', 'IMSI copiado', 'El IMSI queda en el portapapeles tras cada búsqueda y al pulsarlo.'],
+            ['user', 'Secciones', 'Cliente, voz, datos e internet, roaming, mensajes y buzón en un panel.'],
+            ['alert', 'Alertas', 'Bloqueos activos, servicios desactivados y bonos consumidos, en un solo vistazo.'],
+            ['refresh', 'Resetear línea', 'Lanza el reseteo de la línea desde el panel.'],
+            ['minus', 'Ocultar', 'El panel se recoge en una pestaña arriba, con el número de alertas.']
+        ],
+        uso: [
+            ['Abre el CRM 360', 'Lanza 360 PRO sobre la pestaña del CRM.'],
+            ['Busca la línea', 'Escribe el número y pulsa Buscar: el IMSI queda copiado.'],
+            ['Revisa las alertas', 'Navega por las secciones desde el menú lateral.']
+        ]
+    },
+    {
+        id: 'fichaje', nombre: 'FICHAJE PRO', variante: '', icono: 'clock', tipo: 'userscript',
+        archivo: 'FICHAJE PRO/FICHAJE_PRO.js', version: '2.0.0', plataformas: ['Portal del empleado'],
+        resumen: 'Ficha el descanso del desayuno por ti: salida, 15 minutos de cuenta atrás y vuelta, siempre desde Fichaje › Fichaje diario.',
+        funciones: [
+            ['coffee', 'Descanso automático', 'Ficha la salida, cuenta 15 minutos y ficha la vuelta.'],
+            ['clock', 'Temporizador', 'Anillo con la cuenta atrás, hora de vuelta y los tres pasos con su hora real.'],
+            ['pin', 'Va al sitio correcto', 'Si no estás en Fichaje diario, abre el menú y entra solo.'],
+            ['refresh', 'Aguanta recargas', 'Si la página se recarga a mitad, el descanso sigue donde iba.'],
+            ['login', 'Control', 'Fichar la vuelta antes de tiempo o cancelar el descanso.'],
+            ['globe', 'Atelco e Insyte', 'Funciona en los dos portales del empleado.']
+        ],
+        uso: [
+            ['Entra en el portal del empleado', 'La herramienta abre Fichaje › Fichaje diario si hace falta.'],
+            ['Pulsa Iniciar descanso', 'Se ficha la salida y empieza la cuenta atrás.'],
+            ['No cierres la pestaña', 'A los 15 minutos la vuelta se ficha sola.']
+        ]
+    },
+    {
+        id: 'reportes', nombre: 'Cargador de reportes', variante: '', icono: 'chart', tipo: 'userscript',
+        archivo: 'suite-reportes.user.js', version: '3.3.6', plataformas: ['MAQA'],
+        resumen: 'Lanzador de los informes del SMC de MAQA: cada día muestra los informes que tocan y los descarga de este repositorio al lanzarlos, siempre en su última versión.',
+        funciones: [
+            ['calendar', 'Informes del día', 'Organizados de lunes a viernes, con los diarios siempre presentes.'],
+            ['chart', '15 informes', 'Huawei, Customer Complaints, QBOOST, PCAR, RSSI, despliegue, bloqueos y más.'],
+            ['refresh', 'Siempre al día', 'Cada informe se descarga del repositorio al lanzarlo.'],
+            ['layers', 'Por categorías', 'MásMóvil, servicios y cobertura.']
+        ],
+        uso: [
+            ['Abre el SMC en MAQA', 'Aparece el lanzador de informes.'],
+            ['Elige el día y el informe', 'El informe se carga en la página.'],
+            ['Prepara el correo', 'Cada informe filtra la tabla y deja el correo listo para Outlook.']
+        ]
+    }
+];
 
-    <!-- Changelog -->
-    <div class="section" id="changelog">
-        <div class="section-header reveal">
-            <h2>Registro de Actualizaciones</h2>
-            <p>Últimas mejoras, correcciones y novedades en la suite</p>
-        </div>
-        
-        <div class="changelog-container reveal">
-            
-            <div class="changelog-item">
-                <span class="changelog-date">Octubre 2026</span>
-                <h3 class="changelog-title">Lanzamiento de la Suite v2.0</h3>
-                <div class="tag-container">
-                    <span class="tag new">Nuevo</span>
-                    <span class="tag update">Mejora</span>
-                </div>
-                <p class="changelog-desc">Despliegue del nuevo portal centralizado en GitHub Pages. Integración de la versión mejorada del script de Masivas Pro con telemetría visual y rediseño completo del motor de inyección de código.</p>
-            </div>
+/* Informes del cargador (mismos nombres y archivos que suite-reportes.user.js) */
+const INFORMES = {
+    HUAWEI_MM: ['MasMovil +36h', 'Masmovil.user.js'],
+    HUAWEI_ORANGE: ['Servicios +36h', 'Servicios_orange_mas_36h.user.js'],
+    HUAWEI_SERV_24_36: ['Servicios 24h-36h', 'Servicios_orange_24h_hasta_36h.user.js'],
+    CUST_COMP_24_36: ['Cust. Complaints 24h-36h', 'Customer_24h_hasta_36h.user.js'],
+    CUST_COMP_36: ['Cust. Complaints +36h', 'Customer_mas_36h.user.js'],
+    QBOOST_24_36: ['QBOOST 24h-36h', 'Qboost_24h_hasta_36h.user.js'],
+    QBOOST_36: ['QBOOST +36h', 'QBOOST_mas_36h.user.js'],
+    ZONA_36: ['Zona +36h', 'Zona_mas_36h.user.js'],
+    PCAR_36: ['PCAR +36h', 'PCAR_mas_36h.user.js'],
+    DESPLIEGUE: ['Despliegue SMC', 'Incidencias_despliegue.user.js'],
+    VDF_MC_DOWN: ['VDF (MC y DOWN)', 'MC_DOWN.user.js'],
+    RSSI_OUTLOOK: ['RSSI VDF', 'RSSI_VDF.user.js'],
+    BLOQUEOS: ['Gestión bloqueos FM', 'Gestion_de_bloqueos.user.js'],
+    ESTRUCTURAL: ['Estructural servicios', 'Estructural_servicios.user.js'],
+    REUNION_RSSI: ['Reunión RSSI (3PP, FLM y otros)', 'Reunion_RSSI.user.js']
+};
+const DIARIOS = ['HUAWEI_SERV_24_36', 'HUAWEI_ORANGE', 'HUAWEI_MM'];
+const SEMANA = [
+    ['Lunes', ['CUST_COMP_24_36', 'QBOOST_24_36', 'VDF_MC_DOWN']],
+    ['Martes', ['ZONA_36', 'PCAR_36', 'DESPLIEGUE']],
+    ['Miércoles', ['CUST_COMP_36', 'RSSI_OUTLOOK', 'REUNION_RSSI']],
+    ['Jueves', ['CUST_COMP_24_36', 'QBOOST_36', 'BLOQUEOS']],
+    ['Viernes', ['ESTRUCTURAL']]
+];
 
-            <div class="changelog-item">
-                <span class="changelog-date">Septiembre 2026</span>
-                <h3 class="changelog-title">Corrección de interfaz en Oceane Core</h3>
-                <div class="tag-container">
-                    <span class="tag fix">Corrección (Fix)</span>
-                </div>
-                <p class="changelog-desc">Solucionado el error de superposición visual que impedía ver el semáforo de SLAs tras la última actualización del CRM de MásMóvil. Se ha optimizado el tiempo de carga del script en un 20%.</p>
-            </div>
+const NOVEDADES = [
+    { fecha: '15 oct 2026', herramienta: 'oceane-masmovil', titulo: 'OCEANE PRO · MásMóvil 6.1.1', tipo: 'fix', texto: 'El comentario Portabilidad pone el estado «Rechz: No Red Portabilidad», también cuando la etiqueta es «No red».' },
+    { fecha: '14 oct 2026', herramienta: 'fichaje', titulo: 'FICHAJE PRO 2.0.0', tipo: 'new', texto: 'Nuevo diseño con temporizador y pasos. Entra solo en Fichaje diario, recupera el descanso si la página se recarga y funciona también en el portal de Insyte.' },
+    { fecha: '13 oct 2026', herramienta: 'oceane-masmovil', titulo: 'OCEANE PRO 6.1 y 360 PRO 6.6', tipo: 'update', texto: 'Animaciones del Design System: menús, mensajes dentro de los botones, modales y valores que se rellenan solos.' },
+    { fecha: '13 oct 2026', herramienta: 'oceane-masmovil', titulo: 'OCEANE PRO · MásMóvil 6.0', tipo: 'new', texto: 'Botón Escalar: etiqueta de apertura, comentario, grupo Huawei o IREG, ICF_CORE y búsqueda del grupo en Intervenciones. El Excel reconoce los escalados.' },
+    { fecha: '13 oct 2026', herramienta: '360', titulo: '360 PRO 6.5', tipo: 'fix', texto: 'La búsqueda escribe en la casilla correcta del CRM y pulsa su lupa.' },
+    { fecha: 'Oct 2026', herramienta: 'masivas', titulo: 'MASIVAS PRO 5.5', tipo: 'update', texto: 'Suite unificada con el Design System: analizar, rellenar fijo y móvil, Excel y comprobar estado y cerrar.' }
+];
+const TIPO_NOVEDAD = { new: ['Nuevo', 'success'], update: ['Mejora', 'brand'], fix: ['Corrección', 'warning'] };
 
-            <div class="changelog-item">
-                <span class="changelog-date">Agosto 2026</span>
-                <h3 class="changelog-title">Primera versión de Suite de Reportes</h3>
-                <div class="tag-container">
-                    <span class="tag new">Nuevo</span>
-                </div>
-                <p class="changelog-desc">Lanzamiento inicial del motor de consolidación de métricas. Se ha implementado la extracción básica de datos para automatizar los reportes diarios del departamento de ingeniería.</p>
-            </div>
+const PROXIMAMENTE = [
+    ['sparkle', 'Respuestas con IA', 'Asistente en Oceane para redactar resoluciones técnicas a partir del historial del cliente.'],
+    ['download', 'Extractor de datos', 'Exportación directa a CSV o JSON con estructura limpia para las bases de datos del departamento.'],
+    ['signal', 'Diagnóstico óptico', 'Calculadora superpuesta para validar potencias y atenuaciones de fibra sin cambiar de pestaña.']
+];
 
-        </div>
-    </div>
+const PERMISOS = {
+    'none': ['shield', 'Sin permisos especiales', 'Solo trabaja sobre la página en la que se carga.'],
+    'GM_getValue': ['database', 'Guarda datos propios', 'Ajustes y estado entre páginas, dentro de Violentmonkey.'],
+    'GM_setClipboard': ['copy', 'Portapapeles', 'Copia datos al portapapeles.'],
+    'GM_openInTab': ['external', 'Abre pestañas', 'Abre las herramientas relacionadas en pestañas nuevas.'],
+    'GM_xmlhttpRequest': ['globe', 'Conexiones', 'Se conecta a: '],
+    'GM_addStyle': ['pencil', 'Estilos', 'Añade estilos propios a la página.']
+};
 
-    <!-- Roadmap -->
-    <div class="roadmap">
-        <div class="section-header reveal">
-            <h2>Próximos Desarrollos (Roadmap)</h2>
-            <p>Integración de Inteligencia Artificial y utilidades</p>
-        </div>
-        <div class="roadmap-grid">
-            <div class="roadmap-item reveal">
-                <h4 style="color: white; margin-bottom: 0.5rem;">Auto-Respuesta LLM</h4>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Asistente generativo integrado en Oceane para redactar resoluciones técnicas basadas en el historial del cliente.</p>
-            </div>
-            <div class="roadmap-item reveal" style="transition-delay: 150ms;">
-                <h4 style="color: white; margin-bottom: 0.5rem;">Extractor Data-Lake</h4>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Exportación directa a CSV/JSON con estructura limpia para alimentar bases de datos departamentales.</p>
-            </div>
-            <div class="roadmap-item reveal" style="transition-delay: 300ms;">
-                <h4 style="color: white; margin-bottom: 0.5rem;">Diagnóstico Óptico</h4>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Calculadora superpuesta para validar potencias y atenuaciones de fibra sin cambiar de pestaña.</p>
-            </div>
-        </div>
-    </div>
+/* =====================================================================
+   ICONOS (mismo trazo que IADS_ICONS: 24 × 24, 1,7 px, currentColor)
+   ===================================================================== */
+const ICONOS = {
+    'refresh': '<path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>',
+    'check-circle': '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
+    'check': '<path d="m5 12 5 5 9-10"/>',
+    'table': '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M9 4v16"/>',
+    'keyboard': '<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10"/>',
+    'bolt': '<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    'x': '<path d="M18 6 6 18M6 6l12 12"/>',
+    'alert': '<path d="M12 3 2 21h20z"/><path d="M12 10v5M12 18h.01"/>',
+    'chevron': '<path d="m6 9 6 6 6-6"/>',
+    'chevron-right': '<path d="m9 6 6 6-6 6"/>',
+    'pencil': '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+    'plus': '<path d="M12 5v14M5 12h14"/>',
+    'minus': '<path d="M5 12h14"/>',
+    'escalate': '<path d="M7 17 17 7"/><path d="M8 7h9v9"/>',
+    'user': '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+    'phone': '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+    'globe': '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+    'search': '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+    'copy': '<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h8"/>',
+    'coffee': '<path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M16 10h1.5a2.5 2.5 0 0 1 0 5H16"/><path d="M8 3.5c0 1 1 1 1 2M12 3.5c0 1 1 1 1 2"/>',
+    'clock': '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    'pin': '<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+    'login': '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="m10 16 4-4-4-4M14 12H4"/>',
+    'ticket': '<path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M13 6v2M13 11v2M13 16v2"/>',
+    'signal': '<path d="M1.5 9a15 15 0 0 1 21 0"/><path d="M5 12.5a10 10 0 0 1 14 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r="1"/>',
+    'layers': '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 13 9 5 9-5"/>',
+    'compass': '<circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/>',
+    'chart': '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    'calendar': '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    'shield': '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/>',
+    'sparkle': '<path d="M12 3c.5 4.5 2.5 6.5 7 7-4.5.5-6.5 2.5-7 7-.5-4.5-2.5-6.5-7-7 4.5-.5 6.5-2.5 7-7z"/>',
+    'download': '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+    'code': '<path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/>',
+    'external': '<path d="M14 4h6v6M20 4 10 14"/><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/>',
+    'arrow-right': '<path d="M5 12h14M13 6l6 6-6 6"/>',
+    'menu': '<path d="M4 7h16M4 12h16M4 17h16"/>',
+    'link': '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+    'ruler': '<path d="m3 17 14-14 4 4L7 21z"/><path d="m7 9 2 2M10 6l2 2M13 3l2 2M4 12l2 2"/>',
+    'database': '<ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/>',
+    'wrap': '<path d="M4 6h16M4 12h13a3 3 0 0 1 0 6h-4"/><path d="m15 16-2 2 2 2M4 18h5"/>',
+    'file': '<path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5"/>',
+    'github': '<path d="M9 19c-4.5 1.5-4.5-2.5-6-3m12 5v-3.5a3 3 0 0 0-.9-2.3c3-.3 6-1.5 6-6.5a5 5 0 0 0-1.4-3.5 4.7 4.7 0 0 0-.1-3.5s-1.1-.3-3.6 1.4a12.3 12.3 0 0 0-6.5 0C6 2.2 5 2.5 5 2.5a4.7 4.7 0 0 0-.1 3.5A5 5 0 0 0 3.5 9.5c0 5 3 6.2 6 6.5a3 3 0 0 0-.9 2.3V21"/>'
+};
+function icono(nombre, px) {
+    const t = px || 14;
+    return '<svg class="ia-icon" data-i="' + nombre + '" width="' + t + '" height="' + t + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONOS[nombre] || '') + '</svg>';
+}
 
-    <footer>
-        <p>&copy; 2026 Dpto. Telecomunicaciones e Inteligencia Artificial (IATEL). Desarrollado para uso corporativo interno.</p>
-        <p style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.5;">Powered by GitHub Pages & Userscripts</p>
-    </footer>
+/* =====================================================================
+   UTILIDADES
+   ===================================================================== */
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const reducido = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+const anim = (el, frames, opts) => (!el || !el.animate || reducido()) ? null : el.animate(frames, Object.assign({ duration: 240, easing: 'cubic-bezier(0.16, 1, 0.3, 1)' }, opts || {}));
+const rutaUrl = (p) => p.split('/').map(encodeURIComponent).join('/');
+const urlRaw = (p) => `https://raw.githubusercontent.com/${REPO.usuario}/${REPO.nombre}/${REPO.rama}/${rutaUrl(p)}`;
+const urlRepo = `https://github.com/${REPO.usuario}/${REPO.nombre}`;
+const tamano = (b) => b == null ? '' : (b >= 1024 * 1024 ? (b / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.round(b / 1024) + ' KB');
+const miles = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const herramienta = (id) => HERRAMIENTAS.find(h => h.id === id);
+const informePorArchivo = (a) => Object.values(INFORMES).find(i => i[1] === a);
 
-    <!-- Script para animaciones de scroll -->
-    <script>
-        function reveal() {
-            var reveals = document.querySelectorAll(".reveal");
-            for (var i = 0; i < reveals.length; i++) {
-                var windowHeight = window.innerHeight;
-                var elementTop = reveals[i].getBoundingClientRect().top;
-                var elementVisible = 100;
-                
-                if (elementTop < windowHeight - elementVisible) {
-                    reveals[i].classList.add("active");
-                }
-            }
+/* --- Lectura del código del repositorio ---
+   Primero en el mismo sitio (GitHub Pages sirve los archivos del repositorio); si falla, desde raw.githubusercontent.com. */
+const cacheTexto = new Map(), cacheMeta = new Map();
+async function pedir(ruta, cabecera) {
+    const intentos = [rutaUrl(ruta), urlRaw(ruta)];
+    let ultimo = null;
+    for (const u of intentos) {
+        try {
+            const r = await fetch(u, cabecera ? { headers: { Range: 'bytes=0-6143' } } : { cache: 'no-cache' });
+            if (r.ok || r.status === 206) return r;
+            ultimo = r.status;
+            if (r.status === 404) break;                 // el repositorio no tiene ese archivo (Pages publica el repositorio tal cual)
+        } catch (e) { ultimo = e; }
+    }
+    const err = new Error(ultimo === 404 ? 'no-existe' : 'sin-conexion'); err.code = ultimo; throw err;
+}
+function textoCompleto(ruta) {
+    if (!cacheTexto.has(ruta)) cacheTexto.set(ruta, pedir(ruta).then(r => r.text()).then(t => t.replace(/\r\n?/g, '\n')).catch(e => { cacheTexto.delete(ruta); throw e; }));
+    return cacheTexto.get(ruta);
+}
+function leerCabecera(t) {
+    const m = {}, bloque = (t.match(/\/\/\s*==UserScript==([\s\S]*?)\/\/\s*==\/UserScript==/) || [])[1] || '';
+    bloque.split('\n').forEach(l => { const x = l.match(/\/\/\s*@([\w:-]+)\s+(.*)$/); if (x) (m[x[1]] = m[x[1]] || []).push(x[2].trim()); });
+    if (!m.version) { const v = t.match(/v(\d+\.\d+(?:\.\d+)?) - IATelecom/); if (v) m.version = [v[1]]; }
+    return m;
+}
+/* Metadatos de una herramienta: existe, versión, webs, permisos y tamaño (sin descargar el archivo entero si el servidor admite rangos) */
+function meta(h) {
+    if (cacheMeta.has(h.archivo)) return cacheMeta.get(h.archivo);
+    const p = (async () => {
+        try {
+            if (cacheTexto.has(h.archivo)) { const t = await cacheTexto.get(h.archivo); return Object.assign({ existe: true, tamano: new Blob([t]).size, lineas: t.split('\n').length }, { cab: leerCabecera(t) }); }
+            const r = await pedir(h.archivo, true);
+            const total = r.status === 206 ? +((r.headers.get('content-range') || '').split('/')[1] || 0) : null;
+            const t = (await r.text()).replace(/\r\n?/g, '\n');                       // los archivos del repositorio usan CRLF
+            const res = { existe: true, tamano: total || (r.status === 200 ? new Blob([t]).size : null), cab: leerCabecera(t) };
+            if (r.status === 200) { cacheTexto.set(h.archivo, Promise.resolve(t)); res.lineas = t.split('\n').length; }
+            return res;
+        } catch (e) { return { existe: e.message !== 'no-existe' ? null : false, error: e.message }; }
+    })();
+    cacheMeta.set(h.archivo, p);
+    return p;
+}
+const versionDe = (h, m) => (m && m.cab && m.cab.version && m.cab.version[0]) || h.version;
+
+/* --- Mensajes dentro del botón (mismo patrón que btnMsg de los userscripts) --- */
+function btnMsg(btn, texto, tipo, ms) {
+    if (!btn) return;
+    if (!btn._ia) btn._ia = { html: btn.innerHTML, t: null };
+    clearTimeout(btn._ia.t);
+    const w0 = btn.getBoundingClientRect().width;
+    btn.classList.remove('is-busy', 'is-success', 'is-warning'); void btn.offsetWidth; btn.classList.add('is-' + tipo);
+    btn.innerHTML = (tipo === 'busy' ? '<span class="ia-spinner"></span>' : icono(tipo === 'success' ? 'check' : 'alert')) + '<span>' + esc(texto) + '</span>';
+    const w1 = btn.getBoundingClientRect().width;
+    if (Math.abs(w1 - w0) > 1 && !btn.classList.contains('ws-full')) anim(btn, [{ width: w0 + 'px' }, { width: w1 + 'px' }], { duration: 240 });
+    if (ms) btn._ia.t = setTimeout(() => btnReset(btn), ms);
+}
+function btnReset(btn) {
+    if (!btn || !btn._ia) return;
+    clearTimeout(btn._ia.t);
+    btn.classList.remove('is-busy', 'is-success', 'is-warning');
+    btn.innerHTML = btn._ia.html; btn._ia = null;
+    Array.from(btn.children).forEach(c => anim(c, [{ opacity: 0, transform: 'translateY(-4px)' }, { opacity: 1, transform: 'none' }]));
+}
+async function copiar(texto) {
+    try { await navigator.clipboard.writeText(texto); return true; } catch (e) {}
+    try { const ta = document.createElement('textarea'); ta.value = texto; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch (e) { return false; }
+}
+
+/* =====================================================================
+   PIEZAS COMUNES
+   ===================================================================== */
+const cabecera = (marca, titulo, texto, extra) => `
+    <div class="ws-head ws-reveal"><div><div class="tw-section-title">${esc(marca)}</div><h2>${titulo}</h2>${texto ? `<p>${texto}</p>` : ''}</div>${extra || ''}</div>`;
+
+function chipEstado(h, m) {
+    if (!m) return `<span class="ia-chip" data-tono="neutral"><span class="ia-spinner" style="width:8px;height:8px"></span>Comprobando</span>`;
+    if (m.existe === false) return `<span class="ia-chip"><i></i>Próximamente</span>`;
+    if (m.existe === null) return `<span class="ia-chip" data-tono="warning"><i></i>Sin conexión</span>`;
+    return `<span class="ia-chip" data-tono="success"><i></i>Disponible</span>`;
+}
+const nombreHtml = (h) => `${esc(h.nombre)}${h.variante ? ` <small>${esc(h.variante)}</small>` : ''}`;
+const tipoTexto = (h) => h.tipo === 'marcador' ? 'Marcador' : 'Userscript';
+
+function tarjetaHerramienta(h, i) {
+    return `<a class="ws-card ws-tool ws-reveal" style="--d:${(i % 3) * 70}ms" href="#/herramientas/${h.id}" data-id="${h.id}" data-plat="${esc(h.plataformas.join('|'))}">
+        <div class="ws-tool-top"><span class="ws-tile">${icono(h.icono, 20)}</span><span data-estado>${chipEstado(h, null)}</span></div>
+        <h3>${nombreHtml(h)}</h3>
+        <div class="ws-plat">${icono('pin', 12)}${esc(h.plataformas.join(' · '))}</div>
+        <p>${esc(h.resumen)}</p>
+        <div class="ws-tool-foot"><span class="tw-chip" data-version>v${esc(h.version)}</span><span class="tw-pill">${tipoTexto(h)}</span><span class="ws-go">Ver ficha ${icono('arrow-right', 13)}</span></div>
+    </a>`;
+}
+function hidratarTarjetas(raiz) {
+    $$('.ws-tool[data-id]', raiz).forEach(card => {
+        const h = herramienta(card.dataset.id);
+        meta(h).then(m => {
+            const e = $('[data-estado]', card); if (e) { e.innerHTML = chipEstado(h, m); anim(e.firstElementChild, [{ opacity: 0, transform: 'scale(0.85)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' }); }
+            const v = $('[data-version]', card); if (v) v.textContent = 'v' + versionDe(h, m);
+        });
+    });
+}
+
+/* --- Instalar --- */
+function accionInstalar(h, m, clase) {
+    if (m && m.existe === false) return `<button class="ia-btn ${clase}" disabled>${icono('clock', 15)}<span>Código en preparación</span></button>`;
+    if (h.tipo === 'marcador') return `<button class="ia-btn ia-btn--primary ${clase}" data-instalar="${h.id}">${icono('copy', 15)}<span>Cómo usarlo</span></button>`;
+    if (/\.user\.js$/i.test(h.archivo)) return `<a class="ia-btn ia-btn--primary ${clase}" href="${urlRaw(h.archivo)}" data-instalar-directo="${h.id}">${icono('download', 15)}<span>Instalar</span></a>`;
+    return `<button class="ia-btn ia-btn--primary ${clase}" data-instalar="${h.id}">${icono('download', 15)}<span>Instalar</span></button>`;
+}
+function abrirInstalar(h) {
+    const marcador = h.tipo === 'marcador';
+    const caja = $('#modal-caja');
+    caja.innerHTML = marcador ? `
+        <div class="ia-modal-title" id="modal-titulo">${icono('phone', 16)}<span>Usar 360 PRO</span></div>
+        <p style="margin-bottom:16px">360 PRO no se instala en Violentmonkey: se lanza sobre la pestaña del CRM 360. Copia el código y pégalo en tu marcador de 360 PRO, o en la consola del navegador (F12) con el CRM abierto.</p>
+        <div class="ia-hint">${icono('bolt', 13)}<span>Cada vez que publiquemos una versión nueva, vuelve a copiar el código.</span></div>
+        <div class="ia-modal-footer"><a class="ia-btn" href="#/codigo/${h.id}" data-cerrar>Ver código</a><button class="ia-btn ia-btn--primary" id="m-copiar">${icono('copy', 14)}<span>Copiar código</span></button></div>` : `
+        <div class="ia-modal-title" id="modal-titulo">${icono('download', 16)}<span>Instalar ${esc(h.nombre)}${h.variante ? ' · ' + esc(h.variante) : ''}</span></div>
+        <ol class="fp-steps" style="margin-bottom:20px">
+            <li class="is-in"><span class="fp-node">1</span><div><h3 style="font-size:14px">Copia la dirección del script</h3><p style="font-size:13px">Este archivo no termina en <span class="ws-mono">.user.js</span>, así que Violentmonkey no abre su instalación con un solo clic.</p></div></li>
+            <li class="is-in"><span class="fp-node">2</span><div><h3 style="font-size:14px">Violentmonkey › + › Instalar desde URL</h3><p style="font-size:13px">Abre el panel de Violentmonkey, pulsa el «+» y elige «Instalar desde URL».</p></div></li>
+            <li class="is-in"><span class="fp-node">3</span><div><h3 style="font-size:14px">Pega y confirma</h3><p style="font-size:13px">Pulsa «Confirmar instalación» y recarga la web de trabajo.</p></div></li>
+        </ol>
+        <label class="ia-label" for="m-url">Dirección del script</label>
+        <input class="ia-control" id="m-url" readonly value="${esc(urlRaw(h.archivo))}" style="font-family:var(--ia-mono);font-size:11px">
+        <div class="ia-modal-footer"><button class="ia-btn" data-cerrar>Cerrar</button><button class="ia-btn ia-btn--primary" id="m-copiar">${icono('copy', 14)}<span>Copiar dirección</span></button></div>`;
+    abrirModal();
+    $('#m-copiar').onclick = async (e) => {
+        const b = e.currentTarget;
+        if (marcador) {
+            btnMsg(b, 'Descargando...', 'busy');
+            try { const t = await textoCompleto(h.archivo); const ok = await copiar(t); btnMsg(b, ok ? 'Código copiado' : 'No se pudo copiar', ok ? 'success' : 'warning', 2400); }
+            catch (err) { btnMsg(b, 'No se pudo descargar', 'warning', 3000); }
+        } else {
+            const ok = await copiar(urlRaw(h.archivo));
+            btnMsg(b, ok ? 'Dirección copiada' : 'No se pudo copiar', ok ? 'success' : 'warning', 2400);
+            if (!ok) $('#m-url').select();
         }
-        window.addEventListener("scroll", reveal);
-        reveal(); 
-    </script>
+    };
+}
+const modal = $('#modal');
+let focoPrevio = null;
+function abrirModal() {
+    focoPrevio = document.activeElement;
+    if (modal._cierre) { modal._cierre.cancel(); modal._cierre = null; }
+    modal.classList.add('is-open');
+    setTimeout(() => { const f = $('#m-copiar'); if (f) f.focus(); }, 50);
+}
+function cerrarModal() {
+    if (!modal.classList.contains('is-open')) return;
+    const a = anim(modal, [{ opacity: 1 }, { opacity: 0 }], { duration: 150, easing: 'ease-in', fill: 'forwards' });
+    anim(modal.firstElementChild, [{ transform: 'none' }, { transform: 'translateY(8px) scale(0.97)' }], { duration: 150, easing: 'ease-in', fill: 'forwards' });
+    const fin = () => { modal.classList.remove('is-open'); if (a) a.cancel(); $$('*', modal).forEach(x => x.getAnimations && x.getAnimations().forEach(y => { if (!y.animationName) y.cancel(); })); if (focoPrevio) focoPrevio.focus(); };
+    if (a) { modal._cierre = a; a.onfinish = fin; } else fin();
+}
+modal.addEventListener('click', (e) => { if (e.target === modal || e.target.closest('[data-cerrar]')) cerrarModal(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { cerrarModal(); cerrarMenu(); } });
+document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-instalar]');
+    if (b) { e.preventDefault(); abrirInstalar(herramienta(b.dataset.instalar)); }
+});
+
+/* =====================================================================
+   VISTA: INICIO
+   ===================================================================== */
+function vistaInicio() {
+    const disponibles = HERRAMIENTAS.length;
+    const plataformas = new Set(HERRAMIENTAS.flatMap(h => h.plataformas)).size;
+    const informes = Object.keys(INFORMES).length;
+    return `
+    <section class="ws-hero"><div class="ws-wrap ws-hero-grid">
+        <div>
+            <span class="ia-chip ws-reveal" data-tono="brand"><i></i>Suite interna del Dpto. de Telecomunicaciones e IA</span>
+            <h1 class="ws-reveal" style="--d:60ms">Automatiza lo repetitivo. <span>Decide tú lo importante.</span></h1>
+            <p class="ws-lead ws-reveal" style="--d:120ms">Herramientas para Oceane, Brújula, MAQA, el CRM 360 y el portal del empleado. Comparten un mismo diseño y se instalan en un minuto con Violentmonkey.</p>
+            <div class="ws-cta ws-reveal" style="--d:180ms">
+                <a class="ia-btn ia-btn--primary ia-btn--lg" href="#/herramientas">Ver herramientas ${icono('arrow-right', 15)}</a>
+                <a class="ia-btn ia-btn--outline ia-btn--lg" href="#/instalacion">${icono('download', 15)}Cómo instalar</a>
+            </div>
+            <div class="ws-stats ws-reveal" style="--d:240ms">
+                <div class="ws-stat"><b data-cuenta="${disponibles}">0</b><span>herramientas</span></div>
+                <div class="ws-stat"><b data-cuenta="${informes}">0</b><span>informes automáticos</span></div>
+                <div class="ws-stat"><b data-cuenta="${plataformas}">0</b><span>plataformas</span></div>
+            </div>
+        </div>
+        <div class="ws-stage" id="escena" aria-hidden="true">
+            <div class="ws-layer ws-l-card" data-prof="10"><div class="ws-float">
+                <div class="ws-mock-card">
+                    <div class="ws-mock-head">${icono('user', 16)}Información del cliente</div>
+                    <div class="ws-mock-inner">
+                        <div class="tw-section-title">Identificación</div>
+                        <div class="tw-row"><span>Marca</span><b>MásMóvil</b></div>
+                        <div class="tw-row"><span>IMSI</span><span class="tw-copy">21404•••••6411 ${icono('copy', 11)}</span></div>
+                        <div class="tw-row"><span>Tipo de pago</span><span class="tw-chip">PREPAGO</span></div>
+                        <div class="tw-row"><span>VoLTE</span><span class="tw-badge is-good">Activo y registrado</span></div>
+                        <div class="tw-row"><span>Roaming</span><span class="tw-badge is-info">Permitido</span></div>
+                    </div>
+                </div>
+            </div></div>
+            <div class="ws-layer ws-l-bar" data-prof="18">
+                <div class="ia-toolbar" style="animation:none">
+                    <span class="ia-brand"><img src="iatel.png" alt="" width="75" height="18"></span>
+                    <span class="ia-btn is-active ws-hide-sm">${icono('refresh')}<span>Refresh</span><span class="ia-dot is-on" id="esc-dot"></span></span>
+                    <span class="ia-btn ws-hide-sm">${icono('check-circle')}<span>Cerrar</span></span>
+                    <span class="ia-btn ws-hide-sm">${icono('escalate')}<span>Escalar</span></span>
+                    <span class="ia-btn" id="esc-excel">${icono('table')}<span>Excel</span></span>
+                    <span class="ia-btn">${icono('keyboard')}<span>Atajos</span></span>
+                </div>
+            </div>
+            <div class="ws-layer ws-l-ring" data-prof="26"><div class="ws-float">
+                <div class="ws-mini-ring">
+                    <div class="ws-mini-ring-head"><span>Fichaje</span><span class="ia-chip" data-tono="brand"><i></i>En descanso</span></div>
+                    <svg viewBox="0 0 160 160"><defs><linearGradient id="ws-grad" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#36c8ff"/><stop offset="1" stop-color="#0077ff"/></linearGradient></defs>
+                        <circle class="ws-ring-track" cx="80" cy="80" r="64"/>
+                        <circle class="ws-ring-arc" id="esc-arc" cx="80" cy="80" r="64" stroke-dasharray="402.12" stroke-dashoffset="0" transform="rotate(-90 80 80)"/>
+                        <circle class="ws-ring-dot" id="esc-ring-dot" cx="80" cy="16" r="4.5"/></svg>
+                    <div class="ws-ring-center"><span class="ws-ring-time" id="esc-time">15:00</span><span class="ws-ring-sub" id="esc-sub">Vuelta a las --:--</span></div>
+                </div>
+            </div></div>
+        </div>
+    </div></section>
+
+    <section class="ws-section"><div class="ws-wrap">
+        ${cabecera('Cómo están hechas', 'Ayudan sin quitarte el control', 'Todas siguen los mismos principios, vengan de la plataforma que vengan.')}
+        <div class="ws-grid-4">
+            ${[['bolt', 'Menos clics, mismos criterios', 'Rellenan etiquetas, comentarios y estados con las reglas del equipo, para que cada gestión se haga igual.'],
+               ['check-circle', 'La última palabra es tuya', 'Proponen y tú confirmas. Nunca muestran un éxito que la página no haya confirmado.'],
+               ['shield', 'No tocan la web', 'Cada herramienta vive aislada: no cambia los estilos ni rompe la página en la que trabaja.'],
+               ['sparkle', 'Un mismo diseño', 'Mismos botones, avisos y animaciones en todas las plataformas gracias al IATelecom Design System.']]
+              .map((p, i) => `<div class="ws-card ws-principle ws-reveal" style="--d:${i * 70}ms"><span class="ws-tile">${icono(p[0], 20)}</span><h3>${p[1]}</h3><p>${p[2]}</p></div>`).join('')}
+        </div>
+    </div></section>
+
+    <section class="ws-section"><div class="ws-wrap">
+        ${cabecera('Herramientas', 'Una para cada plataforma', 'Elige la que necesites y abre su ficha para ver qué hace, dónde funciona y qué permisos pide.', `<a class="ia-btn ia-btn--outline ia-btn--md ws-reveal" href="#/herramientas">Ver catálogo completo ${icono('arrow-right', 14)}</a>`)}
+        <div class="ws-tools" id="destacadas">${HERRAMIENTAS.slice(0, 6).map(tarjetaHerramienta).join('')}</div>
+    </div></section>
+
+    <section class="ws-section" id="instalacion"><div class="ws-wrap">
+        ${cabecera('Instalación', 'Lista en un minuto', 'Las herramientas se cargan con Violentmonkey sobre las webs de trabajo. Solo hay que hacerlo una vez por herramienta.')}
+        <div class="ws-install">
+            <ol class="fp-steps">
+                <li class="ws-reveal"><span class="fp-node">1</span><div><h3>Instala Violentmonkey</h3><p>Extensión gratuita para Firefox, Chrome y Edge. Es el motor que carga las herramientas sobre las webs de trabajo.</p>
+                    <a class="ia-btn ia-btn--outline ia-btn--md" style="margin-top:14px" href="https://violentmonkey.github.io/get-it/" target="_blank" rel="noopener">${icono('external', 14)}Descargar Violentmonkey</a></div></li>
+                <li class="ws-reveal" style="--d:90ms"><span class="fp-node">2</span><div><h3>Elige una herramienta y pulsa Instalar</h3><p>Violentmonkey muestra el código y las webs en las que va a funcionar antes de instalar nada.</p></div></li>
+                <li class="ws-reveal" style="--d:180ms"><span class="fp-node">3</span><div><h3>Confirma y recarga la web</h3><p>Pulsa «Confirmar instalación» y recarga la página de trabajo. Cuando publiquemos una versión nueva, Violentmonkey la detecta y la actualiza.</p></div></li>
+            </ol>
+            <aside class="ws-aside">
+                <div class="ws-card ws-reveal"><div class="tw-section-title">Antes de empezar</div>
+                    <div class="ws-perm">${icono('phone', 16)}<div><b>360 PRO es un marcador</b><span>No se instala: se lanza sobre la pestaña del CRM 360. Su ficha explica cómo.</span></div></div>
+                    <div class="ws-perm">${icono('shield', 16)}<div><b>Algunas piden acceso</b><span>BRÚJULA PRO pide tu token personal la primera vez.</span></div></div>
+                    <div class="ws-perm">${icono('code', 16)}<div><b>Todo el código a la vista</b><span>Puedes leer cada herramienta antes de instalarla en el visor de código.</span></div></div>
+                </div>
+            </aside>
+        </div>
+    </div></section>
+
+    <section class="ws-section" id="novedades"><div class="ws-wrap">
+        ${cabecera('Novedades', 'Lo último que ha cambiado', 'Mejoras, correcciones y herramientas nuevas.')}
+        <div class="ws-log">${NOVEDADES.map((n, i) => {
+            const [t, tono] = TIPO_NOVEDAD[n.tipo];
+            return `<div class="ws-log-item ws-reveal" style="--d:${i * 50}ms"><span class="ws-log-date">${esc(n.fecha)}</span>
+                <a class="ws-card ws-card--link" href="#/herramientas/${n.herramienta}"><div class="ws-log-head"><span class="ia-chip" data-tono="${tono}"><i></i>${t}</span><h3>${esc(n.titulo)}</h3></div><p>${esc(n.texto)}</p></a></div>`;
+        }).join('')}</div>
+    </div></section>
+
+    <section class="ws-section"><div class="ws-wrap">
+        ${cabecera('Próximamente', 'En lo que estamos trabajando', 'Ideas en desarrollo. Cuando estén listas aparecerán en el catálogo.')}
+        <div class="ws-road">${PROXIMAMENTE.map((r, i) => `<div class="ws-card ws-reveal" style="--d:${i * 70}ms"><div style="display:flex;justify-content:space-between;align-items:center"><span class="ws-tile">${icono(r[0], 20)}</span><span class="ia-chip"><i></i>En desarrollo</span></div><h3>${r[1]}</h3><p>${r[2]}</p></div>`).join('')}</div>
+    </div></section>`;
+}
+
+/* Escena del hero: anillo de fichaje que cuenta de verdad, Excel que se copia y profundidad con el ratón */
+let escenaTimers = [];
+function animarEscena() {
+    escenaTimers.forEach(clearInterval); escenaTimers = [];
+    const arc = $('#esc-arc'); if (!arc) return;
+    const C = 402.12, R = 64, total = 15 * 60;
+    let resta = total - 132;
+    const fin = new Date(Date.now() + resta * 1000);
+    $('#esc-sub').textContent = 'Vuelta a las ' + fin.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const pintar = () => {
+        const p = resta / total, a = p * 2 * Math.PI - Math.PI / 2;
+        arc.style.strokeDashoffset = (C * (1 - p)).toFixed(2);
+        const d = $('#esc-ring-dot'); d.setAttribute('cx', (80 + Math.cos(a) * R).toFixed(2)); d.setAttribute('cy', (80 + Math.sin(a) * R).toFixed(2));
+        $('#esc-time').textContent = String(Math.floor(resta / 60)).padStart(2, '0') + ':' + String(resta % 60).padStart(2, '0');
+    };
+    pintar();
+    if (reducido()) return;
+    escenaTimers.push(setInterval(() => { resta = resta > 1 ? resta - 1 : total; pintar(); }, 1000));
+    const excel = $('#esc-excel');
+    const ciclo = () => { btnMsg(excel, 'Copiando...', 'busy'); setTimeout(() => btnMsg(excel, 'Copiado', 'success', 1800), 900); };
+    escenaTimers.push(setInterval(() => { if (document.visibilityState === 'visible') ciclo(); }, 5200));
+    setTimeout(ciclo, 1400);
+    escenaTimers.push(setInterval(() => { const d = $('#esc-dot'); if (d) { d.animate && d.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.8)' }, { transform: 'scale(1)' }], { duration: 300 }); } }, 1800));
+    const escena = $('#escena');
+    escena.closest('.ws-hero').addEventListener('pointermove', (e) => {
+        const r = escena.getBoundingClientRect(), x = (e.clientX - r.left - r.width / 2) / r.width, y = (e.clientY - r.top - r.height / 2) / r.height;
+        $$('.ws-layer', escena).forEach(l => { const k = +l.dataset.prof; l.style.transform = `translate3d(${(-x * k).toFixed(1)}px, ${(-y * k).toFixed(1)}px, 0)`; });
+    });
+}
+
+/* =====================================================================
+   VISTA: CATÁLOGO
+   ===================================================================== */
+let filtro = { plat: 'Todas', q: '' };
+function vistaCatalogo() {
+    const plats = ['Todas', ...Array.from(new Set(HERRAMIENTAS.flatMap(h => h.plataformas)))];
+    return `<section class="ws-page"><div class="ws-wrap">
+        ${cabecera('Catálogo', 'Herramientas', `${HERRAMIENTAS.length} herramientas para el trabajo diario. Las versiones y el estado se leen directamente del repositorio.`)}
+        <div class="ws-toolbar-filters ws-reveal">
+            <div class="ws-filters" role="group" aria-label="Filtrar por plataforma">${plats.map(p => `<button class="ia-btn${p === filtro.plat ? ' is-active' : ''}" data-plat="${esc(p)}" aria-pressed="${p === filtro.plat}">${esc(p)}</button>`).join('')}</div>
+            <label class="ws-search">${icono('search', 15)}<input class="ia-control" id="buscar" type="search" placeholder="Buscar herramienta o función" value="${esc(filtro.q)}" aria-label="Buscar herramienta"></label>
+        </div>
+        <div class="ws-tools" id="catalogo">${HERRAMIENTAS.map(tarjetaHerramienta).join('')}</div>
+        <div class="ia-empty ia-hidden" id="vacio">No hay herramientas con ese filtro. <button class="ia-btn" id="limpiar" style="margin-left:8px">Quitar filtros</button></div>
+    </div></section>`;
+}
+function montarCatalogo(raiz) {
+    hidratarTarjetas(raiz);
+    const aplicar = (animar) => {
+        const tarjetas = $$('#catalogo .ws-tool', raiz);
+        const antes = new Map(tarjetas.map(t => [t, t.getBoundingClientRect()]));
+        const q = filtro.q.trim().toLowerCase();
+        let n = 0;
+        tarjetas.forEach(t => {
+            const h = herramienta(t.dataset.id);
+            const texto = [h.nombre, h.variante, h.resumen, h.plataformas.join(' '), h.funciones.map(f => f[1] + ' ' + f[2]).join(' ')].join(' ').toLowerCase();
+            const ok = (filtro.plat === 'Todas' || h.plataformas.includes(filtro.plat)) && (!q || texto.includes(q));
+            t.classList.toggle('ia-hidden', !ok); if (ok) { n++; t.classList.add('is-in'); }
+        });
+        $('#vacio', raiz).classList.toggle('ia-hidden', n > 0);
+        if (!animar) return;
+        tarjetas.forEach(t => {            // FLIP: las tarjetas se recolocan deslizándose
+            if (t.classList.contains('ia-hidden')) return;
+            const a = antes.get(t), b = t.getBoundingClientRect();
+            if (!a.width) { anim(t, [{ opacity: 0, transform: 'scale(0.96)' }, { opacity: 1, transform: 'none' }], { duration: 320 }); return; }
+            const dx = a.left - b.left, dy = a.top - b.top;
+            if (dx || dy) anim(t, [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 420 });
+        });
+    };
+    $$('.ws-filters .ia-btn', raiz).forEach(b => b.onclick = () => {
+        filtro.plat = b.dataset.plat;
+        $$('.ws-filters .ia-btn', raiz).forEach(x => { x.classList.toggle('is-active', x === b); x.setAttribute('aria-pressed', x === b); });
+        aplicar(true);
+    });
+    $('#buscar', raiz).addEventListener('input', (e) => { filtro.q = e.target.value; aplicar(true); });
+    $('#limpiar', raiz).onclick = () => { filtro = { plat: 'Todas', q: '' }; $('#buscar', raiz).value = ''; $$('.ws-filters .ia-btn', raiz).forEach(x => x.classList.toggle('is-active', x.dataset.plat === 'Todas')); aplicar(true); };
+    aplicar(false);
+}
+
+/* =====================================================================
+   VISTA: FICHA
+   ===================================================================== */
+function vistaFicha(h) {
+    if (!h) return vistaNoEncontrada();
+    const reportes = h.id === 'reportes';
+    const hoy = new Date().getDay();
+    return `<section class="ws-page"><div class="ws-wrap">
+        <nav class="ws-crumbs ws-reveal" aria-label="Ruta"><a href="#/herramientas">Herramientas</a>${icono('chevron-right', 12)}<span>${esc(h.nombre)}${h.variante ? ' · ' + esc(h.variante) : ''}</span></nav>
+        <div class="ws-detail">
+            <div>
+                <div class="ws-detail-head ws-reveal">
+                    <span class="ws-tile ws-tile--lg">${icono(h.icono, 28)}</span>
+                    <div><h1>${nombreHtml(h)}</h1><p>${esc(h.resumen)}</p></div>
+                </div>
+                <div class="ws-block"><div class="tw-section-title ws-reveal">Qué hace</div>
+                    <div class="ws-feats">${h.funciones.map((f, i) => `<div class="ws-card ws-feat ws-reveal" style="--d:${(i % 2) * 70}ms"><span class="ws-tile">${icono(f[0], 17)}</span><div><h3>${esc(f[1])}</h3><p>${esc(f[2])}</p></div></div>`).join('')}</div>
+                </div>
+                ${reportes ? `
+                <div class="ws-block"><div class="tw-section-title ws-reveal">Informes de cada día</div>
+                    <div class="ws-week">${SEMANA.map((d, i) => `<div class="ws-card ws-day ws-reveal${hoy === i + 1 ? ' is-today' : ''}" style="--d:${i * 60}ms"><h3>${d[0]}${hoy === i + 1 ? '<span class="ia-chip" data-tono="brand"><i></i>Hoy</span>' : ''}</h3><ul>${d[1].map(k => `<li>${esc(INFORMES[k][0])}</li>`).join('')}${DIARIOS.map(k => `<li class="is-daily">${esc(INFORMES[k][0])}</li>`).join('')}</ul></div>`).join('')}</div>
+                    <p class="ia-hint ws-reveal" style="margin-top:12px">${icono('bolt', 13)}<span>En gris, los tres informes diarios de Huawei.</span></p>
+                </div>
+                <div class="ws-block"><div class="tw-section-title ws-reveal">Los 15 informes</div>
+                    <div class="ws-reports ws-reveal">${Object.values(INFORMES).map(r => `<a class="ws-report" href="#/codigo/reportes/${encodeURIComponent(r[1])}">${icono('file', 15)}<span>${esc(r[0])}</span>${icono('arrow-right', 13)}</a>`).join('')}</div>
+                </div>` : ''}
+                <div class="ws-block"><div class="tw-section-title ws-reveal">Cómo se usa</div>
+                    <ol class="fp-steps">${h.uso.map((u, i) => `<li class="ws-reveal" style="--d:${i * 80}ms"><span class="fp-node">${i + 1}</span><div><h3>${esc(u[0])}</h3><p>${esc(u[1])}</p></div></li>`).join('')}</ol>
+                </div>
+                <div class="ws-block" id="f-tecnico"></div>
+            </div>
+            <aside class="ws-panel ws-reveal" style="--d:100ms" id="f-panel" aria-label="Instalación">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><div class="tw-section-title" style="margin:0">${tipoTexto(h)}</div><span data-estado>${chipEstado(h, null)}</span></div>
+                <div class="tw-row"><span>Versión</span><b data-f="version">v${esc(h.version)}</b></div>
+                <div class="tw-row"><span>Plataforma</span><b>${esc(h.plataformas.join(' · '))}</b></div>
+                <div class="tw-row"><span>Tamaño</span><b data-f="tamano">…</b></div>
+                <div class="tw-row"><span>Líneas</span><b data-f="lineas">…</b></div>
+                <div class="ws-panel-actions" data-f="acciones">${accionInstalar(h, null, 'ia-btn--lg ws-full')}
+                    <a class="ia-btn ia-btn--outline ia-btn--lg ws-full" href="#/codigo/${h.id}">${icono('code', 15)}Ver código</a></div>
+                <p class="ia-hint" style="margin-top:16px">${icono('github', 13)}<span class="ws-mono" style="background:none;border:none;padding:0">${esc(h.archivo)}</span></p>
+            </aside>
+        </div>
+        ${(() => { const otras = HERRAMIENTAS.filter(x => x.id !== h.id && x.plataformas.some(p => h.plataformas.includes(p))).slice(0, 3); return otras.length ? `
+        <div class="ws-block" style="margin-top:96px"><div class="tw-section-title ws-reveal">También en ${esc(h.plataformas[0])}</div><div class="ws-tools">${otras.map(tarjetaHerramienta).join('')}</div></div>` : ''; })()}
+    </div></section>`;
+}
+async function montarFicha(raiz, h) {
+    hidratarTarjetas(raiz);
+    const m = await meta(h);
+    if (!raiz.isConnected) return;
+    const panel = $('#f-panel', raiz);
+    $('[data-estado]', panel).innerHTML = chipEstado(h, m);
+    $('[data-f="version"]', panel).textContent = 'v' + versionDe(h, m);
+    $('[data-f="acciones"]', panel).firstElementChild.outerHTML = accionInstalar(h, m, 'ia-btn--lg ws-full');
+    if (m.existe === false) { $('[data-f="tamano"]', panel).textContent = 'Pendiente de subir'; $('[data-f="lineas"]', panel).textContent = '—'; }
+    else {
+        $('[data-f="tamano"]', panel).textContent = tamano(m.tamano) || '—';
+        const ponerLineas = (n) => { const e = $('[data-f="lineas"]', panel); if (e) e.textContent = miles(n); };
+        if (m.lineas) ponerLineas(m.lineas); else textoCompleto(h.archivo).then(t => { ponerLineas(t.split('\n').length); const v = leerCabecera(t).version; if (v) $('[data-f="version"]', panel).textContent = 'v' + v[0]; }).catch(() => ponerLineas('—'));
+    }
+    // Dónde funciona y permisos: leídos de la cabecera del propio script
+    const cab = m.cab || {};
+    const tec = $('#f-tecnico', raiz);
+    if (!m.existe) { tec.innerHTML = ''; return; }
+    const webs = cab.match || cab.include || [];
+    const grants = (cab.grant || []).map(g => g === 'GM_setValue' || g === 'GM_deleteValue' ? 'GM_getValue' : g).filter((g, i, a) => a.indexOf(g) === i);
+    const perm = (grants.length ? grants : (h.tipo === 'marcador' ? [] : ['none'])).map(g => {
+        const p = PERMISOS[g] || ['shield', g, ''];
+        const extra = g === 'GM_xmlhttpRequest' ? (cab.connect || ['webs externas']).join(', ') : '';
+        return `<div class="ws-perm">${icono(p[0], 16)}<div><b>${esc(p[1])}</b><span>${esc(p[2] + extra)}</span></div></div>`;
+    }).join('');
+    tec.innerHTML = `<div class="tw-section-title ws-reveal is-in">Dónde funciona y qué permisos pide</div>
+        <div class="ws-feats">
+            <div class="ws-card ws-reveal is-in"><div class="tw-section-title">Webs</div><div class="ws-tags">${webs.length ? webs.map(w => `<span class="ws-mono">${esc(w)}</span>`).join('') : `<span style="color:var(--ia-text-3)">Se lanza a mano sobre la pestaña del CRM 360.</span>`}</div></div>
+            <div class="ws-card ws-reveal is-in"><div class="tw-section-title">Permisos</div>${perm || `<div class="ws-perm">${icono('shield', 16)}<div><b>Sin permisos de Violentmonkey</b><span>Se ejecuta como marcador en la página.</span></div></div>`}</div>
+        </div>`;
+    anim(tec, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420 });
+}
+
+/* =====================================================================
+   VISTA: VISOR DE CÓDIGO
+   ===================================================================== */
+function archivosVisor() {
+    return {
+        herramientas: HERRAMIENTAS.map(h => ({ clave: h.id, titulo: h.nombre + (h.variante ? ' · ' + h.variante : ''), archivo: h.archivo, icono: h.icono, h })),
+        informes: Object.values(INFORMES).map(r => ({ clave: 'reportes/' + encodeURIComponent(r[1]), titulo: r[0], archivo: 'REPORTES/' + r[1], icono: 'file' }))
+    };
+}
+function vistaCodigo(clave) {
+    const a = archivosVisor(), todos = [...a.herramientas, ...a.informes];
+    const sel = todos.find(x => x.clave === clave) || a.herramientas[0];
+    const grupo = (t, lista) => `<div class="ws-rail-group">${t}</div><div class="ws-rail-list">${lista.map(x => `<a class="tw-cat-btn${x === sel ? ' active' : ''}" href="#/codigo/${x.clave}" title="${esc(x.archivo)}">${icono(x.icono, 14)}<span>${esc(x.titulo)}</span></a>`).join('')}</div>`;
+    return { sel, html: `<section class="ws-page" style="padding-bottom:40px"><div class="ws-wrap">
+        ${cabecera('Visor de código', 'El código de cada herramienta', 'Léelo antes de instalar. Lo que ves aquí es exactamente lo que hay publicado en el repositorio.')}
+        <div class="ws-viewer ws-reveal">
+            <nav class="ws-rail" aria-label="Archivos"><span class="tw-nav-ind" id="rail-ind"></span>${grupo('Herramientas', a.herramientas)}${grupo('Informes', a.informes)}</nav>
+            <div class="ws-code-main">
+                <div class="ws-code-head">
+                    <div><h1>${icono(sel.icono, 18)}${esc(sel.titulo)}<span id="cv-ver"></span></h1><div class="ws-code-path">${esc(sel.archivo)}</div></div>
+                    <div class="ws-code-actions">
+                        <button class="ia-btn ia-btn--md ia-btn--outline" id="cv-wrap" aria-pressed="false" title="Ajustar líneas largas">${icono('wrap', 14)}<span>Ajustar</span></button>
+                        <button class="ia-btn ia-btn--md ia-btn--outline" id="cv-copiar" disabled>${icono('copy', 14)}<span>Copiar</span></button>
+                        <a class="ia-btn ia-btn--md ia-btn--outline" id="cv-bajar" aria-disabled="true">${icono('download', 14)}<span>Descargar</span></a>
+                        ${sel.h ? `<a class="ia-btn ia-btn--md ia-btn--primary" href="#/herramientas/${sel.h.id}">Ficha ${icono('arrow-right', 14)}</a>` : ''}
+                    </div>
+                </div>
+                <div class="ws-code-meta" id="cv-meta"></div>
+                <div class="ws-code" id="cv" tabindex="0" aria-label="Código de ${esc(sel.titulo)}"><div class="ws-code-state"><span class="ia-spinner" style="width:18px;height:18px"></span><span>Cargando código...</span></div></div>
+            </div>
+        </div>
+    </div></section>` };
+}
+/* Resaltado ligero de JavaScript (sin dependencias). Las líneas muy largas (imágenes incrustadas) se recortan. */
+const LARGA = 2000, CORTE = 80;   // marcador de línea recortada: \u0000x<n>\u0000 ("x" evita que el número se coloree como número)
+function resaltar(texto) {
+    const lineas = texto.split('\n'), recortes = {};
+    lineas.forEach((l, i) => { if (l.length > LARGA) { recortes[i] = l.length; lineas[i] = l.slice(0, CORTE) + '\u0000x' + i + '\u0000'; } });
+    const fuente = lineas.join('\n');
+    const re = /(\/\/\s*@[\w:-]+[^\n]*|\/\/\s*==\/?UserScript==)|(\/\*[\s\S]*?\*\/|\/\/[^\n]*)|(`(?:\\[\s\S]|[^\\`])*`|'(?:\\.|[^\\'\n])*'|"(?:\\.|[^\\"\n])*")|\b(const|let|var|function|return|if|else|for|while|do|switch|case|break|continue|new|try|catch|finally|throw|async|await|of|in|typeof|instanceof|class|extends|this|null|undefined|true|false|default|delete|void)\b|\b(\d+(?:\.\d+)?)\b/g;
+    let out = '', ultimo = 0, m;
+    const envolver = (txt, cls) => txt.split('\n').map(p => p ? `<span class="${cls}">${esc(p)}</span>` : '').join('\n');
+    while ((m = re.exec(fuente))) {
+        out += esc(fuente.slice(ultimo, m.index));
+        if (m[1]) { const x = m[1].match(/^(\/\/\s*)(@[\w:-]+|==\/?UserScript==)(.*)$/); out += x ? `<span class="t-m">${esc(x[1])}<b>${esc(x[2])}</b>${esc(x[3])}</span>` : envolver(m[1], 't-m'); }
+        else if (m[2]) out += envolver(m[2], 't-c');
+        else if (m[3]) out += envolver(m[3], 't-s');
+        else if (m[4]) out += `<span class="t-k">${m[4]}</span>`;
+        else if (m[5]) out += `<span class="t-n">${m[5]}</span>`;
+        ultimo = re.lastIndex;
+    }
+    out += esc(fuente.slice(ultimo));
+    out = out.replace(/\u0000x(\d+)\u0000/g, (_, i) => `<button class="cv-more" data-l="${i}" title="Mostrar la línea completa">… ${miles(recortes[i] - CORTE)} caracteres más</button>`);
+    const filas = out.split('\n');
+    let html = '';
+    for (let i = 0; i < filas.length; i += 400) {
+        html += '<div class="cv-chunk">' + filas.slice(i, i + 400).map((f, k) => `<div class="cv-line" id="L${i + k + 1}"><span class="cv-n">${i + k + 1}</span><span class="cv-c">${f || ' '}</span></div>`).join('') + '</div>';
+    }
+    return html;
+}
+async function montarCodigo(raiz, sel) {
+    const ind = $('#rail-ind', raiz), act = $('.tw-cat-btn.active', raiz);
+    if (ind && act) { requestAnimationFrame(() => { ind.style.transform = `translateY(${act.offsetTop}px)`; ind.style.height = act.offsetHeight + 'px'; ind.style.opacity = 1; act.scrollIntoView({ block: 'nearest' }); }); }
+    const cv = $('#cv', raiz), meta_ = $('#cv-meta', raiz);
+    let texto;
+    try { texto = await textoCompleto(sel.archivo); }
+    catch (e) {
+        cv.innerHTML = e.message === 'no-existe'
+            ? `<div class="ws-code-state">${icono('clock', 22)}<b style="color:var(--ia-text)">Código en preparación</b><span>Este archivo aún no está subido al repositorio.</span></div>`
+            : `<div class="ws-code-state">${icono('alert', 22)}<b style="color:var(--ia-text)">No se pudo cargar el código</b><span>Comprueba la conexión y vuelve a intentarlo.</span><button class="ia-btn ia-btn--md ia-btn--outline" id="cv-reintentar">${icono('refresh', 14)}Reintentar</button></div>`;
+        const r = $('#cv-reintentar', raiz); if (r) r.onclick = () => route();
+        return;
+    }
+    if (!raiz.isConnected) return;
+    const cab = leerCabecera(texto), lineas = texto.split('\n').length, bytes = new Blob([texto]).size;
+    if (cab.version) $('#cv-ver', raiz).innerHTML = ` <span class="tw-chip">v${esc(cab.version[0])}</span>`;
+    meta_.innerHTML = [`${miles(lineas)} líneas`, tamano(bytes), cab.name ? cab.name[0] : null, ...(cab.match || []).slice(0, 3)].filter(Boolean).map((t, i) => `<span class="${i < 2 ? 'tw-pill' : 'ws-mono'}">${esc(t)}</span>`).join('');
+    // Pintado en dos tiempos para que la página no se congele con los archivos grandes
+    await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
+    cv.innerHTML = resaltar(texto);
+    anim(cv, [{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
+    const copiarBtn = $('#cv-copiar', raiz), bajar = $('#cv-bajar', raiz);
+    copiarBtn.disabled = false;
+    copiarBtn.onclick = async () => { const ok = await copiar(texto); btnMsg(copiarBtn, ok ? 'Copiado' : 'No se pudo copiar', ok ? 'success' : 'warning', 1800); };
+    const url = URL.createObjectURL(new Blob([texto], { type: 'text/javascript' }));
+    bajar.href = url; bajar.download = sel.archivo.split('/').pop(); bajar.removeAttribute('aria-disabled');
+    $('#cv-wrap', raiz).onclick = (e) => { const on = cv.classList.toggle('is-wrap'); e.currentTarget.setAttribute('aria-pressed', on); e.currentTarget.classList.toggle('is-active', on); };
+    cv.addEventListener('click', (e) => {
+        const mas = e.target.closest('.cv-more');
+        if (mas) { const i = +mas.dataset.l; mas.parentElement.textContent = texto.split('\n')[i]; return; }
+        const n = e.target.closest('.cv-n');
+        if (n) { $$('.cv-line.is-hl', cv).forEach(x => x.classList.remove('is-hl')); n.parentElement.classList.add('is-hl'); }
+    });
+}
+
+function vistaNoEncontrada() {
+    return `<section class="ws-page"><div class="ws-wrap"><div class="ia-empty" style="padding:64px">${icono('compass', 28)}<h2 style="margin:16px 0 8px;font-size:22px">Esta página no existe</h2><p style="margin-bottom:20px">Puede que la herramienta haya cambiado de nombre.</p><a class="ia-btn ia-btn--primary ia-btn--md" href="#/herramientas">Ver herramientas</a></div></div></section>`;
+}
+
+/* =====================================================================
+   NAVEGACIÓN
+   ===================================================================== */
+const vista = $('#vista');
+const nav = $('#nav'), navInd = $('#nav-ind');
+const TITULOS = { inicio: 'Inicio', herramientas: 'Herramientas', instalacion: 'Instalación', novedades: 'Novedades', codigo: 'Código' };
+function marcarNav(clave) {
+    $$('.ia-btn', nav).forEach(a => { const on = a.dataset.ruta === clave; if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    $$('.ia-menu-item', $('#menu-movil')).forEach(a => a.classList.toggle('is-active', a.dataset.ruta === clave));
+    $('#bar-title').textContent = TITULOS[clave] || 'IATEL';
+    const act = $(`.ia-btn[data-ruta="${clave}"]`, nav);
+    if (act) { navInd.style.opacity = 1; navInd.style.width = act.offsetWidth + 'px'; navInd.style.transform = `translateX(${act.offsetLeft}px)`; }
+    else navInd.style.opacity = 0;
+}
+let rutaActual = null, observador = null;
+function observarReveal(raiz) {
+    if (observador) observador.disconnect();
+    if (reducido() || !('IntersectionObserver' in window)) { $$('.ws-reveal', raiz).forEach(e => e.classList.add('is-in')); return; }
+    observador = new IntersectionObserver((ents) => ents.forEach(en => {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('is-in'); observador.unobserve(en.target);
+        $$('[data-cuenta]', en.target).forEach(contar);
+    }), { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    $$('.ws-reveal', raiz).forEach(e => observador.observe(e));
+}
+function contar(el) {
+    const fin = +el.dataset.cuenta; if (el._contado) return; el._contado = true;
+    if (reducido()) { el.textContent = fin; return; }
+    const t0 = performance.now(), d = 900;
+    const paso = (t) => { const p = Math.min(1, (t - t0) / d); el.textContent = Math.round(fin * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(paso); };
+    requestAnimationFrame(paso);
+}
+function route() {
+    const hash = decodeURIComponent((location.hash || '#/').slice(1)) || '/';
+    const partes = hash.split('/').filter(Boolean);
+    const seccion = partes[0] || 'inicio';
+    let html = '', montar = null, claveNav = seccion, anclaje = null, clave = hash;
+    if (seccion === 'inicio' || seccion === 'instalacion' || seccion === 'novedades') { html = vistaInicio(); montar = (r) => { hidratarTarjetas(r); animarEscena(); }; anclaje = seccion === 'inicio' ? null : seccion; clave = '/'; }
+    else if (seccion === 'herramientas' && partes[1]) { const h = herramienta(partes[1]); html = vistaFicha(h); montar = h ? (r) => montarFicha(r, h) : null; claveNav = 'herramientas'; }
+    else if (seccion === 'herramientas') { html = vistaCatalogo(); montar = montarCatalogo; }
+    else if (seccion === 'codigo') { const v = vistaCodigo(partes.slice(1).map(encodeURIComponent).join('/').replace(/%2F/g, '/')); html = v.html; montar = (r) => montarCodigo(r, v.sel); }
+    else { html = vistaNoEncontrada(); claveNav = null; }
+
+    const misma = rutaActual === clave;
+    rutaActual = clave;
+    marcarNav(anclaje || claveNav);
+    cerrarMenu();
+    document.title = (TITULOS[anclaje || claveNav] && claveNav !== 'inicio' ? TITULOS[anclaje || claveNav] + ' · ' : '') + 'IATEL · Herramientas';
+    if (misma && anclaje !== undefined) { irA(anclaje); return; }
+    const pintar = () => {
+        escenaTimers.forEach(clearInterval); escenaTimers = [];
+        vista.innerHTML = html;
+        if (montar) montar(vista);
+        observarReveal(vista);
+        if (anclaje) requestAnimationFrame(() => irA(anclaje, true)); else window.scrollTo({ top: 0, behavior: 'instant' });
+        anim(vista, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420 });
+    };
+    if (vista.firstElementChild && !reducido()) { const a = anim(vista, [{ opacity: 1 }, { opacity: 0 }], { duration: 120, easing: 'ease-in', fill: 'forwards' }); a.onfinish = () => { a.cancel(); pintar(); }; }
+    else pintar();
+}
+function irA(id, instantaneo) {
+    if (!id) { window.scrollTo({ top: 0, behavior: reducido() ? 'auto' : 'smooth' }); return; }
+    const el = document.getElementById(id); if (!el) return;
+    $$('.ws-reveal', el).forEach(x => x.classList.add('is-in'));
+    el.scrollIntoView({ behavior: instantaneo || reducido() ? 'auto' : 'smooth' });
+}
+window.addEventListener('hashchange', route);
+window.addEventListener('resize', () => marcarNav($('.ia-btn[aria-current]', nav) ? $('.ia-btn[aria-current]', nav).dataset.ruta : null));
+// En Inicio, la barra sigue la sección visible (Instalación / Novedades)
+window.addEventListener('scroll', () => {
+    if (rutaActual !== '/') return;
+    const y = window.scrollY + 140;
+    const sec = ['novedades', 'instalacion'].find(id => { const e = document.getElementById(id); return e && e.offsetTop <= y; });
+    const actual = $('.ia-btn[aria-current]', nav), quiere = sec || 'inicio';
+    if (!actual || actual.dataset.ruta !== quiere) marcarNav(quiere);
+}, { passive: true });
+
+/* Menú en móvil (mismo menú desplegable del sistema) */
+const menuBtn = $('#menu-btn'), menuMovil = $('#menu-movil');
+menuBtn.innerHTML = icono('menu', 18);
+menuMovil.innerHTML = Object.keys(TITULOS).map(k => `<a class="ia-menu-item" role="menuitem" href="#/${k === 'inicio' ? '' : k}" data-ruta="${k}">${esc(TITULOS[k])}</a>`).join('') + `<a class="ia-menu-item" role="menuitem" href="${urlRepo}" target="_blank" rel="noopener">${icono('github', 15)}GitHub</a>`;
+function cerrarMenu() { menuMovil.classList.remove('is-open'); menuBtn.setAttribute('aria-expanded', 'false'); }
+menuBtn.onclick = (e) => { e.stopPropagation(); const ab = !menuMovil.classList.contains('is-open'); menuMovil.classList.toggle('is-open', ab); menuBtn.setAttribute('aria-expanded', ab); };
+document.addEventListener('click', (e) => { if (!e.target.closest('.ws-menu-wrap')) cerrarMenu(); });
+
+/* Brillo que sigue al cursor en las tarjetas */
+document.addEventListener('pointermove', (e) => {
+    const c = e.target.closest && e.target.closest('.ws-card'); if (!c) return;
+    const r = c.getBoundingClientRect(); c.style.setProperty('--mx', (e.clientX - r.left) + 'px'); c.style.setProperty('--my', (e.clientY - r.top) + 'px');
+}, { passive: true });
+
+$('#gh').href = urlRepo; $('#gh').innerHTML = icono('github', 17); $('#gh-foot').href = urlRepo;
+route();
+requestAnimationFrame(() => marcarNav($('.ia-btn[aria-current]', nav) ? $('.ia-btn[aria-current]', nav).dataset.ruta : 'inicio'));
+})();
+</script>
 </body>
 </html>
