@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         Herramienta Dpto Loader
-// @namespace    https://empresa.com/
+// @namespace    *://*/*
 // @version      1.0.0
 // @match        https://sistema-de-tu-empresa.com/*
 // @updateURL    https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/Registro usuarios/loader.user.js
