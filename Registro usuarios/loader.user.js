@@ -3,8 +3,8 @@
 // @namespace    https://empresa.com/
 // @version      1.0.0
 // @match        https://sistema-de-tu-empresa.com/*
-// @updateURL    https://raw.githubusercontent.com/tu-usuario/repo/main/loader.user.js
-// @downloadURL  https://raw.githubusercontent.com/tu-usuario/repo/main/loader.user.js
+// @updateURL    https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/Registro usuarios/loader.user.js
+// @downloadURL  https://raw.githubusercontent.com/Pache2993/herramientas-iatel/refs/heads/main/Registro usuarios/loader.user.js
 // @grant        GM_xmlhttpRequest
 // @grant        GM_getValue
 // @grant        GM_setValue
