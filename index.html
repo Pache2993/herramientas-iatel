@@ -464,8 +464,11 @@ function mostrarBienvenidaIatel(callback) {
         if ('speechSynthesis' in window) {
             const utterance = new SpeechSynthesisUtterance(texto);
             utterance.lang = 'es-ES';
-            utterance.rate = 1.05; // Un poco más rápido
-            utterance.pitch = 0.8; // Tono ligeramente más grave/robótico
+            utterance.rate = 0.95; // Un poco más rápido
+            utterance.pitch = 0.1; // Tono ligeramente más grave/robótico
+           const voces = window.speechSynthesis.getVoices();
+const buena = voces.find(v => v.lang.startsWith('es') && /Online|Natural/i.test(v.name));
+if (buena) utterance.voice = buena;
             window.speechSynthesis.speak(utterance);
         }
     }
