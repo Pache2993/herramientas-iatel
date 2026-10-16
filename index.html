@@ -1498,12 +1498,96 @@ const nav = $('#nav'), navInd = $('#nav-ind'); const TITULOS = { inicio: 'Inicio
     else navInd.style.opacity = 0;
 }
 let rutaActual = null, observador = null;
+
 function observarReveal(raiz) {
     if (observador) observador.disconnect();
-    if (reducido() || !('IntersectionObserver' in window)) { $$('.ws-reveal', raiz).forEach(e => e.classList.add('is-in')); return; } observador = new IntersectionObserver((ents) => ents.forEach(en => { if (!en.isIntersecting) return; en.target.classList.add('is-in'); observador.unobserve(en.target); $$('[data-cuenta]', en.target).forEach(contar);
+    if (reducido() || !('IntersectionObserver' in window)) {
+        $$('.ws-reveal', raiz).forEach(e => e.classList.add('is-in'));
+        $$('[data-cuenta]', raiz).forEach(contar);
+        return;
+    }
+    observador = new IntersectionObserver((ents) => ents.forEach(en => {
+        if (!en.isIntersecting) return;
+        en.target.classList.add('is-in');
+        observador.unobserve(en.target);
+        $$('[data-cuenta]', en.target).forEach(contar);
     }), { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
-    $$('.ws-reveal', raiz).forEach(e => observador.observe(e)); } function contar(el) { const fin = +el.dataset.cuenta; if (el._contado) return; el._contado = true; if (reducido()) { el.textContent = fin; return; } const t0 = performance.now(), d = 900; const paso = (t) => { const p = Math.min(1, (t - t0) / d); el.textContent = Math.round(fin * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(paso); }; requestAnimationFrame(paso); } function route() { const hash = decodeURIComponent((location.hash \vert{}\vert{} '#/').slice(1)) \vert{}\vert{} '/'; const partes = hash.split('/').filter(Boolean); const seccion = partes[0] \vert{}\vert{} 'inicio'; let html = '', montar = null, claveNav = seccion, anclaje = null, clave = hash; if (seccion === 'inicio' \vert{}\vert{} seccion === 'instalacion' \vert{}\vert{} seccion === 'novedades') { html = vistaInicio(); montar = (r) => { hidratarTarjetas(r); animarEscena(); }; anclaje = seccion === 'inicio' ? null : seccion; clave = '/'; } else if (seccion === 'herramientas' && partes[1]) { const h = herramienta(partes[1]); html = vistaFicha(h); montar = h ? (r) => montarFicha(r, h) : null; claveNav = 'herramientas'; } else if (seccion === 'herramientas') { html = vistaCatalogo(); montar = montarCatalogo; } else if (seccion === 'codigo') { const v = vistaCodigo(partes.slice(1).map(encodeURIComponent).join('/').replace(/\%2F/g, '/')); html = v.html; montar = (r) => montarCodigo(r, v.sel); } else { html = vistaNoEncontrada(); claveNav = null; }      const misma = rutaActual === clave; rutaActual = clave; marcarNav(anclaje \vert{}\vert{} claveNav); cerrarMenu(); document.title = (TITULOS[anclaje \vert{}\vert{} claveNav] && claveNav !== 'inicio' ? TITULOS[anclaje \vert{}\vert{} claveNav] + ' · ' : '') + 'IATEL · Herramientas'; if (misma && anclaje !== undefined) { irA(anclaje); return; } const pintar = () => { escenaTimers.forEach(clearInterval); escenaTimers = []; vista.innerHTML = html; if (montar) montar(vista); observarReveal(vista); if (anclaje) requestAnimationFrame(() => irA(anclaje, true)); else window.scrollTo({ top: 0, behavior: 'instant' }); anim(vista, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420 }); }; if (vista.firstElementChild && !reducido()) { const a = anim(vista, [{ opacity: 1 }, { opacity: 0 }], { duration: 120, easing: 'ease-in', fill: 'forwards' }); a.onfinish = () => { a.cancel(); pintar(); }; } else pintar(); } function irA(id, instantaneo) { if (!id) { window.scrollTo({ top: 0, behavior: reducido() ? 'auto' : 'smooth' }); return; } const el = document.getElementById(id); if (!el) return; $$
-('.ws-reveal', el).forEach(x => x.classList.add('is-in'));
+    $$('.ws-reveal', raiz).forEach(e => observador.observe(e));
+}
+
+function contar(el) {
+    const fin = +el.dataset.cuenta;
+    if (el._contado) return;
+    el._contado = true;
+    if (reducido()) { el.textContent = fin; return; }
+    const t0 = performance.now(), d = 900;
+    const paso = (t) => {
+        const p = Math.min(1, (t - t0) / d);
+        el.textContent = Math.round(fin * (1 - Math.pow(1 - p, 3)));
+        if (p < 1) requestAnimationFrame(paso);
+    };
+    requestAnimationFrame(paso);
+}
+
+function route() {
+    const hash = decodeURIComponent((location.hash || '#/').slice(1)) || '/';
+    const partes = hash.split('/').filter(Boolean);
+    const seccion = partes[0] || 'inicio';
+    let html = '', montar = null, claveNav = seccion, anclaje = null, clave = hash;
+
+    if (seccion === 'inicio' || seccion === 'instalacion' || seccion === 'novedades') {
+        html = vistaInicio();
+        montar = (r) => { hidratarTarjetas(r); animarEscena(); };
+        anclaje = seccion === 'inicio' ? null : seccion;
+        clave = '/';
+    } else if (seccion === 'herramientas' && partes[1]) {
+        const h = herramienta(partes[1]);
+        html = vistaFicha(h);
+        montar = h ? (r) => montarFicha(r, h) : null;
+        claveNav = 'herramientas';
+    } else if (seccion === 'herramientas') {
+        html = vistaCatalogo();
+        montar = montarCatalogo;
+    } else if (seccion === 'codigo') {
+        const v = vistaCodigo(partes.slice(1).map(encodeURIComponent).join('/').replace(/%2F/g, '/'));
+        html = v.html;
+        montar = (r) => montarCodigo(r, v.sel);
+    } else {
+        html = vistaNoEncontrada();
+        claveNav = null;
+    }
+
+    const misma = rutaActual === clave;
+    rutaActual = clave;
+    marcarNav(anclaje || claveNav);
+    cerrarMenu();
+    const tituloSec = anclaje || claveNav;
+    document.title = (TITULOS[tituloSec] && claveNav !== 'inicio' ? TITULOS[tituloSec] + ' · ' : '') + 'IATEL · Herramientas';
+
+    // Misma página de inicio: solo hay que desplazarse al ancla
+    if (misma && clave === '/') { irA(anclaje); return; }
+
+    const pintar = () => {
+        escenaTimers.forEach(clearInterval); escenaTimers = [];
+        vista.innerHTML = html;
+        if (montar) montar(vista);
+        observarReveal(vista);
+        if (anclaje) requestAnimationFrame(() => irA(anclaje, true));
+        else window.scrollTo({ top: 0, behavior: 'instant' });
+        anim(vista, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420 });
+    };
+
+    if (vista.firstElementChild && !reducido()) {
+        const a = anim(vista, [{ opacity: 1 }, { opacity: 0 }], { duration: 120, easing: 'ease-in', fill: 'forwards' });
+        if (a) a.onfinish = () => { a.cancel(); pintar(); }; else pintar();
+    } else pintar();
+}
+
+function irA(id, instantaneo) {
+    if (!id) { window.scrollTo({ top: 0, behavior: reducido() ? 'auto' : 'smooth' }); return; }
+    const el = document.getElementById(id);
+    if (!el) return;
+    $$('.ws-reveal', el).forEach(x => x.classList.add('is-in'));
     el.scrollIntoView({ behavior: instantaneo || reducido() ? 'auto' : 'smooth' });
 }
 window.addEventListener('hashchange', route);
