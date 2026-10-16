@@ -514,11 +514,19 @@ if (buena) utterance.voice = buena;
                 animation: iatel-glitch 0.2s cubic-bezier(.25, .46, .45, .94) both;
                 filter: drop-shadow(0 0 40px rgba(0, 255, 170, 0.8)) hue-rotate(90deg);
             }
-            .iatel-title {
-                color: #ffffff; font-size: 26px; font-weight: 800;
-                letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px;
-                text-shadow: 0 0 20px rgba(0, 210, 255, 0.85);
-            }
+           .iatel-title {
+    color: #ffffff;
+    font-size: clamp(16px, 5.2vw, 26px);
+    font-weight: 800;
+    letter-spacing: clamp(1px, 0.5vw, 3px);
+    text-transform: uppercase;
+    text-align: center;
+    text-wrap: balance;
+    max-width: 92vw;
+    padding: 0 8px;
+    margin-bottom: 6px;
+    text-shadow: 0 0 20px rgba(0, 210, 255, 0.85);
+}
             .iatel-badge {
                 display: inline-flex; align-items: center; gap: 6px;
                 background: rgba(0, 220, 255, 0.1); border: 1px solid rgba(0, 220, 255, 0.35);
