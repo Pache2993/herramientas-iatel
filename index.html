@@ -6,84 +6,36 @@
 <title>IATEL · Herramientas</title>
 <meta name="description" content="Herramientas del Dpto. de Telecomunicaciones e IA (IATEL) para Oceane, Brújula, MAQA, el CRM 360 y el portal del empleado.">
 <meta name="theme-color" content="#0d1117">
-<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABT0lEQVQ4T42RvS9DURjGfy+taCNEdJBYqokRQwcdDEisJlaLiAGTv8BssvsbLAaJREIsNh+xSIcOSDRBEB+ht33l3NPT3nt7qd9yznnOe55znvdIZRkFATP4CIIGVm4nrDvEGoSJL41irWMN/kecgZkZ3RFdN3DBxBk0kwYJq8FVi0FYjuO3vTY9iDtmNIPV2xjEETb9sweO+G+1Z3wDEdD6ftPKzcJPbmJtGxEiD2uxiVZYIr9gaS20SsBqIAu5AryWEW81rTK7gVa/4eUekilbmOxGulKQ7kcv9pD8PHpzDj0ZpDNB7WTHzy3e5phKYRH9eEIyOfRgC8bnkOEJe/31EQyNoqVTJJOFkSn0bBc93K5HWElox8waWq3A1ztc7cPkEvL2iFY+4aEENQ+ZXofnO/T2EnoH/YtMqEgPXM5IH1J9SH4BisdoudiQzeQHb9SQjlYmmBsAAAAASUVORK5CYII=">
+<link rel="icon" href="https://raw.githubusercontent.com/Pache2993/herramientas-iatel/main/iatel.png">
 <style>
 /* =====================================================================
-   IATELECOM DESIGN SYSTEM · tokens (copiados tal cual del bloque :host de los userscripts)
+   IATELECOM DESIGN SYSTEM · tokens
    ===================================================================== */
 :root {
-    /* Color · marca */
-    --ia-brand-500: #0099ff;
-    --ia-brand-600: #007acc;
-    --ia-brand-glow: rgba(0, 153, 255, 0.35);
-    --ia-brand-soft: rgba(0, 153, 255, 0.12);
-    /* Color · estado */
-    --ia-success: #3fb950;
-    --ia-warning: #d29922;
-    --ia-danger: #f85149;
-    /* Color · superficies */
-    --ia-surface-glass: rgba(13, 17, 23, 0.65);
-    --ia-surface-bar: rgba(13, 17, 23, 0.85);
-    --ia-surface-raised: rgba(13, 17, 23, 0.88);
-    --ia-surface-modal: rgba(13, 17, 23, 0.97);
-    --ia-surface-solid: #0d1117;
-    --ia-hover: rgba(255, 255, 255, 0.08);
-    --ia-field: rgba(255, 255, 255, 0.05);
-    --ia-overlay: rgba(0, 0, 0, 0.65);
-    /* Color · bordes y texto */
-    --ia-border: rgba(255, 255, 255, 0.10);
-    --ia-border-strong: rgba(255, 255, 255, 0.18);
-    --ia-border-focus: rgba(0, 153, 255, 0.60);
-    --ia-text: #f0f6fc;
-    --ia-text-2: #c9d1d9;
-    --ia-text-3: #8b949e;
-    --ia-dot-off: #555555;
-    /* Tipografía */
+    --ia-brand-500: #0099ff; --ia-brand-600: #007acc; --ia-brand-glow: rgba(0, 153, 255, 0.35);
+    --ia-brand-soft: rgba(0, 153, 255, 0.12); --ia-success: #3fb950; --ia-warning: #d29922;
+    --ia-danger: #f85149; --ia-surface-glass: rgba(13, 17, 23, 0.65);
+    --ia-surface-bar: rgba(13, 17, 23, 0.85); --ia-surface-raised: rgba(13, 17, 23, 0.88);
+    --ia-surface-modal: rgba(13, 17, 23, 0.97); --ia-surface-solid: #0d1117;
+    --ia-hover: rgba(255, 255, 255, 0.08); --ia-field: rgba(255, 255, 255, 0.05);
+    --ia-overlay: rgba(0, 0, 0, 0.65); --ia-border: rgba(255, 255, 255, 0.10);
+    --ia-border-strong: rgba(255, 255, 255, 0.18); --ia-border-focus: rgba(0, 153, 255, 0.60);
+    --ia-text: #f0f6fc; --ia-text-2: #c9d1d9; --ia-text-3: #8b949e; --ia-dot-off: #555555;
     --ia-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     --ia-mono: "JetBrains Mono", "SF Mono", Consolas, Menlo, monospace;
-    --ia-fs-2xs: 9px;
-    --ia-fs-xs: 11px;
-    --ia-fs-sm: 12px;
-    --ia-fs-lg: 15px;
-    /* Espaciado */
-    --ia-sp-1: 4px;
-    --ia-sp-2: 6px;
-    --ia-sp-3: 8px;
-    --ia-sp-4: 12px;
-    --ia-sp-5: 16px;
-    --ia-sp-6: 24px;
-    /* Radios */
-    --ia-r-sm: 4px;
-    --ia-r-md: 6px;
-    --ia-r-lg: 8px;
-    --ia-r-xl: 10px;
-    /* Sombras */
+    --ia-fs-2xs: 9px; --ia-fs-xs: 11px; --ia-fs-sm: 12px; --ia-fs-lg: 15px;
+    --ia-sp-1: 4px; --ia-sp-2: 6px; --ia-sp-3: 8px; --ia-sp-4: 12px; --ia-sp-5: 16px; --ia-sp-6: 24px;
+    --ia-r-sm: 4px; --ia-r-md: 6px; --ia-r-lg: 8px; --ia-r-xl: 10px;
     --ia-sh-bar: 0 12px 40px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15);
     --ia-sh-menu: 0 16px 36px rgba(0, 0, 0, 0.60), 0 0 1px rgba(255, 255, 255, 0.20);
     --ia-sh-modal: 0 24px 60px rgba(0, 0, 0, 0.70);
-    /* Movimiento */
-    --ia-ease: cubic-bezier(0.16, 1, 0.3, 1);
-    --ia-ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
-    /* Capas */
-    --ia-z-menu: 9999;
-    --ia-z-bar: 9999999;
-    --ia-z-modal: 2147483646;
-
-    /* ---- Extensión web v1.9 (escala de página; mismos tipos, pesos y colores) ---- */
-    --ia-fs-md: 14px;
-    --ia-fs-xl: 18px;
-    --ia-fs-2xl: 24px;
-    --ia-fs-3xl: clamp(26px, 3.2vw, 34px);
-    --ia-fs-display: clamp(36px, 5.4vw, 62px);
-    --ia-sp-7: 32px;
-    --ia-sp-8: 48px;
-    --ia-sp-9: 72px;
-    --ia-sp-10: 112px;
-    --ia-r-2xl: 16px;
-    --ia-page: 1180px;
+    --ia-ease: cubic-bezier(0.16, 1, 0.3, 1); --ia-ease-pop: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ia-z-menu: 9999; --ia-z-bar: 9999999; --ia-z-modal: 2147483646;
+    --ia-fs-md: 14px; --ia-fs-xl: 18px; --ia-fs-2xl: 24px; --ia-fs-3xl: clamp(26px, 3.2vw, 34px);
+    --ia-fs-display: clamp(36px, 5.4vw, 62px); --ia-sp-7: 32px; --ia-sp-8: 48px;
+    --ia-sp-9: 72px; --ia-sp-10: 112px; --ia-r-2xl: 16px; --ia-page: 1180px;
     --ia-gutter: clamp(16px, 4vw, 40px);
 }
-
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 96px; background: var(--ia-surface-solid); }
 body { margin: 0; min-height: 100vh; font-family: var(--ia-font); font-size: var(--ia-fs-md); line-height: 1.6; color: var(--ia-text-2); background: var(--ia-surface-solid); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
@@ -95,7 +47,6 @@ img { display: block; max-width: 100%; }
 ::selection { background: rgba(0, 153, 255, 0.35); color: #fff; }
 * { scrollbar-width: thin; scrollbar-color: var(--ia-border-strong) transparent; }
 
-/* Fondo: halos de marca (mismo recurso que la cabecera del widget de FICHAJE PRO) */
 .ws-bg { position: fixed; inset: 0; z-index: -1; pointer-events: none;
     background: radial-gradient(70% 55% at 78% -8%, rgba(0, 153, 255, 0.20), transparent 62%), radial-gradient(55% 45% at -10% 30%, rgba(0, 119, 255, 0.10), transparent 70%), radial-gradient(60% 50% at 50% 115%, rgba(0, 153, 255, 0.08), transparent 70%), var(--ia-surface-solid); }
 
@@ -105,16 +56,12 @@ img { display: block; max-width: 100%; }
 .ws-skip:focus { top: 16px; }
 .ws-wrap { width: min(var(--ia-page), 100% - 2 * var(--ia-gutter)); margin-inline: auto; }
 
-/* =====================================================================
-   COMPONENTES DEL SISTEMA (mismas reglas que en los userscripts)
-   ===================================================================== */
-/* Barra de herramientas (OCEANE PRO) */
+/* COMPONENTES DEL SISTEMA */
 .ia-toolbar { position: fixed; top: 14px; left: 0; right: 0; margin: 0 auto; width: max-content; max-width: calc(100% - 24px); display: flex; align-items: center; padding: 6px var(--ia-sp-3); gap: var(--ia-sp-2); font-size: var(--ia-fs-xs); color: var(--ia-text); z-index: var(--ia-z-bar); border-radius: var(--ia-r-lg); user-select: none; animation: ia-bar-in 0.6s var(--ia-ease) backwards; }
 .ia-toolbar::before { content: ""; position: absolute; inset: 0; backdrop-filter: blur(14px) saturate(180%); -webkit-backdrop-filter: blur(14px) saturate(180%); background-color: var(--ia-surface-bar); border: 1px solid var(--ia-border-strong); border-radius: var(--ia-r-lg); box-shadow: var(--ia-sh-bar); z-index: -1; }
 .ia-brand { display: flex; align-items: center; padding: 0 var(--ia-sp-4) 0 2px; margin-right: var(--ia-sp-1); border-right: 1px solid var(--ia-border); }
 .ia-brand img { height: 18px; width: auto; }
 
-/* Botón */
 .ia-btn { position: relative; background: transparent; color: var(--ia-text-2); border: 1px solid transparent; border-left: 2px solid transparent; padding: 0 10px; border-radius: var(--ia-r-md); cursor: pointer; font-family: inherit; font-weight: 600; font-size: var(--ia-fs-xs); letter-spacing: 0.2px; transition: all 0.18s var(--ia-ease); height: 26px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; gap: var(--ia-sp-1); overflow: hidden; text-decoration: none; }
 .ia-btn:hover { color: var(--ia-text); background-color: var(--ia-hover); border-color: var(--ia-border); }
 .ia-btn:active { transform: scale(0.96); transition-duration: 0.06s; }
@@ -137,12 +84,10 @@ img { display: block; max-width: 100%; }
 .ia-btn.is-success > .ia-icon { animation: ia-pop 0.45s var(--ia-ease-pop) backwards; }
 .ia-btn.is-success { animation: ia-ring-ok 0.7s ease-out; }
 .ia-btn.is-warning { animation: ia-shake 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
-/* Tamaño de página para botones (misma forma, más alto) */
 .ia-btn--lg { height: 40px; padding: 0 18px; font-size: 13px; border-radius: var(--ia-r-lg); gap: var(--ia-sp-2); }
 .ia-btn--md { height: 32px; padding: 0 14px; font-size: var(--ia-fs-sm); gap: var(--ia-sp-2); }
 .ia-btn--outline { border-color: var(--ia-border); background: var(--ia-field); }
 
-/* Menú */
 .ia-menu { display: none; position: absolute; top: calc(100% + 8px); right: 0; background-color: var(--ia-surface-raised); backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%); border: 1px solid var(--ia-border); border-radius: var(--ia-r-lg); width: max-content; min-width: 200px; box-shadow: var(--ia-sh-menu); z-index: var(--ia-z-menu); padding: var(--ia-sp-2); transform-origin: top right; animation: ia-dd-in 0.18s var(--ia-ease); }
 .ia-menu.is-open { display: block; }
 .ia-menu > * { animation: ia-item-in 0.24s var(--ia-ease) backwards; }
@@ -151,7 +96,6 @@ img { display: block; max-width: 100%; }
 .ia-menu-item:hover { color: var(--ia-brand-500); border-left-color: var(--ia-brand-500); background-color: var(--ia-brand-soft); padding-left: 14px; }
 .ia-menu-item.is-active { color: var(--ia-brand-500); border-left-color: var(--ia-brand-500); background-color: var(--ia-brand-soft); font-weight: 600; }
 
-/* Botón de icono, contador, punto, spinner, tecla */
 .ia-icon-btn { flex: none; width: 30px; height: 30px; background: transparent; border: 1px solid transparent; color: var(--ia-text-3); cursor: pointer; border-radius: var(--ia-r-md); display: inline-flex; align-items: center; justify-content: center; transition: all 0.15s ease; }
 .ia-icon-btn:hover { color: var(--ia-text); background: var(--ia-hover); border-color: var(--ia-border); }
 .ia-count { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--ia-brand-soft); border: 1px solid var(--ia-brand-glow); color: var(--ia-brand-500); font-size: var(--ia-fs-2xs); font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
@@ -161,7 +105,6 @@ img { display: block; max-width: 100%; }
 .ia-kbd { font-family: var(--ia-mono); background: var(--ia-brand-soft); color: var(--ia-brand-500); padding: 1px var(--ia-sp-2); border-radius: var(--ia-r-sm); font-size: var(--ia-fs-xs); font-weight: 700; border: 1px solid var(--ia-brand-glow); }
 .ia-empty { padding: var(--ia-sp-6); border: 1px dashed var(--ia-border-strong); border-radius: var(--ia-r-lg); color: var(--ia-text-3); text-align: center; }
 
-/* Chip de estado (FICHAJE PRO .fp-chip) */
 .ia-chip { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 0 9px; border-radius: 11px; font-size: var(--ia-fs-xs); font-weight: 600; white-space: nowrap; color: var(--ia-text-2); background: rgba(255, 255, 255, 0.05); border: 1px solid var(--ia-border); }
 .ia-chip i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .ia-chip[data-tono="brand"] { color: var(--ia-brand-500); background: var(--ia-brand-soft); border-color: var(--ia-brand-glow); }
@@ -169,10 +112,8 @@ img { display: block; max-width: 100%; }
 .ia-chip[data-tono="success"] { color: var(--ia-success); background: rgba(63, 185, 80, 0.12); border-color: rgba(63, 185, 80, 0.35); }
 .ia-chip[data-tono="warning"] { color: var(--ia-warning); background: rgba(210, 153, 34, 0.12); border-color: rgba(210, 153, 34, 0.35); }
 
-/* Valor destacado y etiqueta (360 PRO .tw-chip / .tw-pill) */
 .tw-chip, .tw-copy { display: inline-flex; align-items: center; gap: 6px; padding: 2px var(--ia-sp-2); background: var(--ia-brand-soft); border: 1px solid var(--ia-brand-glow); border-radius: var(--ia-r-sm); color: var(--ia-brand-500); font-family: var(--ia-mono); font-size: var(--ia-fs-sm); font-weight: 700; line-height: 1.4; }
 .tw-pill { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 2px var(--ia-sp-2); border-radius: 9px; font-size: var(--ia-fs-xs); font-weight: 600; border: 1px solid var(--ia-border); color: var(--ia-text-2); background: rgba(255, 255, 255, 0.04); }
-/* Título de sección y fila de dato (360 PRO .tw-section-title / .tw-row) */
 .tw-section-title { display: flex; align-items: center; gap: var(--ia-sp-2); margin: 0 0 var(--ia-sp-3); font-size: var(--ia-fs-xs); font-weight: 700; color: var(--ia-text); letter-spacing: 0.2px; }
 .tw-section-title::before { content: ""; flex: none; width: 3px; height: 12px; border-radius: 2px; background-color: var(--ia-brand-500); }
 .tw-row { display: grid; grid-template-columns: minmax(96px, 1fr) minmax(0, max-content); align-items: center; column-gap: var(--ia-sp-4); padding: 7px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: var(--ia-fs-sm); line-height: 1.4; }
@@ -185,7 +126,6 @@ img { display: block; max-width: 100%; }
 .tw-badge.is-good { color: var(--ia-success); } .tw-badge.is-good::before { background: var(--ia-success); }
 .tw-badge.is-info { color: var(--ia-brand-500); } .tw-badge.is-info::before { background: var(--ia-brand-500); }
 
-/* Pasos (FICHAJE PRO .fp-steps) */
 .fp-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .fp-steps > li { position: relative; display: grid; grid-template-columns: 30px 1fr; gap: var(--ia-sp-5); padding-bottom: var(--ia-sp-7); }
 .fp-steps > li:last-child { padding-bottom: 0; }
@@ -195,7 +135,6 @@ img { display: block; max-width: 100%; }
 .fp-steps h3 { font-size: var(--ia-fs-xl); margin: 3px 0 var(--ia-sp-2); }
 .fp-steps p { color: var(--ia-text-3); max-width: 60ch; }
 
-/* Modal */
 .ia-overlay { display: none; position: fixed; inset: 0; background: var(--ia-overlay); z-index: var(--ia-z-modal); align-items: center; justify-content: center; padding: 16px; animation: ia-fade 0.2s ease-out; }
 .ia-overlay.is-open { display: flex; }
 .ia-modal { background-color: var(--ia-surface-modal); border: 1px solid var(--ia-border); border-radius: var(--ia-r-xl); padding: var(--ia-sp-6); width: 480px; max-width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--ia-sh-modal); color: var(--ia-text-2); animation: ia-modal-in 0.34s var(--ia-ease); }
@@ -212,10 +151,7 @@ img { display: block; max-width: 100%; }
 .ia-hint .ia-icon { margin-top: 2px; color: var(--ia-brand-500); }
 .ia-hint--warning, .ia-hint--warning .ia-icon { color: var(--ia-warning); }
 
-/* =====================================================================
-   PATRONES DE LA WEB (extensión v1.9: composición de página con los mismos tokens)
-   ===================================================================== */
-/* Barra de navegación = barra de herramientas + indicador deslizante (menú lateral de 360 PRO, en horizontal) */
+/* PATRONES DE LA WEB */
 .ws-nav { position: relative; display: flex; align-items: center; gap: 2px; }
 .ws-nav .ia-btn { height: 30px; padding: 0 12px; font-size: var(--ia-fs-sm); z-index: 1; border-color: transparent !important; background: transparent !important; }
 .ws-nav .ia-btn:hover { color: var(--ia-text); }
@@ -225,7 +161,6 @@ img { display: block; max-width: 100%; }
 .ws-bar-title { display: none; font-size: var(--ia-fs-sm); font-weight: 600; color: var(--ia-text); padding: 0 var(--ia-sp-2); }
 .ws-menu-wrap { position: relative; display: none; }
 
-/* Secciones */
 .ws-section { padding: var(--ia-sp-10) 0 0; }
 .ws-section:last-of-type { padding-bottom: var(--ia-sp-9); }
 .ws-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--ia-sp-6); margin-bottom: var(--ia-sp-8); flex-wrap: wrap; }
@@ -233,7 +168,6 @@ img { display: block; max-width: 100%; }
 .ws-head h2 { font-size: var(--ia-fs-3xl); letter-spacing: -0.5px; max-width: 22ch; }
 .ws-head p { margin-top: var(--ia-sp-4); max-width: 58ch; color: var(--ia-text-3); font-size: var(--ia-fs-lg); }
 
-/* Hero */
 .ws-hero { position: relative; padding: 150px 0 var(--ia-sp-8); }
 .ws-hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--ia-sp-8); align-items: center; }
 .ws-hero h1 { font-size: var(--ia-fs-display); letter-spacing: -1.6px; line-height: 1.04; margin: var(--ia-sp-6) 0 var(--ia-sp-6); }
@@ -244,7 +178,6 @@ img { display: block; max-width: 100%; }
 .ws-stat b { display: block; font-size: var(--ia-fs-3xl); color: var(--ia-text); font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .ws-stat span { font-size: var(--ia-fs-sm); color: var(--ia-text-3); font-weight: 500; }
 
-/* Escena del hero: componentes reales del sistema */
 .ws-stage { position: relative; height: 470px; perspective: 1400px; }
 .ws-layer { position: absolute; transition: transform 0.5s var(--ia-ease); will-change: transform; }
 .ws-float { animation: ws-float 7s ease-in-out infinite; }
@@ -267,7 +200,6 @@ img { display: block; max-width: 100%; }
 .ws-ring-time { font-size: 32px; font-weight: 700; letter-spacing: -1px; line-height: 1; font-variant-numeric: tabular-nums; background: linear-gradient(180deg, #ffffff, #b9d9ff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .ws-ring-sub { font-size: var(--ia-fs-xs); color: var(--ia-text-3); margin-top: 4px; }
 
-/* Tarjeta (base 360 PRO .tw-card, a escala de página) */
 .ws-card { position: relative; display: flex; flex-direction: column; min-width: 0; background: var(--ia-field); border: 1px solid var(--ia-border); border-radius: var(--ia-r-xl); padding: var(--ia-sp-6); overflow: hidden; isolation: isolate;
     transition: transform 0.35s var(--ia-ease), border-color 0.25s ease, background-color 0.25s ease, box-shadow 0.35s var(--ia-ease); }
 .ws-card::after { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity 0.3s ease; background: radial-gradient(380px circle at var(--mx, 50%) var(--my, 0%), rgba(0, 153, 255, 0.12), transparent 60%); }
@@ -279,12 +211,10 @@ a.ws-card:focus-visible { outline: 2px solid var(--ia-brand-500); outline-offset
 a.ws-card:hover .ws-tile { transform: scale(1.06) rotate(-4deg); box-shadow: 0 0 22px var(--ia-brand-glow); }
 .ws-tile--lg { width: 64px; height: 64px; border-radius: var(--ia-r-xl); }
 
-/* Principios */
 .ws-grid-4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--ia-sp-5); }
 .ws-principle h3 { font-size: var(--ia-fs-lg); margin: var(--ia-sp-5) 0 var(--ia-sp-2); }
 .ws-principle p { color: var(--ia-text-3); font-size: var(--ia-fs-md); }
 
-/* Catálogo */
 .ws-tools { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: var(--ia-sp-5); }
 .ws-tool-top { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--ia-sp-4); margin-bottom: var(--ia-sp-5); }
 .ws-tool h3 { font-size: var(--ia-fs-xl); display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 var(--ia-sp-2); }
@@ -302,7 +232,6 @@ a.ws-card:hover .ws-go .ia-icon { transform: translateX(4px); }
 .ws-search .ia-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--ia-text-3); pointer-events: none; }
 .ws-search .ia-control { height: 40px; padding-left: 34px; font-size: var(--ia-fs-md); border-radius: var(--ia-r-lg); }
 
-/* Novedades (línea de tiempo con chips) */
 .ws-log { position: relative; display: flex; flex-direction: column; gap: var(--ia-sp-4); max-width: 860px; }
 .ws-log-item { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: var(--ia-sp-6); }
 .ws-log-date { font-size: var(--ia-fs-sm); color: var(--ia-text-3); font-weight: 600; padding-top: var(--ia-sp-6); font-variant-numeric: tabular-nums; }
@@ -311,17 +240,14 @@ a.ws-card:hover .ws-go .ia-icon { transform: translateX(4px); }
 .ws-log-head h3 { font-size: var(--ia-fs-lg); }
 .ws-log p { color: var(--ia-text-3); }
 
-/* Hoja de ruta */
 .ws-road { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--ia-sp-5); }
 .ws-road .ws-card { border-style: dashed; background: transparent; }
 .ws-road h3 { font-size: var(--ia-fs-lg); margin: var(--ia-sp-4) 0 var(--ia-sp-2); }
 .ws-road p { color: var(--ia-text-3); }
 
-/* Instalación */
 .ws-install { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: var(--ia-sp-8); align-items: start; }
 .ws-aside { position: sticky; top: 96px; display: flex; flex-direction: column; gap: var(--ia-sp-4); }
 
-/* Ficha de herramienta */
 .ws-page { padding: 128px 0 var(--ia-sp-9); }
 .ws-crumbs { display: flex; align-items: center; gap: var(--ia-sp-2); font-size: var(--ia-fs-sm); color: var(--ia-text-3); margin-bottom: var(--ia-sp-7); }
 .ws-crumbs a { color: var(--ia-text-2); font-weight: 500; transition: color 0.15s; }
@@ -364,7 +290,6 @@ a.ws-card:hover .ws-go .ia-icon { transform: translateX(4px); }
 .ws-report:hover .ia-icon { color: var(--ia-brand-500); transform: translateX(3px); }
 .ws-report span { flex: 1; }
 
-/* Visor de código: menú lateral (360 PRO .tw-rail) + editor */
 .ws-viewer { display: grid; grid-template-columns: 250px minmax(0, 1fr); min-height: calc(100vh - 160px); border: 1px solid var(--ia-border); border-radius: var(--ia-r-xl); overflow: hidden; background: var(--ia-surface-solid); box-shadow: var(--ia-sh-modal); }
 .ws-rail { position: relative; padding: var(--ia-sp-5) var(--ia-sp-3); background: linear-gradient(180deg, rgba(0, 153, 255, 0.05), rgba(255, 255, 255, 0.015) 40%); border-right: 1px solid var(--ia-border); overflow-y: auto; max-height: calc(100vh - 160px); }
 .ws-rail-group { font-size: var(--ia-fs-xs); font-weight: 700; color: var(--ia-text-3); padding: var(--ia-sp-4) var(--ia-sp-4) var(--ia-sp-2); }
@@ -402,7 +327,6 @@ a.ws-card:hover .ws-go .ia-icon { transform: translateX(4px); }
 .cv-more:hover { background: rgba(0, 153, 255, 0.2); }
 .ws-code-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--ia-sp-4); min-height: 360px; color: var(--ia-text-3); font-family: var(--ia-font); }
 
-/* Pie */
 .ws-foot { margin-top: var(--ia-sp-10); border-top: 1px solid var(--ia-border); padding: var(--ia-sp-8) 0; font-size: var(--ia-fs-sm); color: var(--ia-text-3); }
 .ws-foot-row { display: flex; align-items: center; justify-content: space-between; gap: var(--ia-sp-6); flex-wrap: wrap; }
 .ws-foot .ia-brand { border-right: 1px solid var(--ia-border); }
@@ -410,13 +334,9 @@ a.ws-card:hover .ws-go .ia-icon { transform: translateX(4px); }
 .ws-foot-links a { transition: color 0.15s; }
 .ws-foot-links a:hover { color: var(--ia-brand-500); }
 
-/* Entrada al hacer scroll y al cambiar de página */
 .ws-reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.7s var(--ia-ease), transform 0.7s var(--ia-ease); transition-delay: var(--d, 0s); }
 .ws-reveal.is-in { opacity: 1; transform: none; }
 
-/* =====================================================================
-   MOVIMIENTO (catálogo del Design System v1.7)
-   ===================================================================== */
 @keyframes ia-bar-in { from { opacity: 0; transform: translateY(-14px) scale(0.98); } to { opacity: 1; transform: none; } }
 @keyframes ia-rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes ia-item-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
@@ -440,9 +360,6 @@ a.ws-card:hover .ws-go .ia-icon { transform: translateX(4px); }
     .ws-reveal { opacity: 1; transform: none; }
 }
 
-/* =====================================================================
-   RESPONSIVE
-   ===================================================================== */
 @media (max-width: 1320px) {
     .ws-l-ring { scale: 0.82; transform-origin: right bottom; }
     .ws-l-card { width: min(330px, calc(100% - 206px)); }
@@ -539,9 +456,297 @@ a.ws-card:hover .ws-go .ia-icon { transform: translateX(4px); }
 (function () {
 'use strict';
 
+// SPLASH SCREEN IATEL: TELECOMUNICACIONES & IA (VERSIÓN DIRECTIVA)
+// ========================================================
+function mostrarBienvenidaIatel(callback) {
+    // Función de voz robótica (Text-to-Speech nativo)
+    function hablar(texto) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(texto);
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.05; // Un poco más rápido
+            utterance.pitch = 0.8; // Tono ligeramente más grave/robótico
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    const overlay = document.createElement("div");
+    overlay.id = "iatel-splash";
+    overlay.innerHTML = `
+        <style>
+            #iatel-splash {
+                position: fixed;
+                top: 0; left: 0; width: 100vw; height: 100vh;
+                background: radial-gradient(circle at center, #0a1122 0%, #030712 100%);
+                z-index: 999999999;
+                display: flex; flex-direction: column;
+                justify-content: center; align-items: center;
+                font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+                overflow: hidden; user-select: none;
+                /* Transición épica tipo compuerta sci-fi */
+                clip-path: inset(0 0 0 0);
+                transition: clip-path 0.9s cubic-bezier(0.77, 0, 0.17, 1), opacity 0.8s ease;
+            }
+            #iatel-splash.door-open {
+                clip-path: inset(0 50% 0 50%); /* Se abre por la mitad hacia los lados */
+                opacity: 0.3;
+            }
+            #iatel-bg-canvas {
+                position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                opacity: 0.45; pointer-events: none;
+            }
+            .iatel-content {
+                position: relative; display: flex; flex-direction: column;
+                align-items: center; z-index: 2;
+            }
+            .iatel-logo-wrapper { position: relative; margin-bottom: 22px; }
+            .iatel-logo {
+                width: 130px; height: auto;
+                filter: drop-shadow(0 0 30px rgba(0, 200, 255, 0.65));
+                animation: iatel-float 2.8s ease-in-out infinite alternate;
+                transition: filter 0.1s;
+            }
+            /* Efecto Chispazo/Glitch */
+            .glitch-active {
+                animation: iatel-glitch 0.2s cubic-bezier(.25, .46, .45, .94) both;
+                filter: drop-shadow(0 0 40px rgba(0, 255, 170, 0.8)) hue-rotate(90deg);
+            }
+            .iatel-title {
+                color: #ffffff; font-size: 26px; font-weight: 800;
+                letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px;
+                text-shadow: 0 0 20px rgba(0, 210, 255, 0.85);
+            }
+            .iatel-badge {
+                display: inline-flex; align-items: center; gap: 6px;
+                background: rgba(0, 220, 255, 0.1); border: 1px solid rgba(0, 220, 255, 0.35);
+                padding: 4px 14px; border-radius: 20px; color: #00d2ff;
+                font-size: 11px; font-weight: 600; letter-spacing: 2.5px;
+                text-transform: uppercase; margin-bottom: 28px;
+                box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+            }
+            .iatel-badge-dot {
+                width: 7px; height: 7px; background: #00ffaa;
+                border-radius: 50%; box-shadow: 0 0 8px #00ffaa;
+                animation: iatel-blink 1.2s infinite;
+            }
+            .iatel-progress-container {
+                width: 340px; display: flex; flex-direction: column; gap: 8px;
+            }
+            .iatel-progress-bar-bg {
+                width: 100%; height: 6px; background: rgba(255, 255, 255, 0.08);
+                border-radius: 10px; overflow: hidden;
+                border: 1px solid rgba(0, 210, 255, 0.25);
+                box-shadow: inset 0 0 8px rgba(0,0,0,0.5);
+            }
+            .iatel-progress-bar-fill {
+                width: 0%; height: 100%;
+                background: linear-gradient(90deg, #0077ff, #00d2ff, #00ffc8);
+                border-radius: 10px; box-shadow: 0 0 12px rgba(0, 210, 255, 0.9);
+                transition: width 0.15s ease-out;
+            }
+            .iatel-status-row {
+                display: flex; justify-content: space-between; color: #8fa5c7;
+                font-size: 12px; letter-spacing: 1px; font-family: 'Consolas', monospace;
+            }
+            .iatel-percentage { color: #00ffc8; font-weight: 700; }
+            
+            /* Terminal de comandos */
+            #iatel-terminal {
+                width: 340px; height: 60px; margin-top: 15px;
+                font-family: 'Consolas', monospace; font-size: 11px;
+                color: #00d2ff; text-align: left; opacity: 0.7;
+                overflow: hidden; display: flex; flex-direction: column;
+                justify-content: flex-end;
+            }
+            .term-line { margin: 2px 0; border-right: 2px solid transparent; }
+            .term-line.typing { border-right: 2px solid #00ffc8; animation: blink-cursor 0.5s step-end infinite alternate; }
+
+            @keyframes iatel-float {
+                0% { transform: translateY(0px) scale(0.98); }
+                100% { transform: translateY(-7px) scale(1.02); }
+            }
+            @keyframes iatel-blink {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.3; }
+            }
+            @keyframes blink-cursor { 50% { border-color: transparent; } }
+            @keyframes iatel-glitch {
+                0% { transform: translate(0) }
+                20% { transform: translate(-3px, 3px) }
+                40% { transform: translate(-3px, -3px) }
+                60% { transform: translate(3px, 3px) }
+                80% { transform: translate(3px, -3px) }
+                100% { transform: translate(0) }
+            }
+        </style>
+
+        <canvas id="iatel-bg-canvas"></canvas>
+
+        <div class="iatel-content">
+            <div class="iatel-logo-wrapper">
+                <img src="iatel.png" id="iatel-logo-img" class="iatel-logo" alt="Logo Iatel" />
+            </div>
+            <div class="iatel-title">Bienvenido al mundo Iatel</div>
+            <div class="iatel-badge">
+                <span class="iatel-badge-dot"></span>
+                Telecomunicaciones &amp; IA
+            </div>
+
+            <div class="iatel-progress-container">
+                <div class="iatel-progress-bar-bg">
+                    <div id="iatel-fill" class="iatel-progress-bar-fill"></div>
+                </div>
+                <div class="iatel-status-row">
+                    <span id="iatel-status">Iniciando sistema...</span>
+                    <span id="iatel-percent" class="iatel-percentage">0%</span>
+                </div>
+            </div>
+            
+            <div id="iatel-terminal"></div>
+        </div>
+    `;
+
+    document.body.appendChild(overlay);
+    iniciarFondoRed();
+
+    const fill = document.getElementById("iatel-fill");
+    const status = document.getElementById("iatel-status");
+    const percent = document.getElementById("iatel-percent");
+    const logo = document.getElementById("iatel-logo-img");
+    const terminal = document.getElementById("iatel-terminal");
+
+    const fases = [
+        { hasta: 25, tiempo: 800, texto: "Autenticando nodo neural...", logs: ["[SYS] Inicializando core v9.2...", "[OK] Memoria asignada", "[SYS] Bypass de seguridad completado"] },
+        { hasta: 55, tiempo: 1000, texto: "Enlazando con Iatel Cloud...", logs: ["[OK] Conexión establecida", "[SYS] Desplegando scripts en VRAM...", "[OK] Red neuronal activa"] },
+        { hasta: 85, tiempo: 1200, texto: "Cargando sus herramientas...", logs: ["[SYS] Cargando módulo OCEANE PRO...", "[SYS] Inyectando MASIVAS PRO...", "[OK] Integración CRM 360 validada"] },
+        { hasta: 100, tiempo: 800, texto: "¡Acceso concedido!", logs: ["[OK] Sistemas operativos.", "[SYS] Procedimiento de arranque finalizado."] }
+    ];
+
+    let progresoActual = 0;
+    let faseIdx = 0;
+
+    function logTerminal(lineas) {
+        lineas.forEach((linea, index) => {
+            setTimeout(() => {
+                const el = document.createElement("div");
+                el.className = "term-line typing";
+                el.innerText = linea;
+                terminal.appendChild(el);
+                if (terminal.childElementCount > 4) terminal.removeChild(terminal.firstChild);
+                setTimeout(() => el.classList.remove("typing"), 300);
+            }, index * 250);
+        });
+    }
+
+    function triggerGlitch() {
+        logo.classList.add("glitch-active");
+        setTimeout(() => logo.classList.remove("glitch-active"), 200);
+    }
+
+    function avanzarFase() {
+        if (faseIdx >= fases.length) {
+            hablar("Sistemas de automatización en línea. Bienvenidos al mundo Iatel.");
+            setTimeout(() => {
+                overlay.classList.add("door-open");
+                setTimeout(() => {
+                    overlay.remove();
+                    if (typeof callback === "function") callback();
+                }, 900);
+            }, 600);
+            return;
+        }
+
+        const { hasta, tiempo, texto, logs } = fases[faseIdx];
+        status.innerText = texto;
+        triggerGlitch();
+        logTerminal(logs);
+
+        const incremento = hasta - progresoActual;
+        const pasos = 15;
+        const intervaloTiempo = tiempo / pasos;
+        let paso = 0;
+
+        const timer = setInterval(() => {
+            paso++;
+            progresoActual += incremento / pasos;
+            if (paso >= pasos) {
+                progresoActual = hasta;
+                clearInterval(timer);
+                faseIdx++;
+                setTimeout(avanzarFase, 120);
+            }
+            const valorRedondeado = Math.min(100, Math.round(progresoActual));
+            fill.style.width = valorRedondeado + "%";
+            percent.innerText = valorRedondeado + "%";
+        }, intervaloTiempo);
+    }
+
+    avanzarFase();
+
+    function iniciarFondoRed() {
+        const canvas = document.getElementById("iatel-bg-canvas");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        
+        function redimensionar() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        redimensionar();
+        window.addEventListener('resize', redimensionar);
+
+        const puntos = [];
+        const total = 50;
+
+        for (let i = 0; i < total; i++) {
+            puntos.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 1.2,
+                vy: (Math.random() - 0.5) * 1.2
+            });
+        }
+
+        function dibujar() {
+            if (!document.getElementById("iatel-splash")) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let i = 0; i < total; i++) {
+                const p1 = puntos[i];
+                p1.x += p1.vx; p1.y += p1.vy;
+
+                if (p1.x < 0 || p1.x > canvas.width) p1.vx *= -1;
+                if (p1.y < 0 || p1.y > canvas.height) p1.vy *= -1;
+
+                ctx.fillStyle = "#00d2ff";
+                ctx.beginPath();
+                ctx.arc(p1.x, p1.y, 2, 0, Math.PI * 2);
+                ctx.fill();
+
+                for (let j = i + 1; j < total; j++) {
+                    const p2 = puntos[j];
+                    const dist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+                    if (dist < 140) {
+                        ctx.strokeStyle = `rgba(0, 210, 255, ${0.35 * (1 - dist / 140)})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(dibujar);
+        }
+        dibujar();
+    }
+}
+
+// INICIAR LA PRESENTACIÓN NADA MÁS ARRANCAR EL SCRIPT
+mostrarBienvenidaIatel();
+
 /* =====================================================================
-   DATOS · todo lo que se ve sale de aquí. Para añadir una herramienta, añade un objeto a HERRAMIENTAS.
-   "archivo" es la ruta dentro del repositorio. Si el archivo aún no está subido, la web lo muestra como "Próximamente".
+   DATOS · todo lo que se ve sale de aquí.
    ===================================================================== */
 const REPO = { usuario: 'Pache2993', nombre: 'herramientas-iatel', rama: 'main' };
 
@@ -671,7 +876,6 @@ const HERRAMIENTAS = [
     }
 ];
 
-/* Informes del cargador (mismos nombres y archivos que suite-reportes.user.js) */
 const INFORMES = {
     HUAWEI_MM: ['MasMovil +36h', 'Masmovil.user.js'],
     HUAWEI_ORANGE: ['Servicios +36h', 'Servicios_orange_mas_36h.user.js'],
@@ -723,9 +927,6 @@ const PERMISOS = {
     'GM_addStyle': ['pencil', 'Estilos', 'Añade estilos propios a la página.']
 };
 
-/* =====================================================================
-   ICONOS (mismo trazo que IADS_ICONS: 24 × 24, 1,7 px, currentColor)
-   ===================================================================== */
 const ICONOS = {
     'refresh': '<path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/>',
     'check-circle': '<circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/>',
@@ -775,9 +976,7 @@ function icono(nombre, px) {
     return '<svg class="ia-icon" data-i="' + nombre + '" width="' + t + '" height="' + t + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICONOS[nombre] || '') + '</svg>';
 }
 
-/* =====================================================================
-   UTILIDADES
-   ===================================================================== */
+/* UTILIDADES */
 const $ = (s, r) => (r || document).querySelector(s);
 const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -791,8 +990,6 @@ const miles = (n) => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 const herramienta = (id) => HERRAMIENTAS.find(h => h.id === id);
 const informePorArchivo = (a) => Object.values(INFORMES).find(i => i[1] === a);
 
-/* --- Lectura del código del repositorio ---
-   Primero en el mismo sitio (GitHub Pages sirve los archivos del repositorio); si falla, desde raw.githubusercontent.com. */
 const cacheTexto = new Map(), cacheMeta = new Map();
 async function pedir(ruta, cabecera) {
     const intentos = [rutaUrl(ruta), urlRaw(ruta)];
@@ -802,7 +999,7 @@ async function pedir(ruta, cabecera) {
             const r = await fetch(u, cabecera ? { headers: { Range: 'bytes=0-6143' } } : { cache: 'no-cache' });
             if (r.ok || r.status === 206) return r;
             ultimo = r.status;
-            if (r.status === 404) break;                 // el repositorio no tiene ese archivo (Pages publica el repositorio tal cual)
+            if (r.status === 404) break;
         } catch (e) { ultimo = e; }
     }
     const err = new Error(ultimo === 404 ? 'no-existe' : 'sin-conexion'); err.code = ultimo; throw err;
@@ -817,7 +1014,6 @@ function leerCabecera(t) {
     if (!m.version) { const v = t.match(/v(\d+\.\d+(?:\.\d+)?) - IATelecom/); if (v) m.version = [v[1]]; }
     return m;
 }
-/* Metadatos de una herramienta: existe, versión, webs, permisos y tamaño (sin descargar el archivo entero si el servidor admite rangos) */
 function meta(h) {
     if (cacheMeta.has(h.archivo)) return cacheMeta.get(h.archivo);
     const p = (async () => {
@@ -825,7 +1021,7 @@ function meta(h) {
             if (cacheTexto.has(h.archivo)) { const t = await cacheTexto.get(h.archivo); return Object.assign({ existe: true, tamano: new Blob([t]).size, lineas: t.split('\n').length }, { cab: leerCabecera(t) }); }
             const r = await pedir(h.archivo, true);
             const total = r.status === 206 ? +((r.headers.get('content-range') || '').split('/')[1] || 0) : null;
-            const t = (await r.text()).replace(/\r\n?/g, '\n');                       // los archivos del repositorio usan CRLF
+            const t = (await r.text()).replace(/\r\n?/g, '\n');
             const res = { existe: true, tamano: total || (r.status === 200 ? new Blob([t]).size : null), cab: leerCabecera(t) };
             if (r.status === 200) { cacheTexto.set(h.archivo, Promise.resolve(t)); res.lineas = t.split('\n').length; }
             return res;
@@ -836,7 +1032,6 @@ function meta(h) {
 }
 const versionDe = (h, m) => (m && m.cab && m.cab.version && m.cab.version[0]) || h.version;
 
-/* --- Mensajes dentro del botón (mismo patrón que btnMsg de los userscripts) --- */
 function btnMsg(btn, texto, tipo, ms) {
     if (!btn) return;
     if (!btn._ia) btn._ia = { html: btn.innerHTML, t: null };
@@ -860,9 +1055,6 @@ async function copiar(texto) {
     try { const ta = document.createElement('textarea'); ta.value = texto; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select(); const ok = document.execCommand('copy'); ta.remove(); return ok; } catch (e) { return false; }
 }
 
-/* =====================================================================
-   PIEZAS COMUNES
-   ===================================================================== */
 const cabecera = (marca, titulo, texto, extra) => `
     <div class="ws-head ws-reveal"><div><div class="tw-section-title">${esc(marca)}</div><h2>${titulo}</h2>${texto ? `<p>${texto}</p>` : ''}</div>${extra || ''}</div>`;
 
@@ -894,7 +1086,6 @@ function hidratarTarjetas(raiz) {
     });
 }
 
-/* --- Instalar --- */
 function accionInstalar(h, m, clase) {
     if (m && m.existe === false) return `<button class="ia-btn ${clase}" disabled>${icono('clock', 15)}<span>Código en preparación</span></button>`;
     if (h.tipo === 'marcador') return `<button class="ia-btn ia-btn--primary ${clase}" data-instalar="${h.id}">${icono('copy', 15)}<span>Cómo usarlo</span></button>`;
@@ -954,9 +1145,6 @@ document.addEventListener('click', (e) => {
     if (b) { e.preventDefault(); abrirInstalar(herramienta(b.dataset.instalar)); }
 });
 
-/* =====================================================================
-   VISTA: INICIO
-   ===================================================================== */
 function vistaInicio() {
     const disponibles = HERRAMIENTAS.length;
     const plataformas = new Set(HERRAMIENTAS.flatMap(h => h.plataformas)).size;
@@ -1064,7 +1252,6 @@ function vistaInicio() {
     </div></section>`;
 }
 
-/* Escena del hero: anillo de fichaje que cuenta de verdad, Excel que se copia y profundidad con el ratón */
 let escenaTimers = [];
 function animarEscena() {
     escenaTimers.forEach(clearInterval); escenaTimers = [];
@@ -1090,13 +1277,10 @@ function animarEscena() {
     const escena = $('#escena');
     escena.closest('.ws-hero').addEventListener('pointermove', (e) => {
         const r = escena.getBoundingClientRect(), x = (e.clientX - r.left - r.width / 2) / r.width, y = (e.clientY - r.top - r.height / 2) / r.height;
-        $$('.ws-layer', escena).forEach(l => { const k = +l.dataset.prof; l.style.transform = `translate3d(${(-x * k).toFixed(1)}px, ${(-y * k).toFixed(1)}px, 0)`; });
+        $$('.ws-layer', escena).forEach(l => { const k = +l.dataset.prof; l.style.transform = `translate3d(${(-x * k).toFixed(1)}px,${(-y * k).toFixed(1)}px, 0)`; });
     });
 }
 
-/* =====================================================================
-   VISTA: CATÁLOGO
-   ===================================================================== */
 let filtro = { plat: 'Todas', q: '' };
 function vistaCatalogo() {
     const plats = ['Todas', ...Array.from(new Set(HERRAMIENTAS.flatMap(h => h.plataformas)))];
@@ -1125,12 +1309,12 @@ function montarCatalogo(raiz) {
         });
         $('#vacio', raiz).classList.toggle('ia-hidden', n > 0);
         if (!animar) return;
-        tarjetas.forEach(t => {            // FLIP: las tarjetas se recolocan deslizándose
+        tarjetas.forEach(t => {
             if (t.classList.contains('ia-hidden')) return;
             const a = antes.get(t), b = t.getBoundingClientRect();
             if (!a.width) { anim(t, [{ opacity: 0, transform: 'scale(0.96)' }, { opacity: 1, transform: 'none' }], { duration: 320 }); return; }
             const dx = a.left - b.left, dy = a.top - b.top;
-            if (dx || dy) anim(t, [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 420 });
+            if (dx || dy) anim(t, [{ transform: `translate(${dx}px,${dy}px)` }, { transform: 'none' }], { duration: 420 });
         });
     };
     $$('.ws-filters .ia-btn', raiz).forEach(b => b.onclick = () => {
@@ -1143,9 +1327,6 @@ function montarCatalogo(raiz) {
     aplicar(false);
 }
 
-/* =====================================================================
-   VISTA: FICHA
-   ===================================================================== */
 function vistaFicha(h) {
     if (!h) return vistaNoEncontrada();
     const reportes = h.id === 'reportes';
@@ -1203,7 +1384,6 @@ async function montarFicha(raiz, h) {
         const ponerLineas = (n) => { const e = $('[data-f="lineas"]', panel); if (e) e.textContent = miles(n); };
         if (m.lineas) ponerLineas(m.lineas); else textoCompleto(h.archivo).then(t => { ponerLineas(t.split('\n').length); const v = leerCabecera(t).version; if (v) $('[data-f="version"]', panel).textContent = 'v' + v[0]; }).catch(() => ponerLineas('—'));
     }
-    // Dónde funciona y permisos: leídos de la cabecera del propio script
     const cab = m.cab || {};
     const tec = $('#f-tecnico', raiz);
     if (!m.existe) { tec.innerHTML = ''; return; }
@@ -1222,9 +1402,6 @@ async function montarFicha(raiz, h) {
     anim(tec, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420 });
 }
 
-/* =====================================================================
-   VISTA: VISOR DE CÓDIGO
-   ===================================================================== */
 function archivosVisor() {
     return {
         herramientas: HERRAMIENTAS.map(h => ({ clave: h.id, titulo: h.nombre + (h.variante ? ' · ' + h.variante : ''), archivo: h.archivo, icono: h.icono, h })),
@@ -1245,8 +1422,7 @@ function vistaCodigo(clave) {
                     <div class="ws-code-actions">
                         <button class="ia-btn ia-btn--md ia-btn--outline" id="cv-wrap" aria-pressed="false" title="Ajustar líneas largas">${icono('wrap', 14)}<span>Ajustar</span></button>
                         <button class="ia-btn ia-btn--md ia-btn--outline" id="cv-copiar" disabled>${icono('copy', 14)}<span>Copiar</span></button>
-                        <a class="ia-btn ia-btn--md ia-btn--outline" id="cv-bajar" aria-disabled="true">${icono('download', 14)}<span>Descargar</span></a>
-                        ${sel.h ? `<a class="ia-btn ia-btn--md ia-btn--primary" href="#/herramientas/${sel.h.id}">Ficha ${icono('arrow-right', 14)}</a>` : ''}
+                        <a class="ia-btn ia-btn--md ia-btn--outline" id="cv-bajar" aria-disabled="true">${icono('download', 14)}<span>Descargar</span></a>${sel.h ? `<a class="ia-btn ia-btn--md ia-btn--primary" href="#/herramientas/${sel.h.id}">Ficha ${icono('arrow-right', 14)}</a>` : ''}
                     </div>
                 </div>
                 <div class="ws-code-meta" id="cv-meta"></div>
@@ -1255,8 +1431,7 @@ function vistaCodigo(clave) {
         </div>
     </div></section>` };
 }
-/* Resaltado ligero de JavaScript (sin dependencias). Las líneas muy largas (imágenes incrustadas) se recortan. */
-const LARGA = 2000, CORTE = 80;   // marcador de línea recortada: \u0000x<n>\u0000 ("x" evita que el número se coloree como número)
+const LARGA = 2000, CORTE = 80;
 function resaltar(texto) {
     const lineas = texto.split('\n'), recortes = {};
     lineas.forEach((l, i) => { if (l.length > LARGA) { recortes[i] = l.length; lineas[i] = l.slice(0, CORTE) + '\u0000x' + i + '\u0000'; } });
@@ -1299,7 +1474,6 @@ async function montarCodigo(raiz, sel) {
     const cab = leerCabecera(texto), lineas = texto.split('\n').length, bytes = new Blob([texto]).size;
     if (cab.version) $('#cv-ver', raiz).innerHTML = ` <span class="tw-chip">v${esc(cab.version[0])}</span>`;
     meta_.innerHTML = [`${miles(lineas)} líneas`, tamano(bytes), cab.name ? cab.name[0] : null, ...(cab.match || []).slice(0, 3)].filter(Boolean).map((t, i) => `<span class="${i < 2 ? 'tw-pill' : 'ws-mono'}">${esc(t)}</span>`).join('');
-    // Pintado en dos tiempos para que la página no se congele con los archivos grandes
     await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
     cv.innerHTML = resaltar(texto);
     anim(cv, [{ opacity: 0 }, { opacity: 1 }], { duration: 300 });
@@ -1308,12 +1482,7 @@ async function montarCodigo(raiz, sel) {
     copiarBtn.onclick = async () => { const ok = await copiar(texto); btnMsg(copiarBtn, ok ? 'Copiado' : 'No se pudo copiar', ok ? 'success' : 'warning', 1800); };
     const url = URL.createObjectURL(new Blob([texto], { type: 'text/javascript' }));
     bajar.href = url; bajar.download = sel.archivo.split('/').pop(); bajar.removeAttribute('aria-disabled');
-    $('#cv-wrap', raiz).onclick = (e) => { const on = cv.classList.toggle('is-wrap'); e.currentTarget.setAttribute('aria-pressed', on); e.currentTarget.classList.toggle('is-active', on); };
-    cv.addEventListener('click', (e) => {
-        const mas = e.target.closest('.cv-more');
-        if (mas) { const i = +mas.dataset.l; mas.parentElement.textContent = texto.split('\n')[i]; return; }
-        const n = e.target.closest('.cv-n');
-        if (n) { $$('.cv-line.is-hl', cv).forEach(x => x.classList.remove('is-hl')); n.parentElement.classList.add('is-hl'); }
+    $('#cv-wrap', raiz).onclick = (e) => { const on = cv.classList.toggle('is-wrap'); e.currentTarget.setAttribute('aria-pressed', on); e.currentTarget.classList.toggle('is-active', on); }; cv.addEventListener('click', (e) => { const mas = e.target.closest('.cv-more'); if (mas) { const i = +mas.dataset.l; mas.parentElement.textContent = texto.split('\n')[i]; return; } const n = e.target.closest('.cv-n'); if (n) { $$('.cv-line.is-hl', cv).forEach(x => x.classList.remove('is-hl')); n.parentElement.classList.add('is-hl'); }
     });
 }
 
@@ -1321,15 +1490,8 @@ function vistaNoEncontrada() {
     return `<section class="ws-page"><div class="ws-wrap"><div class="ia-empty" style="padding:64px">${icono('compass', 28)}<h2 style="margin:16px 0 8px;font-size:22px">Esta página no existe</h2><p style="margin-bottom:20px">Puede que la herramienta haya cambiado de nombre.</p><a class="ia-btn ia-btn--primary ia-btn--md" href="#/herramientas">Ver herramientas</a></div></div></section>`;
 }
 
-/* =====================================================================
-   NAVEGACIÓN
-   ===================================================================== */
 const vista = $('#vista');
-const nav = $('#nav'), navInd = $('#nav-ind');
-const TITULOS = { inicio: 'Inicio', herramientas: 'Herramientas', instalacion: 'Instalación', novedades: 'Novedades', codigo: 'Código' };
-function marcarNav(clave) {
-    $$('.ia-btn', nav).forEach(a => { const on = a.dataset.ruta === clave; if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
-    $$('.ia-menu-item', $('#menu-movil')).forEach(a => a.classList.toggle('is-active', a.dataset.ruta === clave));
+const nav = $('#nav'), navInd = $('#nav-ind'); const TITULOS = { inicio: 'Inicio', herramientas: 'Herramientas', instalacion: 'Instalación', novedades: 'Novedades', codigo: 'Código' }; function marcarNav(clave) { $$('.ia-btn', nav).forEach(a => { const on = a.dataset.ruta === clave; if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });$$('.ia-menu-item',$('#menu-movil')).forEach(a => a.classList.toggle('is-active', a.dataset.ruta === clave));
     $('#bar-title').textContent = TITULOS[clave] || 'IATEL';
     const act = $(`.ia-btn[data-ruta="${clave}"]`, nav);
     if (act) { navInd.style.opacity = 1; navInd.style.width = act.offsetWidth + 'px'; navInd.style.transform = `translateX(${act.offsetLeft}px)`; }
@@ -1338,58 +1500,14 @@ function marcarNav(clave) {
 let rutaActual = null, observador = null;
 function observarReveal(raiz) {
     if (observador) observador.disconnect();
-    if (reducido() || !('IntersectionObserver' in window)) { $$('.ws-reveal', raiz).forEach(e => e.classList.add('is-in')); return; }
-    observador = new IntersectionObserver((ents) => ents.forEach(en => {
-        if (!en.isIntersecting) return;
-        en.target.classList.add('is-in'); observador.unobserve(en.target);
-        $$('[data-cuenta]', en.target).forEach(contar);
+    if (reducido() || !('IntersectionObserver' in window)) { $$('.ws-reveal', raiz).forEach(e => e.classList.add('is-in')); return; } observador = new IntersectionObserver((ents) => ents.forEach(en => { if (!en.isIntersecting) return; en.target.classList.add('is-in'); observador.unobserve(en.target); $$('[data-cuenta]', en.target).forEach(contar);
     }), { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
-    $$('.ws-reveal', raiz).forEach(e => observador.observe(e));
-}
-function contar(el) {
-    const fin = +el.dataset.cuenta; if (el._contado) return; el._contado = true;
-    if (reducido()) { el.textContent = fin; return; }
-    const t0 = performance.now(), d = 900;
-    const paso = (t) => { const p = Math.min(1, (t - t0) / d); el.textContent = Math.round(fin * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(paso); };
-    requestAnimationFrame(paso);
-}
-function route() {
-    const hash = decodeURIComponent((location.hash || '#/').slice(1)) || '/';
-    const partes = hash.split('/').filter(Boolean);
-    const seccion = partes[0] || 'inicio';
-    let html = '', montar = null, claveNav = seccion, anclaje = null, clave = hash;
-    if (seccion === 'inicio' || seccion === 'instalacion' || seccion === 'novedades') { html = vistaInicio(); montar = (r) => { hidratarTarjetas(r); animarEscena(); }; anclaje = seccion === 'inicio' ? null : seccion; clave = '/'; }
-    else if (seccion === 'herramientas' && partes[1]) { const h = herramienta(partes[1]); html = vistaFicha(h); montar = h ? (r) => montarFicha(r, h) : null; claveNav = 'herramientas'; }
-    else if (seccion === 'herramientas') { html = vistaCatalogo(); montar = montarCatalogo; }
-    else if (seccion === 'codigo') { const v = vistaCodigo(partes.slice(1).map(encodeURIComponent).join('/').replace(/%2F/g, '/')); html = v.html; montar = (r) => montarCodigo(r, v.sel); }
-    else { html = vistaNoEncontrada(); claveNav = null; }
-
-    const misma = rutaActual === clave;
-    rutaActual = clave;
-    marcarNav(anclaje || claveNav);
-    cerrarMenu();
-    document.title = (TITULOS[anclaje || claveNav] && claveNav !== 'inicio' ? TITULOS[anclaje || claveNav] + ' · ' : '') + 'IATEL · Herramientas';
-    if (misma && anclaje !== undefined) { irA(anclaje); return; }
-    const pintar = () => {
-        escenaTimers.forEach(clearInterval); escenaTimers = [];
-        vista.innerHTML = html;
-        if (montar) montar(vista);
-        observarReveal(vista);
-        if (anclaje) requestAnimationFrame(() => irA(anclaje, true)); else window.scrollTo({ top: 0, behavior: 'instant' });
-        anim(vista, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420 });
-    };
-    if (vista.firstElementChild && !reducido()) { const a = anim(vista, [{ opacity: 1 }, { opacity: 0 }], { duration: 120, easing: 'ease-in', fill: 'forwards' }); a.onfinish = () => { a.cancel(); pintar(); }; }
-    else pintar();
-}
-function irA(id, instantaneo) {
-    if (!id) { window.scrollTo({ top: 0, behavior: reducido() ? 'auto' : 'smooth' }); return; }
-    const el = document.getElementById(id); if (!el) return;
-    $$('.ws-reveal', el).forEach(x => x.classList.add('is-in'));
+    $$('.ws-reveal', raiz).forEach(e => observador.observe(e)); } function contar(el) { const fin = +el.dataset.cuenta; if (el._contado) return; el._contado = true; if (reducido()) { el.textContent = fin; return; } const t0 = performance.now(), d = 900; const paso = (t) => { const p = Math.min(1, (t - t0) / d); el.textContent = Math.round(fin * (1 - Math.pow(1 - p, 3))); if (p < 1) requestAnimationFrame(paso); }; requestAnimationFrame(paso); } function route() { const hash = decodeURIComponent((location.hash \vert{}\vert{} '#/').slice(1)) \vert{}\vert{} '/'; const partes = hash.split('/').filter(Boolean); const seccion = partes[0] \vert{}\vert{} 'inicio'; let html = '', montar = null, claveNav = seccion, anclaje = null, clave = hash; if (seccion === 'inicio' \vert{}\vert{} seccion === 'instalacion' \vert{}\vert{} seccion === 'novedades') { html = vistaInicio(); montar = (r) => { hidratarTarjetas(r); animarEscena(); }; anclaje = seccion === 'inicio' ? null : seccion; clave = '/'; } else if (seccion === 'herramientas' && partes[1]) { const h = herramienta(partes[1]); html = vistaFicha(h); montar = h ? (r) => montarFicha(r, h) : null; claveNav = 'herramientas'; } else if (seccion === 'herramientas') { html = vistaCatalogo(); montar = montarCatalogo; } else if (seccion === 'codigo') { const v = vistaCodigo(partes.slice(1).map(encodeURIComponent).join('/').replace(/\%2F/g, '/')); html = v.html; montar = (r) => montarCodigo(r, v.sel); } else { html = vistaNoEncontrada(); claveNav = null; }      const misma = rutaActual === clave; rutaActual = clave; marcarNav(anclaje \vert{}\vert{} claveNav); cerrarMenu(); document.title = (TITULOS[anclaje \vert{}\vert{} claveNav] && claveNav !== 'inicio' ? TITULOS[anclaje \vert{}\vert{} claveNav] + ' · ' : '') + 'IATEL · Herramientas'; if (misma && anclaje !== undefined) { irA(anclaje); return; } const pintar = () => { escenaTimers.forEach(clearInterval); escenaTimers = []; vista.innerHTML = html; if (montar) montar(vista); observarReveal(vista); if (anclaje) requestAnimationFrame(() => irA(anclaje, true)); else window.scrollTo({ top: 0, behavior: 'instant' }); anim(vista, [{ opacity: 0, transform: 'translateY(10px)' }, { opacity: 1, transform: 'none' }], { duration: 420 }); }; if (vista.firstElementChild && !reducido()) { const a = anim(vista, [{ opacity: 1 }, { opacity: 0 }], { duration: 120, easing: 'ease-in', fill: 'forwards' }); a.onfinish = () => { a.cancel(); pintar(); }; } else pintar(); } function irA(id, instantaneo) { if (!id) { window.scrollTo({ top: 0, behavior: reducido() ? 'auto' : 'smooth' }); return; } const el = document.getElementById(id); if (!el) return; $$
+('.ws-reveal', el).forEach(x => x.classList.add('is-in'));
     el.scrollIntoView({ behavior: instantaneo || reducido() ? 'auto' : 'smooth' });
 }
 window.addEventListener('hashchange', route);
-window.addEventListener('resize', () => marcarNav($('.ia-btn[aria-current]', nav) ? $('.ia-btn[aria-current]', nav).dataset.ruta : null));
-// En Inicio, la barra sigue la sección visible (Instalación / Novedades)
+window.addEventListener('resize', () => marcarNav($('.ia-btn[aria-current]', nav) ?$('.ia-btn[aria-current]', nav).dataset.ruta : null));
 window.addEventListener('scroll', () => {
     if (rutaActual !== '/') return;
     const y = window.scrollY + 140;
@@ -1398,7 +1516,6 @@ window.addEventListener('scroll', () => {
     if (!actual || actual.dataset.ruta !== quiere) marcarNav(quiere);
 }, { passive: true });
 
-/* Menú en móvil (mismo menú desplegable del sistema) */
 const menuBtn = $('#menu-btn'), menuMovil = $('#menu-movil');
 menuBtn.innerHTML = icono('menu', 18);
 menuMovil.innerHTML = Object.keys(TITULOS).map(k => `<a class="ia-menu-item" role="menuitem" href="#/${k === 'inicio' ? '' : k}" data-ruta="${k}">${esc(TITULOS[k])}</a>`).join('') + `<a class="ia-menu-item" role="menuitem" href="${urlRepo}" target="_blank" rel="noopener">${icono('github', 15)}GitHub</a>`;
@@ -1406,7 +1523,6 @@ function cerrarMenu() { menuMovil.classList.remove('is-open'); menuBtn.setAttrib
 menuBtn.onclick = (e) => { e.stopPropagation(); const ab = !menuMovil.classList.contains('is-open'); menuMovil.classList.toggle('is-open', ab); menuBtn.setAttribute('aria-expanded', ab); };
 document.addEventListener('click', (e) => { if (!e.target.closest('.ws-menu-wrap')) cerrarMenu(); });
 
-/* Brillo que sigue al cursor en las tarjetas */
 document.addEventListener('pointermove', (e) => {
     const c = e.target.closest && e.target.closest('.ws-card'); if (!c) return;
     const r = c.getBoundingClientRect(); c.style.setProperty('--mx', (e.clientX - r.left) + 'px'); c.style.setProperty('--my', (e.clientY - r.top) + 'px');
@@ -1414,7 +1530,7 @@ document.addEventListener('pointermove', (e) => {
 
 $('#gh').href = urlRepo; $('#gh').innerHTML = icono('github', 17); $('#gh-foot').href = urlRepo;
 route();
-requestAnimationFrame(() => marcarNav($('.ia-btn[aria-current]', nav) ? $('.ia-btn[aria-current]', nav).dataset.ruta : 'inicio'));
+requestAnimationFrame(() => marcarNav($('.ia-btn[aria-current]', nav) ?$('.ia-btn[aria-current]', nav).dataset.ruta : 'inicio'));
 })();
 </script>
 </body>
