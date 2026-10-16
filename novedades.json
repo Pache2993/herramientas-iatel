@@ -1,0 +1,30 @@
+[
+  {
+    "fecha": "Octubre 2026",
+    "herramienta": "",
+    "titulo": "Portal de herramientas",
+    "tipo": "new",
+    "texto": "Catálogo, fichas, instalación y visor de código de todas las herramientas en una sola web, leídos directamente del repositorio."
+  },
+  {
+    "fecha": "Octubre 2026",
+    "herramienta": "oceane-masmovil",
+    "titulo": "Escalados en OCEANE PRO · MásMóvil",
+    "tipo": "new",
+    "texto": "Escalar a Huawei o IREG con etiqueta de apertura, comentario, ICF_CORE y búsqueda del grupo en Intervenciones. El Excel reconoce los escalados."
+  },
+  {
+    "fecha": "Octubre 2026",
+    "herramienta": "masivas",
+    "titulo": "MASIVAS PRO unificada",
+    "tipo": "new",
+    "texto": "Una sola herramienta para las masivas entre Brújula y MAQA: analizar, rellenar fijo y móvil, comprobar estado, cerrar con revisión y Excel."
+  },
+  {
+    "fecha": "Octubre 2026",
+    "herramienta": "",
+    "titulo": "IATelecom Design System en la suite",
+    "tipo": "update",
+    "texto": "OCEANE PRO, 360 PRO, MASIVAS PRO y REPORTES PRO comparten diseño: la misma barra, los mensajes dentro de los botones y las mismas animaciones."
+  }
+]

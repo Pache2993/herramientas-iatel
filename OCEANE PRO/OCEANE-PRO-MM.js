@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         OCEANE PRO - MASMOVIL
 // @namespace    http://tampermonkey.net/
-// @version      6.1.0
+// @version      6.1.1
 // @description  Esta herramienta trata de agilizar el trabajo y reducir errores humanos en la gestión de tickets de MasMóvil conservando la supervisión humana.
-// @author       Sergio Pacheco, Javier Marchal, Gemini, Claude, ChatGPT, IATelecom
+// @author       IATEL
 // @match        https://calipso-oceane.sso.infra.ftgroup/binOceane/*
 // @grant        none
 // ==/UserScript==
@@ -1044,11 +1044,14 @@
             "SIM/TERMINAL": "Rechz: No Red",
             "Provisión MultiSIM": "Rechz: No Red",
             "Activación ATC": "Rechz: No Red",
-            "Portabilidad": "Rechz: No Red",
+            "Portabilidad": "Rechz: No Red Portabilidad",
             "Sin saldo": "Rechz: No Red",
             "Brújula publicado": "Rechz: Ya Comunicado",
             "Brújula PLAN VERANO": "Rechz: Ya Comunicado"
         };
+
+        // Comentarios que fijan su estado también cuando hay etiqueta (mandan sobre el estado del grupo de la etiqueta)
+        const ESTADO_FIJO_POR_COMENTARIO = { "Portabilidad": "Rechz: No Red Portabilidad" };
 
         function vincularComentarioYEstado(selEtiqueta, selComentario, selEstado, avisoEstado) {
             let estadoAuto = null, estadoManual = false, aplicando = false;
@@ -1078,8 +1081,30 @@
                 if (actual && actual.hidden) disparar(selComentario, 0);
             };
 
+            // --- Con etiqueta: el comentario con estado fijo (p. ej. Portabilidad) cambia el estado del grupo ---
+            let estadoFijoAuto = null;
+            const textoDe = (sel) => (sel.selectedOptions[0] && sel.selectedIndex > 0) ? sel.selectedOptions[0].text : '';
+            const idxEstado = (t) => Array.from(selEstado.options).findIndex(o => normalizarTexto(o.text) === normalizarTexto(t));
+            const estadoGrupo = () => { const o = selEtiqueta.selectedOptions[0]; return o && o.dataset.grupo ? (ESTADO_POR_GRUPO[o.dataset.grupo] || '') : ''; };
+            const aplicarFijoConEtiqueta = () => {
+                const opt = selComentario.selectedOptions[0];
+                const k = opt ? Object.keys(ESTADO_FIJO_POR_COMENTARIO).find(c => normalizarTexto(c) === normalizarTexto(opt.text)) : null;
+                const actual = textoDe(selEstado);
+                const automatico = !actual || normalizarTexto(actual) === normalizarTexto(estadoGrupo()) || (estadoFijoAuto && normalizarTexto(actual) === normalizarTexto(estadoFijoAuto));
+                if (k) {
+                    const idx = idxEstado(ESTADO_FIJO_POR_COMENTARIO[k]);
+                    if (idx > 0 && automatico) { disparar(selEstado, idx); estadoFijoAuto = selEstado.options[idx].text; avisar(estadoFijoAuto); }
+                } else if (estadoFijoAuto && normalizarTexto(actual) === normalizarTexto(estadoFijoAuto)) {
+                    const idx = estadoGrupo() ? idxEstado(estadoGrupo()) : 0;               // se vuelve al estado de la etiqueta
+                    disparar(selEstado, idx > 0 ? idx : 0); estadoFijoAuto = null;
+                    avisar(idx > 0 ? selEstado.options[idx].text : null);
+                    if (idx > 0) avisoEstado.lastElementChild.textContent = 'Asignado según la etiqueta';
+                }
+            };
+
             selComentario.addEventListener('change', () => {
-                if (aplicando || !sinEtiqueta()) return;
+                if (aplicando) return;
+                if (!sinEtiqueta()) { aplicarFijoConEtiqueta(); return; }
                 const objetivo = estadoDe(selComentario.selectedOptions[0]);
                 if (objetivo) {
                     if (estadoManual) return;                                         // el estado elegido a mano manda
@@ -1098,7 +1123,7 @@
             });
             selEtiqueta.addEventListener('change', () => {
                 if (sinEtiqueta()) { if (estadoManual) filtrarPorEstado(); }
-                else { estadoAuto = null; estadoManual = false; }
+                else { estadoAuto = null; estadoManual = false; estadoFijoAuto = null; aplicarFijoConEtiqueta(); }
             });
             selEstado._iaResetEnlace = () => { estadoAuto = null; estadoManual = false; };
         }
