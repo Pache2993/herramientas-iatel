@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name          Extractor de Reporte VDF (MC y DOWN) con MAIL
-// @namespace     http://tampermonkey.net/
-// @version       2.0
-// @description   Filtra, consolida filas y copia tabla en formato enriquecido para correo con diseño IATelecom
-// @match         http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
-// @grant         GM_setClipboard
-// @run-at        document-idle
+// @name         Extractor de Reporte VDF (MC y DOWN) con MAIL
+// @namespace    http://tampermonkey.net/
+// @version      2.1
+// @description  Filtra, consolida filas y copia tabla en formato enriquecido para correo con diseño IATelecom (Ordenado por aging de mayor a menor)
+// @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
+// @grant        GM_setClipboard
+// @run-at       document-idle
 // ==/UserScript==
 
 (function() {
@@ -356,15 +356,27 @@
   }
 
   function construirHTMLTabla() {
-    // Cabecera unificada en azul #0288d1
     let theadHtml = configuracionColumnas.map(col =>
       `<th style="background-color: #0288d1; color: #ffffff; font-family: Segoe UI, Arial, sans-serif; font-size: 11px; font-weight: 600; padding: 7px 9px; border: 1px solid #777; text-align: left; white-space: nowrap;">${col.titulo}</th>`
     ).join('');
 
     let tbodyHtml = '';
-    let filaIndex = 0;
+    
+    // ==============================================================================
+    // NUEVA FUNCIONALIDAD: Extraer los datos del Map a un Array y ordenar por aging
+    // ==============================================================================
+    let filasArray = Array.from(bufferFilas.values());
 
-    bufferFilas.forEach(fila => {
+    filasArray.sort((a, b) => {
+        // En este script el aging está en la posición 0 del array de cada fila (a[0], b[0])
+        // Leemos el valor, cambiamos la coma por punto (por si es europeo) y convertimos a número
+        let valA = parseFloat((a[0] || "0").replace(',', '.')) || 0;
+        let valB = parseFloat((b[0] || "0").replace(',', '.')) || 0;
+        return valB - valA; // de mayor a menor
+    });
+
+    // Ahora iteramos sobre el array ya ordenado
+    filasArray.forEach((fila, filaIndex) => {
       const bgColor = (filaIndex % 2 === 0) ? '#ffffff' : '#f8f9fa';
       tbodyHtml += `<tr style="background-color: ${bgColor};">`;
 
@@ -376,7 +388,6 @@
       });
 
       tbodyHtml += '</tr>';
-      filaIndex++;
     });
 
     return `<table style="border-collapse: collapse; width: 100%; border: 1px solid #dee2e6; background-color: #ffffff; margin: 8px 0;">
