@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Generador Reporte ICFs (Customer Complaints) >= 36h
 // @namespace    violentmonkey.custom
-// @version      2.1
-// @description  Filtra por ResponsableICF (Customer), Devuelta (NO), aging >= 36h leyendo de #example_wrapper con diseño IATelecom, botón mailto para Outlook y título superior
+// @version      2.2
+// @description  Filtra por ResponsableICF (Customer), Devuelta (NO), aging >= 36h ordenado de mayor a menor leyendo de #example_wrapper con diseño IATelecom
 // @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant        none
 // ==/UserScript==
@@ -476,6 +476,7 @@
 
             datosFiltrados.push({
                 aging: rawAging,
+                valorNumAging: valorAging, // Guardamos el valor numérico para ordenar
                 bgAging,
                 colorOriginal,
                 codigo,
@@ -488,6 +489,11 @@
                 zona
             });
         });
+
+        // ---------------------------------------------------------
+        // NUEVA FUNCIONALIDAD: Ordenar por aging de mayor a menor
+        // ---------------------------------------------------------
+        datosFiltrados.sort((a, b) => b.valorNumAging - a.valorNumAging);
 
         btnFab.classList.remove('is-busy');
         btnFab.innerHTML = `${iaIcon('clipboard', 16)}<span>Reporte ICFs (≥36h)</span>`;
