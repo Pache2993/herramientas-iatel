@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name          Extractor Reporte Incidencias Despliegue (Conteo Global caso_asociado)
 // @namespace     http://tampermonkey.net/
-// @version       2.1
-// @description   Filtra por Devuelta NO y ResponsableICF INCIDENCIAS DESPLIEGUE, cuenta cuántas veces aparece cada caso_asociado en la tabla y copia para correo con diseño IATelecom y botón mailto
+// @version       2.2
+// @description   Filtra por Devuelta NO y ResponsableICF INCIDENCIAS DESPLIEGUE, cuenta cuántas veces aparece cada caso_asociado, ordena por aging de mayor a menor y copia para correo con diseño IATelecom.
 // @match         http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant         GM_setClipboard
 // @run-at        document-idle
@@ -395,6 +395,15 @@
     ).join('');
 
     let tbodyHtml = '';
+
+    // ==============================================================================
+    // NUEVA FUNCIONALIDAD: Ordenar por aging de mayor a menor
+    // ==============================================================================
+    bufferFilas.sort((a, b) => {
+        let valA = parseFloat((a[0] || "0").replace(',', '.')) || 0;
+        let valB = parseFloat((b[0] || "0").replace(',', '.')) || 0;
+        return valB - valA; // descendente
+    });
 
     bufferFilas.forEach((fila, filaIndex) => {
       const bgColor = (filaIndex % 2 === 0) ? '#ffffff' : '#f8f9fa';
