@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         OCEANE PRO - MASMOVIL
 // @namespace    http://tampermonkey.net/
-// @version      6.1.1
+// @version      6.2.2
 // @description  Esta herramienta trata de agilizar el trabajo y reducir errores humanos en la gestión de tickets de MasMóvil conservando la supervisión humana.
 // @author       IATEL
 // @match        https://calipso-oceane.sso.infra.ftgroup/binOceane/*
@@ -319,6 +319,14 @@
         .ia-dd.is-autofill .ia-dd-trigger { animation: ia-autofill 0.9s ease-out; }
         /* Atajo recién guardado */
         .ia-shortcut.is-new { animation: ia-flash 1.2s ease-out; }
+        .ia-control.is-listo { animation: ia-autofill 0.9s ease-out; border-color: var(--ia-brand-500); }
+        .ia-recuperado { display: flex; align-items: center; gap: var(--ia-sp-2); margin: calc(-1 * var(--ia-sp-2)) 0 var(--ia-sp-5); padding: 8px 8px 8px 12px; border-radius: var(--ia-r-md);
+            font-size: var(--ia-fs-xs); color: var(--ia-brand-500); background: var(--ia-brand-soft); border: 1px solid var(--ia-brand-glow); border-left: 2px solid var(--ia-brand-500); animation: ia-reveal 0.26s var(--ia-ease); }
+        .ia-recuperado.ia-hidden { display: none; }
+        .ia-recuperado span { flex: 1; min-width: 0; }
+        .ia-recuperado b { font-family: var(--ia-mono); font-weight: 700; }
+        .ia-modal .ia-recuperado .ia-btn { height: 24px; padding: 0 10px; flex: none; border-color: var(--ia-border); background: var(--ia-field); color: var(--ia-text-2); }
+        .ia-btn .ia-dot[data-excel] { margin-left: 2px; }
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; transition-delay: 0s !important; }
         }
@@ -1367,6 +1375,7 @@
 
             box.innerHTML = `
                 <div class="ia-modal-title">${iaIcon('check-circle', 16)}<span>Cerrar incidencia</span></div>
+                <div class="ia-recuperado ia-hidden" data-recuperado>${iaIcon('refresh', 13)}<span></span><button type="button" class="ia-btn" data-vaciar>Vaciar</button></div>
                 <div class="ia-field" id="oceane-field-etiqueta">
                     <label class="ia-label" for="oceane-select-etiqueta">1. Etiquetas <span class="ia-optional">(Opcional)</span></label>
                     <select id="oceane-select-etiqueta" class="ia-control"></select>
@@ -1384,7 +1393,7 @@
                     <select id="oceane-select-comentario" class="ia-control"></select>
                     <div class="ia-hint ia-hidden" data-hint-comentario>${iaIcon('bolt', 12)}<span>Asignado según la etiqueta</span></div>
                     <div class="ia-subpanel" data-subpanel="comentario">
-                        <div class="ia-subrow ia-subrow--stack"><label class="ia-sublabel" for="oceane-input-brujula-cod" data-label-codigo>Código de Brújula</label><input type="text" id="oceane-input-brujula-cod" class="ia-control ia-hidden" data-cond placeholder="Introduce el código"></div>
+                        <div class="ia-subrow ia-subrow--stack"><label class="ia-sublabel" for="oceane-input-brujula-cod" data-label-codigo>Código de Brújula</label><input type="text" id="oceane-input-brujula-cod" class="ia-control ia-hidden" data-cond placeholder="Pega el código (Ctrl+V)" autocomplete="off" spellcheck="false"></div>
                         <div class="ia-subrow ia-subrow--stack"><label class="ia-sublabel" for="oceane-textarea-custom">${iaIcon('pencil', 12)} Comentario personalizado</label><textarea id="oceane-textarea-custom" class="ia-control ia-hidden" data-cond placeholder="Escribe aquí tu comentario de cierre..."></textarea></div>
                     </div>
                 </div>
@@ -1437,9 +1446,22 @@
             const textareaCustom = box.querySelector('#oceane-textarea-custom');
             box.querySelector('#oceane-select-comentario').addEventListener('change', (e) => {
                 const esp = e.target.selectedOptions[0] ? e.target.selectedOptions[0].dataset.special : '';
-                inputBrujula.classList.toggle('ia-hidden', !(esp === 'brujula-publicado' || esp === 'brujula-planverano'));
+                const conCodigo = esp === 'brujula-publicado' || esp === 'brujula-planverano';
+                const aparece = conCodigo && inputBrujula.classList.contains('ia-hidden');
+                inputBrujula.classList.toggle('ia-hidden', !conCodigo);
                 textareaCustom.classList.toggle('ia-hidden', esp !== 'custom');
+                // Brújula: el cursor se coloca en el campo del código para pegar directamente (Ctrl+V)
+                if (conCodigo) enfocarCodigoBrujula(aparece);
             });
+            function enfocarCodigoBrujula(destacar) {
+                setTimeout(() => {
+                    if (inputBrujula.classList.contains('ia-hidden') || !overlay.isConnected || getComputedStyle(overlay).display === 'none') return;
+                    inputBrujula.focus();
+                    inputBrujula.select();
+                    if (destacar) { inputBrujula.classList.remove('is-listo'); void inputBrujula.offsetWidth; inputBrujula.classList.add('is-listo'); }
+                }, 90);   // después de que se cierre el desplegable (que se queda con el foco)
+            }
+            overlay._enfocarCodigo = () => { if (!inputBrujula.classList.contains('ia-hidden')) enfocarCodigoBrujula(false); };
 
             box.querySelector('#oceane-btn-cancelar').onclick = () => iaCerrarOverlay(overlay);
             overlay.addEventListener('click', (e) => { if (e.target === overlay) iaCerrarOverlay(overlay); });
@@ -1449,10 +1471,13 @@
         function abrirModalCerrarIncidencia() {
             construirModalCerrarIncidencia();
             const overlay = ui('oceane-modal-overlay');
+            if (!fichaDeEsteTicket()) nuevaFichaExcel();     // otro ticket: la ficha anterior ya no vale
 
             // Lee la checklist del ticket y deja preparado el país de roaming
             try { aplicarPaisDetectado(overlay.querySelector('#oceane-input-roaming-etiqueta'), overlay.querySelector('[data-hint-pais]')); }
             catch (e) { console.warn('[Helper] No se pudo detectar el país de roaming:', e); }
+            // Mismo ticket que la última vez que se lanzó (p. ej. Oceane se cayó y se recargó): se recupera lo elegido
+            try { prepararFormulario('cerrar', overlay); } catch (e) { console.warn('[Helper] No se pudo recuperar el formulario:', e); }
 
             // En Cobertura no hay etiquetas: los pasos pasan a ser 1. Comentario y 2. Estado
             const lblCom = overlay.querySelector('label[for="oceane-select-comentario"]'), lblEst = overlay.querySelector('label[for="oceane-select-estado"]');
@@ -1473,6 +1498,7 @@
             const btnAceptar = overlay.querySelector('#oceane-btn-aceptar');
             btnAceptar.onclick = () => ejecutarCierreIncidencia();
             iaAbrirOverlay(overlay);
+            if (overlay._enfocarCodigo) overlay._enfocarCodigo();
         }
 
         async function ejecutarCierreIncidencia(datosDirectos = null) {
@@ -1539,6 +1565,8 @@
                 return;
             }
 
+            if (!datosDirectos) guardarFormulario('cerrar', ui('oceane-modal-overlay'));   // lo elegido, por si Oceane se cae a mitad
+
             // Evita lanzar dos cierres a la vez (p. ej. un atajo mientras otro cierre está en marcha)
             if (procesoEnCurso) {
                 if (!datosDirectos) iaCerrarOverlay(ui('oceane-modal-overlay'));
@@ -1546,6 +1574,10 @@
             }
             procesoEnCurso = true;
             btnProceso = btnCerrarIncidencia;
+
+            // Ficha del Excel con lo elegido, copiada YA (aún dentro del clic o de la tecla del atajo)
+            const paisForm = datosDirectos ? '' : ((ui('oceane-input-roaming-etiqueta') || {}).value || '');
+            const copiaFicha = fijarYCopiarFicha({ etiqueta: textoEtiqueta, comentario: textoComentario, estado: textoEstado, pais: paisForm }, { modo: 'cierre', estado: textoEstado });
 
             // --- OCULTAR MODAL INMEDIATAMENTE AL COMENZAR ---
             if(!datosDirectos) {
@@ -1566,24 +1598,12 @@
                     if (await pasoComentario(textoComentario, 'INT', 'comentario', 'Comentario ya puesto, omitiendo') === 'omitido') omitidos++;
                 }
 
-                // --- EJECUCIÓN VISUAL DE EXCEL TRAS COMENTARIO ---
-                if (datosDirectos && datosDirectos.esAtajo) {
-                    if (datosDirectos.excelCopiado) {
-                        btnMsg(btnExcel, 'Copiado', 'success', 1800);
-                    } else {
-                        await copiarFilaExcel(true, null, { modo: 'cierre', estado: textoEstado }); // muestra el progreso y el resultado dentro del botón Excel
-                    }
-                }
+                // --- EXCEL: la ficha ya se copió al empezar; aquí solo se recoge el resultado ---
+                copiaOk = await copiaFicha;
+                if (!copiaOk) console.warn("[Helper] No se pudo copiar a Excel automáticamente (portapapeles bloqueado): queda guardada para el botón Excel");
 
                 // --- 3. ESTADO (Ultra Rápido y Resiliente) ---
                 if (textoEstado) {
-                    if (!datosDirectos || !datosDirectos.esAtajo) {
-                        let copiado = await copiarFilaExcel(true, null, { modo: 'cierre', estado: textoEstado });
-                        if (!copiado) {
-                            copiaOk = false;
-                            console.warn("[Helper] No se pudo copiar a Excel automáticamente por bloqueo del portapapeles");
-                        }
-                    }
 
                     // Se continúa desde donde esté la pantalla: formulario de cierre abierto > botón "Cerrar" visible > Modificar.
                     const formCierreVisible = () => { const f = buscarEnFrames('ddlProbFam1'); return (f && visible(f)) ? f : null; };
@@ -1695,7 +1715,8 @@
             const box = document.createElement('div'); box.className = 'ia-modal'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-label', 'Escalar incidencia');
             box.innerHTML = `
                 <div class="ia-modal-title">${iaIcon('escalate', 16)}<span>Escalar incidencia</span></div>
-                <div class="ia-field">
+                <div class="ia-recuperado ia-hidden" data-recuperado>${iaIcon('refresh', 13)}<span></span><button type="button" class="ia-btn" data-vaciar>Vaciar</button></div>
+                <div class="ia-field" id="esc-field-etiqueta">
                     <label class="ia-label" for="esc-select-etiqueta">1. Etiquetas</label>
                     <select id="esc-select-etiqueta" class="ia-control"></select>
                     <div class="ia-subpanel" data-subpanel="etiqueta">
@@ -1762,8 +1783,16 @@
         function abrirModalEscalar() {
             construirModalEscalar();
             const overlay = ui('oceane-modal-escalar');
+            // En Cobertura no hay etiqueta de apertura (la única etiqueta es ICF_CORE, que se añade sola si el grupo es de Huawei)
+            const campoEtq = overlay.querySelector('#esc-field-etiqueta');
+            if (campoEtq) campoEtq.style.display = isColaCoberturaStatus ? 'none' : '';
+            const lblCmt = overlay.querySelector('label[for="esc-textarea-comentario"]'), lblGrp = overlay.querySelector('label[for="esc-select-grupo"]');
+            if (lblCmt) lblCmt.textContent = (isColaCoberturaStatus ? '1' : '2') + '. Comentario';
+            if (lblGrp) lblGrp.textContent = (isColaCoberturaStatus ? '2' : '3') + '. Grupo de escalado';
+            if (!fichaDeEsteTicket()) nuevaFichaExcel();     // otro ticket: la ficha anterior ya no vale
             try { aplicarPaisDetectado(overlay.querySelector('#esc-input-roaming'), overlay.querySelector('[data-hint-pais]')); }
             catch (e) { console.warn('[Helper] No se pudo detectar el país de roaming:', e); }
+            try { prepararFormulario('escalar', overlay); } catch (e) { console.warn('[Helper] No se pudo recuperar el formulario:', e); }
             iaAbrirOverlay(overlay);
         }
 
@@ -1813,25 +1842,89 @@
             const veces = () => textoPaginas().split(grupo).length - 1;
             const antes = veces();
             const campo = campoGrupo();
+            const wCampo = campo.ownerDocument.defaultView;
             campo.focus(); campo.value = grupo;
-            ['input', 'change', 'keyup'].forEach(t => campo.dispatchEvent(new Event(t, { bubbles: true })));
+            // Como si se escribiera y se saliera del campo: algunas pantallas solo leen el valor al soltar tecla o al perder el foco
+            ['input', 'change'].forEach(t => campo.dispatchEvent(new wCampo.Event(t, { bubbles: true })));
+            ['keydown', 'keyup'].forEach(t => campo.dispatchEvent(new wCampo.KeyboardEvent(t, { bubbles: true, key: grupo.slice(-1), keyCode: grupo.charCodeAt(grupo.length - 1) })));
+            campo.dispatchEvent(new wCampo.Event('blur')); campo.dispatchEvent(new wCampo.FocusEvent('focusout', { bubbles: true }));
             if (campo.value !== grupo) throw new Error('No se pudo escribir el grupo ' + grupo);
+            await pausa(250);
+            await esperarCondicion(() => !paginaOcupada(), 5000);
 
-            // 4. Buscar
-            const btnBuscar = await esperarCondicion(() => todosPorId('RECH_EDS').find(el => visible(el)), 3000);
-            if (!btnBuscar) throw new Error("No se encontró el botón 'buscar'");
-            clicRobusto(btnBuscar);
-            await pausa(300);
-            await esperarCondicion(() => !paginaOcupada(), 8000);
-            return !!(await esperarCondicion(() => veces() > antes, 6000));
+            // 4. Buscar: se busca el botón de nuevo (Oceane puede haber redibujado la zona al salir del campo)
+            //    y se comprueba que la pantalla reacciona; si no, se prueba otra forma de pulsarlo.
+            const btnBuscar = () => todosPorId('RECH_EDS').find(el => visible(el)) || todosPorId('RECH_EDS')[0];
+            if (!(await esperarCondicion(btnBuscar, 3000))) throw new Error("No se encontró el botón 'buscar'");
+
+            const formas = [
+                ['clic', (b) => { try { b.scrollIntoView({ block: 'center' }); } catch (e) {} clicRobusto(b); }],
+                ['clic completo', (b) => {
+                    const w = b.ownerDocument.defaultView, r = b.getBoundingClientRect();
+                    const o = { bubbles: true, cancelable: true, view: w, button: 0, buttons: 1, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 };
+                    try { b.dispatchEvent(new w.PointerEvent('pointerdown', o)); } catch (e) {}
+                    b.dispatchEvent(new w.MouseEvent('mousedown', o));
+                    try { b.dispatchEvent(new w.PointerEvent('pointerup', o)); } catch (e) {}
+                    b.dispatchEvent(new w.MouseEvent('mouseup', o));
+                    b.dispatchEvent(new w.MouseEvent('click', o));
+                    const span = b.querySelector('span'); if (span) span.click();
+                }],
+                ['manejador de la página', (b) => {
+                    const w = b.ownerDocument.defaultView;
+                    if (typeof b.onclick === 'function') b.onclick.call(b, new w.MouseEvent('click', { bubbles: true, cancelable: true }));
+                    if (w.jQuery) { try { w.jQuery(b).trigger('click'); } catch (e) {} }
+                    const href = b.getAttribute('href') || '';
+                    if (/^javascript:/i.test(href)) { try { w.eval(decodeURIComponent(href.replace(/^javascript:/i, ''))); } catch (e) {} }
+                }],
+                ['Intro en el campo', () => {
+                    const c = campoGrupo() || campo, w = c.ownerDocument.defaultView;
+                    c.focus();
+                    ['keydown', 'keypress', 'keyup'].forEach(t => c.dispatchEvent(new w.KeyboardEvent(t, { bubbles: true, cancelable: true, key: 'Enter', code: 'Enter', keyCode: 13, which: 13 })));
+                }]
+            ];
+            for (const [nombre, pulsar] of formas) {
+                const b = btnBuscar();
+                if (!b) break;
+                actualizarEstadoProceso('Buscando ' + grupo + '...');
+                const reaccion = vigilarReaccion(b.ownerDocument);
+                try { pulsar(b); } catch (e) { console.warn('[Helper] buscar (' + nombre + '):', e); }
+                const hubo = await esperarCondicion(() => reaccion.cambios() || paginaOcupada() || veces() > antes, 2500, 100);
+                reaccion.parar();
+                if (hubo) {
+                    console.log('[Helper] "buscar" pulsado (' + nombre + ')');
+                    await pausa(300);
+                    await esperarCondicion(() => !paginaOcupada(), 8000);
+                    return !!(await esperarCondicion(() => veces() > antes, 6000));
+                }
+                console.warn('[Helper] "buscar" sin respuesta con: ' + nombre);
+            }
+            throw new Error("Oceane no reaccionó al botón 'buscar'");
+        }
+
+        // ¿Cambia la pantalla tras pulsar? (se ignoran cambios de solo atributos de estilo, como el foco)
+        function vigilarReaccion(doc) {
+            let n = 0;
+            let obs = null;
+            try {
+                obs = new (doc.defaultView.MutationObserver)((lista) => { lista.forEach(m => { if (m.type === 'childList' && (m.addedNodes.length || m.removedNodes.length)) n++; }); });
+                obs.observe(doc.body || doc.documentElement, { childList: true, subtree: true });
+            } catch (e) {}
+            const abrir = doc.defaultView.open;
+            let ventana = false;
+            try { doc.defaultView.open = function () { ventana = true; return abrir.apply(this, arguments); }; } catch (e) {}
+            return {
+                cambios: () => n > 0 || ventana,
+                parar: () => { try { obs && obs.disconnect(); } catch (e) {} try { doc.defaultView.open = abrir; } catch (e) {} }
+            };
         }
 
         async function ejecutarEscalado() {
             const overlay = ui('oceane-modal-escalar');
             const optEtq = overlay.querySelector('#esc-select-etiqueta').selectedOptions[0];
-            if (!optEtq || !optEtq.value) { alert('Elige la etiqueta.'); return; }
-            let textoEtiqueta = optEtq.value;
-            if (optEtq.dataset.special === 'roaming') {
+            const sinEtiqueta = isColaCoberturaStatus;      // Cobertura: sin etiqueta de apertura
+            if (!sinEtiqueta && (!optEtq || !optEtq.value)) { alert('Elige la etiqueta.'); return; }
+            let textoEtiqueta = sinEtiqueta ? '' : optEtq.value;
+            if (!sinEtiqueta && optEtq.dataset.special === 'roaming') {
                 const pais = overlay.querySelector('#esc-input-roaming').value.trim();
                 if (!pais) { alert('Indica el país para el roaming.'); return; }
                 textoEtiqueta = textoEtiqueta.replace('ROAMING_PAIS', 'ROAMING_' + paisParaEtiqueta(pais));
@@ -1841,21 +1934,24 @@
             const grupo = overlay.querySelector('#esc-select-grupo').value;
             if (!grupo) { alert('Elige el grupo de escalado.'); return; }
 
+            guardarFormulario('escalar', overlay);                 // lo elegido, por si Oceane se cae a mitad
             if (procesoEnCurso) { iaCerrarOverlay(overlay); return; }
             procesoEnCurso = true;
             btnProceso = btnEscalar;
             iaCerrarOverlay(overlay);
 
+            // Ficha del Excel con lo elegido, copiada YA (dentro del clic: el navegador permite el portapapeles)
+            const copiaFicha = fijarYCopiarFicha({ etiqueta: textoEtiqueta, comentario: textoComentario, estado: '', pais: (overlay.querySelector('#esc-input-roaming') || {}).value || '' }, { modo: 'escalado', grupo });
+
             let omitidos = 0;
             try {
-                if (await pasoComentario(textoEtiqueta, 'ENT', 'etiqueta', 'Etiqueta ya puesta, omitiendo') === 'omitido') omitidos++;
+                if (textoEtiqueta && await pasoComentario(textoEtiqueta, 'ENT', 'etiqueta', 'Etiqueta ya puesta, omitiendo') === 'omitido') omitidos++;
                 if (await pasoComentario(textoComentario, 'INT', 'comentario', 'Comentario ya puesto, omitiendo') === 'omitido') omitidos++;
                 if (esGrupoHuawei(grupo)) {
                     if (await pasoComentario(COMENTARIO_ICF_CORE, 'INT', 'ICF_CORE', 'ICF_CORE ya puesto, omitiendo', 'VDF-NIC', () => icfCorePuestoTras(textoComentario)) === 'omitido') omitidos++;
                 }
 
-                actualizarEstadoProceso('Copiando Excel...');
-                const copiaOk = await copiarFilaExcel(true, null, { modo: 'escalado', grupo });
+                const copiaOk = await copiaFicha;
 
                 const encontrado = await buscarGrupoEnIntervenciones(grupo);
                 if (encontrado) btnMsg(btnEscalar, grupo + ' encontrado, selecciónalo', 'success', 5000);
@@ -1936,8 +2032,127 @@
             return (o && o.text && o.text.trim()) ? o.text.trim() : '';
         }
 
+        // ---------- FORMULARIOS: lo elegido se guarda al lanzar y se recupera en el mismo ticket ----------
+        const CLAVE_FORM = 'oceanePro_formulario_';
+        const ORDEN_CAMPOS = {   // orden de restauración: la etiqueta primero (sus reglas rellenan comentario y estado)
+            cerrar: ['oceane-select-etiqueta', 'oceane-select-custom-apertura', 'oceane-select-custom-cierre', 'oceane-input-roaming-etiqueta',
+                     'oceane-select-comentario', 'oceane-input-brujula-cod', 'oceane-textarea-custom', 'oceane-select-estado'],
+            escalar: ['esc-select-etiqueta', 'esc-input-roaming', 'esc-textarea-comentario', 'esc-select-grupo']
+        };
+        const leerFormulario = (tipo) => { try { return JSON.parse(localStorage.getItem(CLAVE_FORM + tipo) || 'null'); } catch (e) { return null; } };
+        const borrarFormulario = (tipo) => { try { localStorage.removeItem(CLAVE_FORM + tipo); } catch (e) {} };
+        function guardarFormulario(tipo, overlay) {
+            const id = idTicketActual();
+            if (!id || !overlay) return;
+            const campos = {};
+            ORDEN_CAMPOS[tipo].forEach(cid => {
+                const el = overlay.querySelector('#' + cid);
+                if (!el) return;
+                if (el.tagName === 'SELECT') campos[cid] = { i: el.selectedIndex, t: el.selectedOptions[0] ? el.selectedOptions[0].text : '' };
+                else campos[cid] = { v: el.value };
+            });
+            try { localStorage.setItem(CLAVE_FORM + tipo, JSON.stringify({ ticket: id, ts: Date.now(), campos })); } catch (e) {}
+        }
+        function ponerSelect(sel, idx) {
+            if (!sel || idx < 0 || idx >= sel.options.length) return;
+            sel.selectedIndex = idx;
+            sel.dispatchEvent(new Event('change', { bubbles: true }));
+            if (sel._iaSync) sel._iaSync();
+        }
+        function vaciarFormulario(tipo, overlay) {
+            ORDEN_CAMPOS[tipo].forEach(cid => {
+                const el = overlay.querySelector('#' + cid);
+                if (!el) return;
+                if (el.tagName === 'SELECT') { if (el.selectedIndex !== 0) ponerSelect(el, 0); }
+                else if (!el.dataset.auto) el.value = '';
+            });
+        }
+        // Al abrir: mismo ticket que cuando se lanzó → se recupera; ticket distinto → formulario vacío
+        function prepararFormulario(tipo, overlay) {
+            const id = idTicketActual();
+            const g = leerFormulario(tipo);
+            const aviso = overlay.querySelector('[data-recuperado]');
+            const mostrarAviso = (html) => { if (!aviso) return; aviso.querySelector('span').innerHTML = html; aviso.classList.toggle('ia-hidden', !html); };
+            if (aviso && !aviso._listo) {
+                aviso._listo = true;
+                aviso.querySelector('[data-vaciar]').addEventListener('click', () => { borrarFormulario(tipo); vaciarFormulario(tipo, overlay); mostrarAviso(''); });
+            }
+            if (g && id && g.ticket === id) {
+                ORDEN_CAMPOS[tipo].forEach(cid => {
+                    const el = overlay.querySelector('#' + cid), c = g.campos[cid];
+                    if (!el || !c) return;
+                    if (el.tagName === 'SELECT') {
+                        let idx = c.i;
+                        if (!(el.options[idx] && el.options[idx].text === c.t)) idx = Array.from(el.options).findIndex(o => o.text === c.t);
+                        if (idx >= 0 && idx !== el.selectedIndex) ponerSelect(el, idx);
+                    } else if (c.v) { el.value = c.v; delete el.dataset.auto; }
+                });
+                overlay._ticket = id;
+                mostrarAviso('Recuperado lo elegido en el ticket <b>' + id + '</b>');
+                return true;
+            }
+            if (g && id && g.ticket !== id) borrarFormulario(tipo);
+            if (overlay._ticket && overlay._ticket !== id) vaciarFormulario(tipo, overlay);
+            overlay._ticket = id;
+            mostrarAviso('');
+            return false;
+        }
+
+        function idTicketActual() {
+            let id = '';
+            for (const txt of getElementosExcel('.margintop3', el => el.innerText.trim())) { if (/^\d{4}[A-Z]\d+$/i.test(txt)) { id = txt; break; } }
+            if (!id) { const mx = getElementosExcel('body', el => el.innerText).join(' ').match(/(\d{4}[A-Z]\d{5,})/i); if (mx) id = mx[1]; }
+            return id.toUpperCase();
+        }
+
+        // ---------- FICHA DEL EXCEL ----------
+        // Al pulsar Aceptar (Cerrar), Escalar o un atajo, la fila se monta con lo que elige el gestor y se copia
+        // en ese mismo momento (el navegador solo deja usar el portapapeles justo tras un clic o una tecla).
+        // Queda guardada para el botón Excel, ligada al número de ticket. Abrir otra vez Cerrar/Escalar o
+        // lanzar un atajo empieza una ficha nueva.
+        const CLAVE_FICHA = 'oceanePro_fichaExcel';
+        function leerFicha() { try { return JSON.parse(localStorage.getItem(CLAVE_FICHA) || 'null'); } catch (e) { return null; } }
+        function nuevaFichaExcel() { try { localStorage.removeItem(CLAVE_FICHA); } catch (e) {} actualizarIndicadorExcel(); }
+        function fichaDeEsteTicket() {
+            const f = leerFicha();
+            if (!f || !f.fila) return null;
+            const id = idTicketActual();
+            if (f.ticket && id) return f.ticket === id ? f : null;
+            return (Date.now() - (f.ts || 0) < 30 * 60 * 1000) ? f : null;     // sin número legible: solo si es reciente
+        }
+        function fijarYCopiarFicha(datos, contexto) {
+            let ficha = null;
+            try {
+                ficha = copiarFilaExcel(true, datos, Object.assign({ soloCalcular: true }, contexto));
+            } catch (e) { console.error('[Helper] Ficha Excel:', e); }
+            // copiarFilaExcel es async: con soloCalcular devuelve la fila sin esperar a nada
+            return Promise.resolve(ficha).then(async (f) => {
+                if (!f) { btnMsg(btnExcel, 'Pulsa para copiar', 'warning', 6000); return false; }
+                f.ts = Date.now();
+                f.modo = contexto.modo;
+                try { localStorage.setItem(CLAVE_FICHA, JSON.stringify(f)); } catch (e) {}
+                actualizarIndicadorExcel();
+                return copiarFichaAhora(f, true);
+            });
+        }
+        async function copiarFichaAhora(f, automatico) {
+            btnMsg(btnExcel, 'Copiando...', 'busy', 8000);
+            const ok = await copiarAlPortapapeles(f.fila);
+            if (ok) btnMsg(btnExcel, automatico ? 'Fila copiada' : 'Copiado', 'success', 2200, 'Fila del ticket ' + (f.ticket || '') + ' · ' + (f.estado || '') + ' · ' + (f.causa || ''));
+            else btnMsg(btnExcel, 'Pulsa para copiar', 'warning', 8000, 'El navegador no dejó copiar automáticamente; al pulsar se copia la fila guardada');
+            return ok;
+        }
+        function actualizarIndicadorExcel() {
+            if (typeof btnExcel === 'undefined' || !btnExcel || btnExcel._ia) return;      // mientras muestra un mensaje no se toca
+            const f = fichaDeEsteTicket();
+            let dot = btnExcel.querySelector('.ia-dot[data-excel]');
+            if (!dot) { dot = document.createElement('span'); dot.className = 'ia-dot'; dot.setAttribute('data-excel', ''); btnExcel.appendChild(dot); }
+            dot.classList.toggle('is-on', !!f);
+            btnExcel.title = f ? 'Fila guardada del ticket ' + (f.ticket || '') + ' (' + (f.estado || f.causa || '') + '). Pulsa para copiarla.' : 'Copia la fila del Excel leyendo el ticket';
+        }
+
         async function copiarFilaExcel(silencioso, datosOverride = null, contexto = null) {
-            if (!datosOverride) btnMsg(btnExcel, 'Copiando...', 'busy', 8000);
+            if (!datosOverride && !(contexto && contexto.soloCalcular)) btnMsg(btnExcel, 'Copiando...', 'busy', 8000);
             let m_els = getElementosExcel('.margintop3', el => el.innerText.trim());
             let ocean = '';
             for (let txt of m_els) { if (/^\d{4}[A-Z]\d+$/i.test(txt)) { ocean = txt; break; } }
@@ -1958,14 +2173,30 @@
             let cpMatch = allBodyTexts.match(/\[CP_INC\]#\[(.*?)\]/i); let paisMatch = allBodyTexts.match(/\[DIRECCION\]#\[(.*?)\]/i);
             let cpPais = cpMatch ? cpMatch[1] : (paisMatch ? paisMatch[1] : '');
 
-            let roamingMatch = allBodyTexts.match(/\[Servicio_Afectado\]#\[ROAMING_([^\]]+)\]/i);
+            // ROAMING: el país sale primero de lo que ha puesto el gestor en la herramienta (la etiqueta lleva el país
+            // escrito en el campo País: ROAMING_FRANCIA); si no, de la etiqueta que ya esté en el ticket.
+            const reRoaming = /\[Servicio_Afectado\]#\[ROAMING_(?!PAIS\])([^\]]+)\]/i;
+            let roamingMatch = (datosOverride && (datosOverride.etiqueta || '').match(reRoaming)) || null;
+            // En la etiqueta el país va sin espacios (ROAMING_REINOUNIDO): para el Excel se usa tal como lo escribió el gestor
+            if (roamingMatch && datosOverride.pais && String(datosOverride.pais).trim()) roamingMatch = [null, String(datosOverride.pais).trim()];
+            if (!roamingMatch) roamingMatch = allBodyTexts.match(reRoaming);
             let cpPaisFinal = roamingMatch ? roamingMatch[1].trim().split(/[ _]+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ') : cpPais.toUpperCase();
 
             let comentarioLimpio = '', causaEncontrada = '';
             let escalado = null;   // null = no es escalado; si lo es: 'HUAWEI' (grupos XSPHUA) o 'IREG' (OESSP100)
 
             if (datosOverride) {
-                comentarioLimpio = datosOverride.comentario || '';
+                comentarioLimpio = htmlATexto(datosOverride.comentario || '').replace(/[\r\n]+/g, ' ').trim();
+                if (!comentarioLimpio) {
+                    // Sin comentario elegido: el último comentario del ticket que no sea etiqueta ni ICF_CORE
+                    const nodos = [];
+                    const leer = (d) => { d.querySelectorAll('div[id^="divCmt"]').forEach(el => nodos.push(el)); d.querySelectorAll('iframe').forEach(f => { try { leer(f.contentDocument); } catch (e) {} }); };
+                    try { leer(window.top.document); } catch (e) {}
+                    nodos.sort((a, b) => (parseInt(b.id.replace(/\D/g, '')) || 0) - (parseInt(a.id.replace(/\D/g, '')) || 0));
+                    const ultimo = nodos.map(el => el.innerText.trim()).find(t => t && !esComentarioIcfCore(t) && !/\[Servicio_Afectado\]/.test(t) && !/(?:Causa|Causal|Causac|CausaI)CF_/i.test(t));
+                    if (ultimo) comentarioLimpio = ultimo.replace(/[\r\n]+/g, ' ').trim();
+                }
+                if (contexto && contexto.modo === 'escalado') escalado = esGrupoHuawei(contexto.grupo) ? 'HUAWEI' : 'IREG';
                 let match = (datosOverride.etiqueta || '').match(/(?:Causa|Causal|Causac|CausaI)CF_[A-Z_0-9]+/i);
                 if (match) causaEncontrada = match[0];
                 if (!causaEncontrada) {
@@ -2064,7 +2295,9 @@
 
             // --- NUEVA LÓGICA DINÁMICA DE USUARIO ---
             let gestor = 'Gestor';
-            let allSpans = getElementosExcel('span', el => el.innerText.trim());
+            // Primero, los datos de usuario de la cabecera de Oceane (<p class="pull-left"> → "MARCHAL MARTÍNEZ JAVIER - MNXG");
+            // si no aparecen, cualquier "NOMBRE - CÓDIGO" de la página, como antes
+            let allSpans = getElementosExcel('p.pull-left > span', el => el.innerText.trim()).concat(getElementosExcel('span', el => el.innerText.trim()));
             for (let spanText of allSpans) {
                 if (spanText.includes(' - ') && spanText.length > 5) {
                     let parts = spanText.split(' - ');
@@ -2084,6 +2317,7 @@
 
             let d = new Date(); let hoy = String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') + '/' + d.getFullYear();
             let lineaExcel = [ocean.toUpperCase(), refJira.toUpperCase(), operacional.toUpperCase(), segmento.toUpperCase(), estado.toUpperCase(), msisdn.toUpperCase(), cpPaisFinal, hoy, hoy, causaExcel, gestor, comentarioLimpio].join('\t');
+            if (contexto && contexto.soloCalcular) return { fila: lineaExcel, ticket: ocean.toUpperCase(), estado: estado.toUpperCase(), causa: causaExcel, comentario: comentarioLimpio };
 
             const copiado = await copiarAlPortapapeles(lineaExcel);
             if (!datosOverride) {
@@ -2094,7 +2328,13 @@
             return copiado;
         }
 
-        btnExcel.onclick = () => { copiarFilaExcel(); }; menu.appendChild(excelCont);
+        btnExcel.onclick = () => {
+            const f = fichaDeEsteTicket();
+            if (f) copiarFichaAhora(f, false);
+            else copiarFilaExcel();
+        };
+        menu.appendChild(excelCont);
+        setInterval(actualizarIndicadorExcel, 2000);
 
         // ==========================================
         // NUEVO GESTOR DE ATAJOS DINÁMICOS
@@ -2153,8 +2393,7 @@
                                     esAtajo: true
                                 };
 
-                                datosDirectos.excelCopiado = await copiarFilaExcel(true, datosDirectos);
-
+                                nuevaFichaExcel();                    // un atajo = ticket nuevo
                                 ejecutarCierreIncidencia(datosDirectos);
                             }
                         });
@@ -2454,7 +2693,7 @@
 
             isColaCoberturaStatus = esCobertura;
 
-            const permitidosCobertura = ["Refresh", "Excel", "Atajos", "CerrarIncidencia"];
+            const permitidosCobertura = ["Refresh", "Excel", "Atajos", "CerrarIncidencia", "Escalar"];
             Array.from(menuContainer.children).forEach(child => {
                 const nombre = child.getAttribute("data-elemento-nombre");
                 if (child.classList.contains('ia-brand')) return;
