@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Generador Reporte ICFs (Zona >= 36h)
 // @namespace    violentmonkey.custom
-// @version      2.2
-// @description  Pregunta la zona al inicio, la inyecta directamente en Search ResponsableICF, filtra Devuelta NO y aging >= 36h con diseño IATelecom, mailto para Outlook y título dinámico
+// @version      2.3
+// @description  Pregunta la zona al inicio, la inyecta directamente en Search ResponsableICF, filtra Devuelta NO y aging >= 36h con diseño IATelecom, mailto para Outlook y título dinámico (Ordenado de mayor a menor)
 // @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant        none
 // ==/UserScript==
@@ -653,6 +653,7 @@
 
             datosFiltrados.push({
                 aging: rawAging,
+                valorNumAging: valorAging, // <-- Guardamos el valor numérico aquí
                 bgAging,
                 colorOriginal,
                 codigo,
@@ -665,6 +666,11 @@
                 zona
             });
         });
+
+        // ---------------------------------------------------------
+        // NUEVA FUNCIONALIDAD: Ordenar por aging de mayor a menor
+        // ---------------------------------------------------------
+        datosFiltrados.sort((a, b) => b.valorNumAging - a.valorNumAging);
 
         btnFab.classList.remove('is-busy');
         btnFab.innerHTML = `${iaIcon('map-pin', 16)}<span>Reporte Zonas (≥36h)</span>`;
