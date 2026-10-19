@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Generador Reporte RSSI VDF -> Outlook diseño
 // @namespace    http://violentmonkey.net/
-// @version      2.1
-// @description  Filtra estrictamente Devuelta="NO" y Causa="RSSI_VDF" (sin confundir con causa_especif), copia la tabla y prepara el correo en Outlook con diseño IATelecom.
+// @version      2.2
+// @description  Filtra estrictamente Devuelta="NO" y Causa="RSSI_VDF", ordena por aging de mayor a menor, copia la tabla y prepara el correo en Outlook con diseño IATelecom.
 // @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant        GM_setClipboard
 // ==/UserScript==
@@ -487,6 +487,19 @@
                     const idx = colIndices[colName];
                     return (idx !== -1 && cells[idx]) ? cells[idx].innerHTML.trim() : '';
                 });
+            });
+
+            // ==============================================================================
+            // NUEVA FUNCIONALIDAD: Ordenar por aging de mayor a menor
+            // ==============================================================================
+            extractedRows.sort((a, b) => {
+                // Eliminamos cualquier posible etiqueta HTML oculta para convertir a número limpio
+                let textA = a[0].replace(/<[^>]*>?/gm, '');
+                let textB = b[0].replace(/<[^>]*>?/gm, '');
+                
+                let valA = parseFloat((textA || "0").replace(',', '.')) || 0;
+                let valB = parseFloat((textB || "0").replace(',', '.')) || 0;
+                return valB - valA; // Descendente
             });
 
             buildReport(extractedRows);
