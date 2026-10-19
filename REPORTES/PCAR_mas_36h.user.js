@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Extractor Reporte PCAR (Aging >= 36)
 // @namespace    http://tampermonkey.net/
-// @version      2.2
-// @description  Filtra por Devuelta NO, Causa PCAR y aging >= 36. Complementa descripción con causa_especif completa (title) y botón mailto para Outlook.
+// @version      2.3
+// @description  Filtra por Devuelta NO, Causa PCAR y aging >= 36. Ordenado de mayor a menor. Complementa descripción con causa_especif completa (title) y botón mailto para Outlook.
 // @match        http://mxmefm01.wnet/private/zc/tools/smc/edt_icfs*
 // @grant        none
 // @run-at       document-idle
@@ -574,9 +574,21 @@
     ).join('');
 
     let tbodyHtml = '';
-    let filaIndex = 0;
+    
+    // ==============================================================================
+    // NUEVA FUNCIONALIDAD: Extraer los datos del Map a un Array y ordenar por aging
+    // ==============================================================================
+    let filasArray = Array.from(bufferFilas.values());
 
-    bufferFilas.forEach(fila => {
+    filasArray.sort((a, b) => {
+        // En este script el aging también está en el índice 0 del arreglo de datos de la fila
+        let valA = parseFloat((a[0] || "0").replace(',', '.')) || 0;
+        let valB = parseFloat((b[0] || "0").replace(',', '.')) || 0;
+        return valB - valA; // de mayor a menor
+    });
+
+    // Ahora iteramos sobre el array ya ordenado
+    filasArray.forEach((fila, filaIndex) => {
       const bgColor = (filaIndex % 2 === 0) ? '#ffffff' : '#f8f9fa';
       tbodyHtml += `<tr style="background-color: ${bgColor};">`;
 
@@ -592,7 +604,6 @@
       });
 
       tbodyHtml += '</tr>';
-      filaIndex++;
     });
 
     return `
