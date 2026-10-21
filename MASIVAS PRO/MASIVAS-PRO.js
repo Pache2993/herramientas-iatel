@@ -2,7 +2,7 @@
 // @name        MASIVAS PRO
 // @namespace   Violentmonkey Scripts
 // @icon        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABT0lEQVQ4T42RvS9DURjGfy+taCNEdJBYqokRQwcdDEisJlaLiAGTv8BssvsbLAaJREIsNh+xSIcOSDRBEB+ht33l3NPT3nt7qd9yznnOe55znvdIZRkFATP4CIIGVm4nrDvEGoSJL41irWMN/kecgZkZ3RFdN3DBxBk0kwYJq8FVi0FYjuO3vTY9iDtmNIPV2xjEETb9sweO+G+1Z3wDEdD6ftPKzcJPbmJtGxEiD2uxiVZYIr9gaS20SsBqIAu5AryWEW81rTK7gVa/4eUekilbmOxGulKQ7kcv9pD8PHpzDj0ZpDNB7WTHzy3e5phKYRH9eEIyOfRgC8bnkOEJe/31EQyNoqVTJJOFkSn0bBc93K5HWElox8waWq3A1ztc7cPkEvL2iFY+4aEENQ+ZXofnO/T2EnoH/YtMqEgPXM5IH1J9SH4BisdoudiQzeQHb9SQjlYmmBsAAAAASUVORK5CYII=
-// @version     5.5.6
+// @version     5.6.1
 // @match       https://brujula.orange.es/*
 // @match       *://mxmefm01.wnet/*
 // @grant       GM_setValue
@@ -34,6 +34,18 @@
 
 (function () {
     'use strict';
+
+    // ---------------------------------------------------------------------
+    // COMPATIBILIDAD CON EL CARGADOR iATEL
+    // Dentro del cargador, la herramienta solo recibe las funciones GM_* que el cargador le pasa.
+    // GM_deleteValue no venía: al terminar un cierre o una tarea de MAQA saltaba un error y la marca
+    // de "motor trabajando" se quedaba puesta (la barra seguía bloqueada y MAQA repetía la tarea).
+    // gmBorrar() borra con GM_deleteValue si existe y, si no, deja el valor vacío (mismo efecto).
+    // ---------------------------------------------------------------------
+    function gmBorrar(clave) {
+        try { if (typeof GM_deleteValue === 'function') { GM_deleteValue(clave); return; } } catch (e) {}
+        try { GM_setValue(clave, null); } catch (e) {}
+    }
 
     // =====================================================================
     // IATELECOM DESIGN SYSTEM v1.7  (bloque reutilizable: copiar tal cual a otros scripts)
@@ -590,6 +602,14 @@
         .ia-result-note--muted { color: var(--ia-text-3); }
         .ia-mono-list { font-family: var(--ia-mono); font-size: var(--ia-fs-xs); color: var(--ia-text-2); line-height: 1.6; word-break: break-all; }
         .ia-result-head > .ia-count { margin-left: auto; }
+            /* CONVIVENCIA con otras herramientas iATEL en la misma página (BRÚJULA PRO, REPORTES PRO…):
+           si otra barra ocupa el centro de arriba o la esquina de abajo, MASIVAS PRO se aparta.
+           Las variables las calcula vigilarVecinos() sobre el host. */
+        .ia-toolbar, .tw-dock { top: calc(10px + var(--mp-top, 0px)); transition: top 0.3s var(--ia-ease), right 0.3s var(--ia-ease); }
+        .tw-dock--abajo { top: auto; right: calc(var(--ia-sp-5) + var(--mp-right, 0px)); }
+        .ia-popover { right: calc(var(--ia-sp-5) + var(--mp-right, 0px)); transition: top 0.3s var(--ia-ease), right 0.3s var(--ia-ease); }
+        .ia-popover--top { top: calc(10px + var(--mp-top, 0px)); right: auto; }
+        .ia-alertas { top: calc(54px + var(--mp-top, 0px)); }
     `;
 
     // --- MENSAJES DENTRO DEL BOTÓN (copiados de OCEANE PRO: btnMsg / btnReset) ---
@@ -655,7 +675,41 @@
         s.textContent = IADS_CSS + IADS_CSS_EXT;
         SR.appendChild(s);
         document.body.appendChild(host);
+        vigilarVecinos(host);
         return SR;
+    }
+
+    // ---------- CONVIVENCIA con las demás herramientas iATEL ----------
+    // BRÚJULA PRO, REPORTES PRO, OCEANE PRO… usan el mismo Design System y los mismos sitios
+    // (barra arriba en el centro, botón abajo a la derecha). Con el cargador se ejecutan a la vez en
+    // la misma página, así que MASIVAS PRO mira cada segundo dónde están las suyas y se aparta:
+    //  --mp-top   → cuánto bajar lo que va arriba (barra, avisos, barra de tarea)
+    //  --mp-right → cuánto separar de la derecha lo que va abajo (botón de MAQA y su panel)
+    function vigilarVecinos(host) {
+        let antes = '';
+        const medir = () => {
+            if (!host.isConnected) return;
+            let top = 0, right = 0;
+            document.querySelectorAll('body > [id$="-host"]').forEach(otro => {
+                if (otro === host || !otro.shadowRoot) return;
+                otro.shadowRoot.querySelectorAll('.ia-toolbar, .tw-dock, .rs-fab').forEach(el => {
+                    if (el.classList.contains('ia-hidden')) return;
+                    const r = el.getBoundingClientRect();
+                    if (r.width < 8 || r.height < 8) return;
+                    const centrada = Math.abs((r.left + r.right) / 2 - innerWidth / 2) < 60;
+                    if (r.top < 40 && centrada) top = Math.max(top, r.bottom - 10 + 8);                 // barra arriba
+                    if (r.bottom > innerHeight - 90 && r.right > innerWidth - 120) right = Math.max(right, innerWidth - r.left - 20 + 10);   // botón abajo a la derecha
+                });
+            });
+            const valor = Math.round(top) + '|' + Math.round(right);
+            if (valor === antes) return;
+            antes = valor;
+            host.style.setProperty('--mp-top', Math.round(top) + 'px');
+            host.style.setProperty('--mp-right', Math.round(right) + 'px');
+        };
+        medir();
+        setInterval(medir, 1000);
+        window.addEventListener('resize', medir);
     }
 
     // Logo (o wordmark) para la marca de la barra
@@ -1087,14 +1141,14 @@
                 try {
                     const tarea = JSON.parse(tareaPendienteStr);
                     if (tarea && tarea.tickets && tarea.tickets.length > 0) {
-                        GM_deleteValue('maqa_tarea_pendiente'); // Consumimos la tarea para evitar bucles
+                        gmBorrar('maqa_tarea_pendiente'); // Consumimos la tarea para evitar bucles
                         mostrarPanelMAQA();
                         setTimeout(() => {
                             ejecutarAnalisisTickets(tarea.tickets, tarea.tipoMasiva);
                         }, 250);
                     }
                 } catch(e) {
-                    GM_deleteValue('maqa_tarea_pendiente');
+                    gmBorrar('maqa_tarea_pendiente');
                     console.error("Error al reanudar tarea pendiente", e);
                 }
             }
@@ -1160,21 +1214,111 @@
             iaAvisar(titulo, mensajeHTML, h && h.btn);
         }
 
-        // ¿Ya existe en esa sección un comentario con exactamente este contenido?
-        // (se compara sin espacios ni saltos de línea, que Brújula puede pintar distinto)
-        function comentarioYaExiste(tituloSeccion, texto) {
-            const clave = (t) => (t || '').replace(/\s+/g, '').toLowerCase();
-            const buscado = clave(texto);
-            if (!buscado) return false;
-            const spans = Array.from(document.querySelectorAll('span'))
-                .filter(sp => normalize(sp.textContent) === normalize(tituloSeccion));
-            return spans.some(sp => {
-                const cont = sp.closest('.bg-grey') || (sp.closest('.flex.justify-between') || {}).parentElement;
-                if (!cont) return false;
+        // =========================================================
+        // COMENTARIOS YA PUBLICADOS (para no repetirlos al volver a rellenar)
+        // =========================================================
+        // Se compara por CAMPOS, igual que el cierre busca el comentario Final: cada "[Campo]: valor"
+        // del comentario que se va a añadir tiene que estar ya publicado en la masiva.
+        // La comparación usa una "firma" (solo letras y números, sin acentos ni mayúsculas), así que
+        // no la rompen los saltos de línea, espacios dobles, comillas o signos que Brújula pinte distinto.
+        const firma = (t) => normalize(t || '').replace(/[^a-z0-9]/g, '');
+
+        // "[Campo]: valor" → [{ campo, valor }]
+        function camposDeComentario(texto) {
+            const t = (texto || '').replace(/\r/g, '').replace(/[ \t]*(\[[^\]\n]{2,60}\][ \t]*:)/g, '\n$1');
+            const re = /\[([^\]\n]{2,60})\][ \t]*:([\s\S]*?)(?=\n[ \t]*\[[^\]\n]{2,60}\][ \t]*:|$)/g;
+            const campos = []; let m;
+            while ((m = re.exec(t))) campos.push({ campo: m[1].trim(), valor: m[2].trim() });
+            return campos;
+        }
+
+        // Texto publicado de una sección de comentarios (sin formularios abiertos ni la interfaz propia).
+        // Si no se encuentra la sección, se usa toda la página.
+        function textoPublicado(tituloSeccion) {
+            const limpiar = (cont) => {
                 const copia = cont.cloneNode(true);
-                copia.querySelectorAll('textarea, input, button, form, select').forEach(e => e.remove());
-                return clave(copia.textContent).includes(buscado);
-            });
+                copia.querySelectorAll('textarea, input, button, form, select, ' + SELECTOR_PROPIOS).forEach(e => e.remove());
+                return copia.textContent || '';
+            };
+            // La tarjeta de la sección es el bloque más grande que contiene su título pero NO el de la
+            // otra sección (Comentarios / Comentarios Internos están lado a lado). Así entran el título,
+            // "Añadir comentario" y TODOS los comentarios publicados, se pinten como se pinten.
+            // (Antes se cogía solo la cabecera y no se veía ningún comentario: por eso se duplicaban.)
+            const TITULOS = ['comentarios', 'comentarios internos'];
+            const propio = normalize(tituloSeccion);
+            const otros = TITULOS.filter(t => t !== propio);
+            const tieneOtroTitulo = (el) => Array.from(el.querySelectorAll('span, h1, h2, h3, h4, div'))
+                .some(x => x.children.length === 0 && otros.includes(normalize(x.textContent)));
+            const conts = Array.from(document.querySelectorAll('span, h1, h2, h3, h4, div'))
+                .filter(sp => sp.children.length === 0 && normalize(sp.textContent) === propio && !sp.closest(SELECTOR_PROPIOS))
+                .map(sp => {
+                    let el = sp;
+                    while (el.parentElement && el.parentElement !== document.body && !tieneOtroTitulo(el.parentElement)) el = el.parentElement;
+                    return el;
+                })
+                .filter((el, i, arr) => el && arr.indexOf(el) === i);
+            if (conts.length) return conts.map(limpiar).join('\n');
+            return limpiar(document.body);
+        }
+
+        // Brújula carga los comentarios después del formulario: antes de decidir, se espera a que
+        // la sección exista y su contenido deje de cambiar (si no, al rellenar muy rápido no se ven
+        // los comentarios anteriores y se duplicaban).
+        async function esperarComentariosCargados(tituloSeccion, maxMs = 4000) {
+            const fin = Date.now() + maxMs;
+            let antes = null, estable = 0;
+            while (Date.now() < fin) {
+                const hay = Array.from(document.querySelectorAll('span, h1, h2, h3, h4, div')).some(sp => sp.children.length === 0 && normalize(sp.textContent) === normalize(tituloSeccion));
+                const ahora = hay ? textoPublicado(tituloSeccion).length : -1;
+                if (hay && ahora === antes) { if (++estable >= 2) return true; } else estable = 0;
+                antes = ahora;
+                await sleep(250);
+            }
+            return false;
+        }
+
+        // ¿Ese comentario ya está publicado en esa sección?
+        function comentarioYaExiste(tituloSeccion, texto) {
+            const buscado = firma(texto);
+            if (!buscado) return false;
+            const publicado = firma(textoPublicado(tituloSeccion));
+            if (!publicado) return false;
+            const contiene = (f) => publicado.includes(f);
+
+            // 1. El comentario entero (lo normal)
+            if (contiene(buscado)) return true;
+
+            // 2. Campo a campo: "[Campo]:" + valor, todos (aunque Brújula los pinte en otro orden)
+            const campos = camposDeComentario(texto).filter(c => firma(c.valor));
+            if (campos.length >= 2) return campos.every(c => contiene(firma('[' + c.campo + ']:' + c.valor)));
+
+            // 3. Comentario sin campos (p. ej. el externo de Fijo): línea a línea
+            const lineas = (texto || '').split(/\n+/).map(firma).filter(f => f.length >= 6);
+            return lineas.length > 0 && lineas.every(contiene);
+        }
+
+        // Resumen de comentarios de la última ejecución de Rellenar (para el mensaje del botón)
+        let resumenComentarios = { anadidos: 0, omitidos: 0 };
+        async function anadirSiFalta(tituloSeccion, texto, anadir, estado) {
+            if (!texto || !texto.trim()) return;
+            if (estado) estado('Revisando comentarios');
+            await esperarComentariosCargados(tituloSeccion);
+            if (comentarioYaExiste(tituloSeccion, texto)) {
+                resumenComentarios.omitidos++;
+                console.info(`[MASIVAS PRO] Omitido: el comentario ya estaba en «${tituloSeccion}».`);
+                return;
+            }
+            if (estado) estado('Comentarios');
+            await anadir(tituloSeccion, texto);
+            resumenComentarios.anadidos++;
+        }
+
+        // Mensaje final del botón de Rellenar según lo que haya pasado con los comentarios
+        function terminarRelleno(ui) {
+            const { anadidos, omitidos } = resumenComentarios;
+            if (omitidos && !anadidos) ui.aviso('Omitido: comentarios ya añadidos', 3500, 'Formulario actualizado. Los comentarios ya estaban publicados en la masiva y no se han repetido.');
+            else if (omitidos) ui.exito(`Completado · ${omitidos} comentario${omitidos > 1 ? 's' : ''} ya estaba${omitidos > 1 ? 'n' : ''}`, 3500);
+            else ui.exito('Completado', 2500);
         }
 
         // ---------- Modal para nodos faltantes (usado por Móvil) ----------
@@ -1261,7 +1405,7 @@
             btnDetener.className = 'ia-btn ia-btn--danger ia-hidden';
             btnDetener.innerHTML = iaIcon('x') + '<span>Detener</span>';
             btnDetener.addEventListener('click', () => {
-                GM_deleteValue('brujula_ejecucion_actual');
+                gmBorrar('brujula_ejecucion_actual');
                 ['btn-cerrar-fijo', 'btn-cerrar-movil'].forEach(id => btnReset(ui(id)));
                 const tarea = ui('brujula-tarea');
                 if (tarea) tarea.remove();
@@ -1308,6 +1452,10 @@
                 exito(texto = 'Completado', ms = 2500) {
                     h.exitoHasta = Date.now() + ms;
                     btnMsg(btn, texto, 'success', ms);
+                },
+                aviso(texto, ms = 3500, titulo) {
+                    h.exitoHasta = Date.now() + ms;
+                    btnMsg(btn, texto, 'warning', ms, titulo);
                 },
                 reset() {
                     // Si se acaba de mostrar un aviso, el botón lo enseña y vuelve solo a su estado
@@ -1450,43 +1598,107 @@
                     if (link) link.click();
                 };
 
-                const procederAEditar = async () => {
-                    ui.estado('Abriendo ' + (esFijo ? 'Fijo' : 'Móvil') + '...');
-                    irASeccion();
-                    await esperar(1000);
+                // Abre la masiva en edición desde su sección (Fijo / Móvil).
+                //  trasConvertir: la masiva se acaba de crear y Brújula puede tardar unos segundos en
+                //  listarla, así que se reintenta la búsqueda antes de darla por "fantasma".
+                const procederAEditar = async (trasConvertir = false) => {
+                    const intentos = trasConvertir ? 4 : 1;
+                    let linkResultado = null;
 
-                    // Limpiar búsqueda previa para evitar el bug de "incidencia fantasma"
-                    ui.estado('Limpiando filtros...');
-                    await limpiarBusqueda();
+                    for (let intento = 1; intento <= intentos && !linkResultado; intento++) {
+                        ui.estado(intento === 1 ? 'Abriendo ' + (esFijo ? 'Fijo' : 'Móvil') : `Esperando a la masiva (${intento}/${intentos})`);
+                        if (intento > 1) await esperar(1500);
+                        irASeccion();
+                        await esperarHasta(() => document.querySelector('input[formcontrolname="caso"]'), 6000, 100);
+                        await esperar(300);
 
-                    ui.estado('Buscando incidencia...');
-                    const inputCaso = await esperarHasta(() => document.querySelector('input[formcontrolname="caso"]'), 5000, 100);
-                    if (inputCaso) {
-                        inputCaso.focus();
-                        actualizarValorAngular(inputCaso, oceane);
-                        inputCaso.dispatchEvent(new Event('blur', { bubbles: true }));
-                        await esperar(200);
+                        // Limpiar búsqueda previa para evitar el bug de "incidencia fantasma"
+                        ui.estado('Limpiando filtros');
+                        await limpiarBusqueda();
+
+                        ui.estado('Buscando incidencia');
+                        const inputCaso = await esperarHasta(() => document.querySelector('input[formcontrolname="caso"]'), 5000, 100);
+                        if (inputCaso) {
+                            inputCaso.focus();
+                            actualizarValorAngular(inputCaso, oceane);
+                            inputCaso.dispatchEvent(new Event('blur', { bubbles: true }));
+                            await esperar(200);
+                        }
+                        try { linkResultado = await buscarFilaIncidencia(oceane); } catch (e) { linkResultado = null; }
                     }
 
-                    const linkResultado = await buscarFilaIncidencia(oceane);
-
-                    if (linkResultado) {
-                        ui.estado('Abriendo edición...');
-                        linkResultado.click();
-                        await esperar(1000);
-
-                        const btnEditar = buscarBotonPorTexto('Editar');
-                        if (btnEditar) {
-                            btnEditar.click();
-                            await prepararRelleno('Masiva abierta');
+                    if (!linkResultado) {
+                        if (trasConvertir) {
+                            mostrarAlertaPersonalizada("Masiva convertida", `La incidencia <strong>${oceane}</strong> se ha convertido en masiva, pero Brújula todavía no la muestra en <strong>${esFijo ? 'Fijo' : 'Móvil'}</strong>. Espera unos segundos y pulsa <strong>Analizar masiva</strong> otra vez: ya irá directa a editarla.`);
                         } else {
-                            mostrarAlertaPersonalizada("Botón no encontrado", "No se encontró el botón de <strong>Editar</strong>.");
-                            ui.reset();
+                            mostrarAlertaPersonalizada("Incidencia fantasma", "Esta incidencia se presenta en el histórico pero <strong>no consta como creada</strong> en la sección principal.");
                         }
+                        ui.reset();
+                        return;
+                    }
+
+                    ui.estado('Abriendo edición');
+                    linkResultado.click();
+                    // "Editar" aparece cuando Brújula termina de cargar el detalle (no siempre en 1 s)
+                    const btnEditar = await esperarHasta(() => {
+                        const b = buscarBotonPorTexto('Editar');
+                        return b && !b.disabled ? b : null;
+                    }, 8000, 100);
+                    if (btnEditar) {
+                        btnEditar.click();
+                        await prepararRelleno(trasConvertir ? 'Masiva creada' : 'Masiva abierta');
                     } else {
-                        mostrarAlertaPersonalizada("Incidencia fantasma", "Esta incidencia se presenta en el histórico pero <strong>no consta como creada</strong> en la sección principal.");
+                        mostrarAlertaPersonalizada("Botón no encontrado", "No se encontró el botón de <strong>Editar</strong>.");
                         ui.reset();
                     }
+                };
+
+                // Convierte en masiva la incidencia del histórico. Cada paso espera a que Brújula
+                // pinte lo que necesita (antes se esperaba un tiempo fijo y, si la página iba lenta,
+                // la herramienta se quedaba parada sin decir nada).
+                // Devuelve true si queda convertida, o el texto del paso que falló.
+                const convertirEnMasiva = async () => {
+                    const ticketUpper = oceane.toUpperCase();
+                    const boton = (...textos) => {
+                        const buscados = textos.map(normalize);
+                        return botonesPagina().find(b => {
+                            const t = normalize(b.textContent);
+                            return b.offsetParent !== null && !b.disabled && buscados.some(x => t === x);   // texto exacto: nunca pulsa otro botón parecido
+                        }) || null;
+                    };
+
+                    // 1. Abrir el detalle de la incidencia (la fila de ESTE ticket)
+                    const link = await esperarHasta(() => {
+                        const links = Array.from(document.querySelectorAll('td a.text-primary.font-bold, td a.text-primary'));
+                        return links.find(a => a.textContent.trim().toUpperCase() === ticketUpper) ||
+                               links.find(a => (a.closest('tr') || a).textContent.toUpperCase().includes(ticketUpper)) ||
+                               (links.length === 1 ? links[0] : null);
+                    }, 5000, 100);
+                    if (!link) return 'no aparece la incidencia en el histórico';
+                    link.click();
+
+                    // 2. "Convertir en masiva"
+                    const btnConvertir = await esperarHasta(() => boton('Convertir en masiva'), 8000, 100);
+                    if (!btnConvertir) return 'no aparece el botón «Convertir en masiva»';
+                    btnConvertir.click();
+
+                    // 3. Confirmación (si Brújula la pide)
+                    const btnAceptar = await esperarHasta(() => boton('Aceptar', 'Confirmar', 'Sí', 'Si'), 5000, 100);
+                    if (btnAceptar) {
+                        btnAceptar.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, view: PAGINA }));
+                        btnAceptar.click();
+                    }
+
+                    // 4. Hecho cuando desaparece "Convertir en masiva" (o el diálogo de confirmación)
+                    await esperarHasta(() => !boton('Convertir en masiva') && !boton('Aceptar', 'Confirmar'), 8000, 150);
+                    await esperar(400);
+
+                    // 5. Cerrar el detalle (✖ / Cerrar / Escape)
+                    const btnCerrar = boton('✖', '×');
+                    if (btnCerrar) btnCerrar.click();
+                    else document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', code: 'Escape', keyCode: 27, bubbles: true }));
+                    await esperar(500);
+                    return true;
                 };
 
                 ui.estado('Abriendo Histórico...');
@@ -1534,7 +1746,11 @@
                 if (btnBuscar) btnBuscar.click();
 
                 ui.estado('Comprobando estado...');
-                await esperar(1500);
+                // Espera a que la tabla responda: sin resultados, o la fila con la casilla Masiva Sí/No
+                await esperar(400);
+                await esperarHasta(() =>
+                    Array.from(document.querySelectorAll('td')).some(td => td.textContent.trim() === 'No hay elementos que mostrar') ||
+                    document.querySelector('td[title="Si"] svg.fa-square-check, td[title="No"] svg.fa-square'), 8000, 150);
 
                 const celdas = Array.from(document.querySelectorAll('td'));
                 const sinResultados = celdas.find(td => td.textContent.trim() === 'No hay elementos que mostrar');
@@ -1562,32 +1778,16 @@
                     await procederAEditar();
 
                 } else if (noMasivaTick) {
-                    ui.estado('Convirtiendo a Masiva...');
-                    const linkIdTicket = document.querySelector('td a.text-primary.font-bold');
-                    if (linkIdTicket) {
-                        linkIdTicket.click();
-                        await esperar(1000);
-
-                        const btnConvertir = buscarBotonPorTexto('Convertir en masiva');
-                        if (btnConvertir) {
-                            btnConvertir.click();
-                            await esperar(600);
-
-                            const btnAceptar = buscarBotonPorTexto('Aceptar');
-                            if (btnAceptar) {
-                                btnAceptar.click();
-                                await esperar(1000);
-
-                                const btnCerrar = buscarBotonPorTexto('✖');
-                                if (btnCerrar) btnCerrar.click();
-
-                                await esperar(700);
-                                await procederAEditar();
-                                return;
-                            }
-                        }
+                    // No es masiva todavía: se convierte y, sin parar, se abre para editarla
+                    ui.estado('Convirtiendo a Masiva');
+                    const r = await convertirEnMasiva();
+                    if (r !== true) {
+                        mostrarAlertaPersonalizada("No se pudo convertir", `No se pudo convertir <strong>${oceane}</strong> en masiva: ${r}. Revisa el histórico y vuelve a pulsar <strong>Analizar masiva</strong>.`);
+                        ui.reset();
+                        return;
                     }
-                    ui.reset();
+                    ui.estado('Convertida · abriendo');
+                    await procederAEditar(true);
                 } else {
                     mostrarAlertaPersonalizada("Estado indeterminado", "No se pudo determinar si la incidencia es <strong>Masiva</strong> o no en el Histórico.");
                     ui.reset();
@@ -1676,8 +1876,9 @@
                     }
 
                     ui.estado('Procesando...');
+                    resumenComentarios = { anadidos: 0, omitidos: 0 };
                     await procesarPortapapeles(text, (t) => ui.estado(t));
-                    ui.exito('Completado', 2500);
+                    terminarRelleno(ui);
                 } catch (err) {
                     if (err.message !== "AbortarEjecucion") {
                         console.error(err);
@@ -2163,16 +2364,9 @@
                 };
 
                 if (opc.sinComentarios) return;
-                actualizarEstado('Comentarios...');
-                // Si ya hay un comentario idéntico, no se repite
-                if (!comentarioYaExiste('Comentarios Internos', text)) {
-                    await addCommentTargeted('Comentarios Internos', text);
-                    await sleep(300);
-                }
-
-                if (comentariosText && !comentarioYaExiste('Comentarios', comentariosText)) {
-                    await addCommentTargeted('Comentarios', comentariosText);
-                }
+                // Si el comentario ya está publicado (2ª o 3ª vez que se rellena la masiva), no se repite
+                await anadirSiFalta('Comentarios Internos', text, async (s, t) => { await addCommentTargeted(s, t); await sleep(300); }, actualizarEstado);
+                await anadirSiFalta('Comentarios', comentariosText, addCommentTargeted, actualizarEstado);
             }
 
             return { id: 'fijo', label: 'Rellenar fijo', icon: 'pencil', visible, run, procesar: procesarPortapapeles };
@@ -2369,8 +2563,9 @@
                 try {
                     const text = await navigator.clipboard.readText();
                     ui.estado('Procesando...');
+                    resumenComentarios = { anadidos: 0, omitidos: 0 };
                     const ok = await procesarTexto(text, (t) => ui.estado(t));
-                    if (ok) ui.exito('Completado', 2500);
+                    if (ok) terminarRelleno(ui);
                     else ui.reset();
                 } catch (err) {
                     console.error("Error al rellenar el formulario:", err);
@@ -2606,12 +2801,8 @@
 
                     // --- COMENTARIOS ---
                     if (opc.sinComentarios) return true;
-                    estado('Comentarios...');
-                    // Si ya hay un comentario idéntico, no se repite
-                    if (!comentarioYaExiste('Comentarios Internos', text)) {
-                        await rellenarSeccionComentario('Comentarios Internos', text);
-                        await sleep(600);
-                    }
+                    // Si el comentario ya está publicado (2ª o 3ª vez que se rellena la masiva), no se repite
+                    await anadirSiFalta('Comentarios Internos', text, async (s, t) => { await rellenarSeccionComentario(s, t); await sleep(600); }, estado);
 
                     let comentarioExterno = '';
                     if (esFinal) {
@@ -2626,9 +2817,7 @@
                         comentarioExterno += `[Información relevante y Acciones en curso]: ${infoMatch[1].trim()}`;
                     }
 
-                    if (comentarioExterno.trim() !== '' && !comentarioYaExiste('Comentarios', comentarioExterno.trim())) {
-                        await rellenarSeccionComentario('Comentarios', comentarioExterno.trim());
-                    }
+                    await anadirSiFalta('Comentarios', comentarioExterno.trim(), rellenarSeccionComentario, estado);
 
 
                     return true;
@@ -3634,7 +3823,7 @@
 
             const ejecucion = JSON.parse(GM_getValue('brujula_ejecucion_actual', 'null'));
             if (!ejecucion || ejecucion.tickets.length === 0) {
-                GM_deleteValue('brujula_ejecucion_actual');
+                gmBorrar('brujula_ejecucion_actual');
                 return;
             }
 
@@ -3829,7 +4018,7 @@
                 const finalCompletados = ejecucion.completados || [];
                 const finalTipo = ejecucion.tipo;
 
-                GM_deleteValue('brujula_ejecucion_actual');
+                gmBorrar('brujula_ejecucion_actual');
                 if (finalTipo === 'Fijo') GM_setValue('masivas_cerradas_fijo', '[]');
                 if (finalTipo === 'Móvil') GM_setValue('masivas_cerradas_movil', '[]');
 
@@ -3850,7 +4039,7 @@
             const latido = Number(GM_getValue('brujula_motor_latido', 0)) || 0;
             if (!(latido && Date.now() - latido < 15000)) {
                 console.info('[MASIVAS PRO] Cierre anterior interrumpido: no se reanuda automáticamente.');
-                GM_deleteValue('brujula_ejecucion_actual');
+                gmBorrar('brujula_ejecucion_actual');
             }
         }
         window.addEventListener('load', () => {
