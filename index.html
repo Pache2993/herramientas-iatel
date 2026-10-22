@@ -611,6 +611,7 @@ a.ws-card:hover .ws-go .ia-icon { transform: translateX(4px); }
 .ws-steps-big > li > div { min-width: 0; }
 .ws-install > * { min-width: 0; }
 .ws-loader-code { margin-top: var(--ia-sp-5); padding: 0; overflow: hidden; max-width: 100%; }
+.ws-loader-code[hidden] { display: none !important; }
 .ws-loader-head { display: flex; align-items: center; gap: var(--ia-sp-3); flex-wrap: wrap; padding: var(--ia-sp-4) var(--ia-sp-5); border-bottom: 1px solid var(--ia-border); background: rgba(255, 255, 255, 0.02); }
 .ws-loader-head b { color: var(--ia-text); font-family: var(--ia-mono); font-size: var(--ia-fs-sm); }
 .ws-loader-head .ia-btn { margin-left: auto; }
@@ -1847,16 +1848,14 @@ function vistaInstalacion() {
                     <p>Es la extensión del navegador que carga las herramientas sobre las webs de trabajo. Funciona en Firefox, Chrome y Edge.</p>
                     <div class="ws-step-actions"><a class="ia-btn ia-btn--outline ia-btn--md" href="https://violentmonkey.github.io/get-it/" target="_blank" rel="noopener">${icono('external', 14)}Descargar Violentmonkey</a></div></div></li>
                 <li class="ws-reveal" style="--d:90ms"><span class="fp-node">2</span><div><h3>Instala LOADER PRO</h3>
-                    <p>Es el único script que verás en Violentmonkey. Comprueba tu licencia y carga las herramientas que tienes asignadas en cada web. Pulsa <b>Instalar LOADER PRO</b> y confirma en Violentmonkey.</p>
+                    <p>Es el único script que verás en Violentmonkey. Comprueba tu licencia y carga las herramientas que tienes asignadas en cada web. Pulsa <b>Copiar LOADER PRO</b>, abre Violentmonkey › <b>«+»</b> › <b>Nuevo</b>, borra lo que aparezca, pega el código y pulsa <b>Guardar</b>.</p>
                     <p class="ia-hint ia-hint--warning" style="margin-top:10px">${icono('alert', 13)}<span>¿Tenías el cargador anterior («Oceane Pro - Loader»)? Bórralo en Violentmonkey: con el nombre nuevo se instala como otro script y, si no, seguirían funcionando los dos.</span></p>
                     <div class="ws-step-actions">
-                        <a class="ia-btn ia-btn--primary ia-btn--md" href="${LOADER_ARCHIVO}">${icono('download', 14)}<span>Instalar LOADER PRO</span></a>
-                        <button class="ia-btn ia-btn--outline ia-btn--md" id="ld-copiar">${icono('copy', 14)}<span>Copiar código</span></button>
+                        <button class="ia-btn ia-btn--primary ia-btn--md" id="ld-copiar">${icono('copy', 14)}<span>Copiar LOADER PRO</span></button>
                         <button class="ia-btn ia-btn--outline ia-btn--md" id="ld-ver" aria-expanded="false" aria-controls="ld-codigo">${icono('code', 14)}<span>Ver código</span></button>
                     </div>
-                    <p class="ia-hint" style="margin-top:12px">${icono('bolt', 13)}<span>Si el botón no abre Violentmonkey: copia el código, abre Violentmonkey › «+» › Nuevo, pégalo y guarda.</span></p>
                     <div class="ws-card ws-loader-code" id="ld-codigo" hidden>
-                        <div class="ws-loader-head">${icono('file', 15)}<b>${LOADER_ARCHIVO}</b><span class="tw-chip">v${LOADER_VERSION}</span><button class="ia-btn ia-btn--md" id="ld-copiar2">${icono('copy', 14)}<span>Copiar</span></button></div>
+                        <div class="ws-loader-head">${icono('file', 15)}<b>LOADER PRO</b><span class="tw-chip">v${LOADER_VERSION}</span><button class="ia-btn ia-btn--md" id="ld-copiar2">${icono('copy', 14)}<span>Copiar</span></button></div>
                         <pre class="ws-loader-pre" tabindex="0" aria-label="Código del Loader">${resaltarLoader(LOADER)}</pre>
                     </div></div></li>
                 <li class="ws-reveal" style="--d:180ms"><span class="fp-node">3</span><div><h3>Inicia sesión</h3>
